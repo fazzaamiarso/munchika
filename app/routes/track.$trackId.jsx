@@ -13,7 +13,7 @@ export const loader = async ({ params }) => {
   return {
     trackData: {
       title: trackData.title,
-      artist: trackData.artist,
+      artist: trackData.primary_artist.name,
       geniusUrl: trackData.url,
       thumbnail: trackData.song_art_image_thumbnail_url,
       release_date: trackData.release_date,
