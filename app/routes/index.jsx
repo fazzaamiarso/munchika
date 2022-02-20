@@ -1,15 +1,19 @@
-import { useLoaderData } from 'remix';
-
-export const loader = async () => {
-  return 'I came from loader!';
-};
+import { Link } from 'remix';
 
 export default function Index() {
-  const data = useLoaderData();
   return (
-    <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: '1.4' }}>
-      <h1 className="text-2xl text-red-500">Hello hackathooon!!</h1>
-      <p>{data}</p>
-    </div>
+    <header className="">
+      <nav>
+        <ul className="">
+          <li className="">
+            <Link to="/">Home</Link>
+          </li>
+          <li className="">
+            <Link to="/search">Search</Link>
+          </li>
+        </ul>
+      </nav>
+      <button className="bg-pink-400 py-1 px-4">Add Thought</button>
+    </header>
   );
 }
