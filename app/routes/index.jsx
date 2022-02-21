@@ -1,6 +1,7 @@
-import { Link } from 'remix';
+import { Link, useNavigate } from 'remix';
 
 export default function Index() {
+  const navigate = useNavigate();
   return (
     <header className="">
       <nav>
@@ -13,7 +14,12 @@ export default function Index() {
           </li>
         </ul>
       </nav>
-      <button className="bg-pink-400 py-1 px-4">Add Thought</button>
+      <button
+        onClick={() => navigate('post/new')}
+        className="bg-pink-400 py-1 px-4"
+      >
+        Add Thought
+      </button>
     </header>
   );
 }
