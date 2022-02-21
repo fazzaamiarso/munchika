@@ -10,6 +10,7 @@ import debounce from 'lodash.debounce';
 import { useCallback } from 'react';
 import comboboxStyle from '@reach/combobox/styles.css';
 import { supabase } from '../../server/db.server';
+import { fetchFromGenius } from '~/utils/geniusApi.server';
 
 export const links = () => {
   return [{ rel: 'stylesheet', href: comboboxStyle }];
@@ -21,16 +22,8 @@ export const loader = async ({ request }) => {
 
   if (searchTerm === null) return null;
 
-  const url = `https://api.genius.com/search?q=${searchTerm}`;
-  const encodedURI = encodeURI(url);
-
-  const response = await fetch(encodedURI, {
-    headers: {
-      Authorization: `Bearer ${process.env.GENIUS_ACCESS_TOKEN}`,
-    },
-  });
-  const json = await response.json();
-  const data = json.response.hits;
+  const response = await fetchFromGenius(`search?q=${searchTerm}`);
+  const data = response.hits;
 
   return data;
 };

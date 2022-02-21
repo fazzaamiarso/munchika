@@ -1,21 +1,13 @@
 import { useLoaderData, Link } from 'remix';
+import { fetchFromGenius } from '~/utils/geniusApi.server';
 
 export const loader = async ({ request }) => {
   const newUrl = new URL(request.url);
   const searchTerm = newUrl.searchParams.get('term');
 
   if (searchTerm === null) return {};
-
-  const url = `https://api.genius.com/search?q=${searchTerm}`;
-  const encodedURI = encodeURI(url); //replace character with escape sequence of UTF-8 encoding
-
-  const response = await fetch(encodedURI, {
-    headers: {
-      Authorization: `Bearer ${process.env.GENIUS_ACCESS_TOKEN}`,
-    },
-  });
-  const json = await response.json();
-  const data = json.response.hits;
+  const response = await fetchFromGenius(`search?q=${searchTerm}`);
+  const data = response.hits;
   return {
     data,
   };

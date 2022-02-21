@@ -1,14 +1,9 @@
 import { useLoaderData } from 'remix';
+import { fetchFromGenius } from '../utils/geniusApi.server';
 
 export const loader = async ({ params }) => {
-  const url = `https://api.genius.com/songs/${params.trackId}`;
-  const track = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${process.env.GENIUS_ACCESS_TOKEN}`,
-    },
-  });
-  const response = await track.json();
-  const trackData = response.response.song;
+  const track = await fetchFromGenius(`songs/${params.trackId}`);
+  const trackData = track.song;
 
   return {
     trackData: {

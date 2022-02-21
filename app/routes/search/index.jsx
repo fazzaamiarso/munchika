@@ -1,4 +1,5 @@
 import { useLoaderData, Link } from 'remix';
+import { fetchFromGenius } from '~/utils/geniusApi.server';
 import { supabase } from '../../../server/db.server';
 
 export const loader = async ({ request }) => {
@@ -11,17 +12,9 @@ export const loader = async ({ request }) => {
       .select()
       .order('created_at', { ascending: false });
 
-    const fetchTrack = trackId => {
-      return fetch(`https://api.genius.com/songs/${trackId}`, {
-        headers: {
-          Authorization: `Bearer ${process.env.GENIUS_ACCESS_TOKEN}`,
-        },
-      });
-    };
     const tracks = data.map(async post => {
-      const response = await fetchTrack(post.track_id);
-      const json = await response.json();
-      const track = json.response.song;
+      const response = await fetchFromGenius(`songs/${post.track_id}`);
+      const track = response.song;
       return {
         ...post,
         title: track.title,
