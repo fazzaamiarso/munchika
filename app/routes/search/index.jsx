@@ -1,5 +1,5 @@
 import { useLoaderData, Link } from 'remix';
-import { fetchFromGenius } from '~/utils/geniusApi.server';
+import { fetchFromGenius, removeTranslation } from '~/utils/geniusApi.server';
 import { supabase } from '../../../server/db.server';
 
 export const loader = async ({ request }) => {
@@ -17,7 +17,7 @@ export const loader = async ({ request }) => {
       const track = response.song;
       return {
         ...post,
-        title: track.title,
+        title: removeTranslation(track.title),
         artist: track.primary_artist.name,
         thumbnail: track.song_art_image_thumbnail_url,
       };
@@ -35,28 +35,33 @@ export default function SearchPost() {
 
   return (
     <>
-      <h2 className="">Search post</h2>
       <ul className="space-y-12">
         {data.map(post => {
           return (
-            <li key={post.id} className="max-w-lg">
-              <div className="mb-8 flex items-center gap-4 shadow-md">
-                <img src={post.thumbnail} alt={post.title} className="h-20" />
-                <div className="">
-                  <p className="font-semibold">{post.title}</p>
-                  <p className="">{post.artist}</p>
+            <li key={post.id} className="max-w-lg rounded-md p-4 shadow-lg">
+              <div className="mb-4 flex items-center gap-4 shadow-md">
+                <img src={post.thumbnail} alt={post.title} className="h-24" />
+                <div className="pr-4">
+                  <p className="text-sm font-semibold">{post.title}</p>
+                  <p className="text-xs">{post.artist}</p>
                   <Link
                     to={`/track/${post.track_id}`}
-                    className="text-blue-500 hover:underline"
+                    className="text-xs text-blue-500 hover:underline"
                   >
                     Go to song&apos;s feed ➡
                   </Link>
                 </div>
               </div>
-              <h4 className="text-lg font-semibold">Featured lyrics</h4>
-              <p>{post.lyrics}</p>
-              <h4 className="text-lg font-semibold">Thought</h4>
-              <p>{post.thought}</p>
+              <section className="space-y-4">
+                <div>
+                  <h4 className="text-md font-semibold">Featured lyrics</h4>
+                  <p className="text-justify indent-8">{post.lyrics}</p>
+                </div>
+                <div>
+                  <h4 className="text-md font-semibold">Thought</h4>
+                  <p className="text-justify indent-8">{post.thought}</p>
+                </div>
+              </section>
             </li>
           );
         })}

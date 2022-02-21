@@ -64,12 +64,17 @@ export default function NewPost() {
 
   return (
     <>
-      <h1 className="text-2xl">Add your thought</h1>
-      <form method="post">
+      <h1 className="text-2xl font-bold">Add your thought</h1>
+      <form method="post" className="mx-auto mt-4 flex w-10/12 flex-col gap-4">
         <div>
           <Combobox aria-labelledby="track">
-            <div>
-              <ComboboxInput name="track" onChange={handleChange} />
+            <div className="flex gap-2">
+              <ComboboxInput
+                name="track"
+                onChange={handleChange}
+                className="ring-1 ring-gray-200"
+                placeholder="Find your song here"
+              />
               {fetcher.state === 'submitting' ? <p>fetching..</p> : null}
             </div>
             {fetcher.data ? (
@@ -103,27 +108,33 @@ export default function NewPost() {
             ) : null}
           </Combobox>
         </div>
-        <div>
-          <label htmlFor="lyrics">Lyrics</label>
-          <input type="textarea" name="lyrics" id="lyrics" />
+        <div className="flex flex-col ">
+          <label htmlFor="lyrics" className="font-semibold">
+            Lyrics
+          </label>
+          <textarea type="textarea" name="lyrics" id="lyrics" />
         </div>
-        <div>
-          <label htmlFor="thought">Thought</label>
-          <input type="textarea" name="thought" id="thought" />
+        <div className="flex flex-col ">
+          <label htmlFor="thought" className="font-semibold">
+            Thought
+          </label>
+          <textarea type="textarea" name="thought" id="thought" />
         </div>
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="py-1 px-4 font-semibold"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className="bg-pink-500 py-1 px-4 font-semibold text-white"
-        >
-          Submit
-        </button>
+        <div className="flex gap-2 self-end">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="py-1 px-4 font-semibold"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="bg-pink-500 py-1 px-4 font-semibold text-white"
+          >
+            Submit
+          </button>
+        </div>
       </form>
     </>
   );

@@ -13,3 +13,9 @@ export const fetchFromGenius = async requestPath => {
   const data = json.response;
   return data;
 };
+
+export const removeTranslation = title => {
+  const regex = /\(english translation\)/i;
+  const replacedWord = title.replace(regex, '');
+  return replacedWord.trim();
+};
