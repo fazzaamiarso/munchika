@@ -5,10 +5,11 @@ import {
   ComboboxList,
   ComboboxOption,
 } from '@reach/combobox';
-import { useNavigate, useFetcher } from 'remix';
+import { useNavigate, useFetcher, redirect } from 'remix';
 import debounce from 'lodash.debounce';
 import { useCallback } from 'react';
 import comboboxStyle from '@reach/combobox/styles.css';
+import { supabase } from '../../server/db.server';
 
 export const links = () => {
   return [{ rel: 'stylesheet', href: comboboxStyle }];
@@ -21,7 +22,7 @@ export const loader = async ({ request }) => {
   if (searchTerm === null) return null;
 
   const url = `https://api.genius.com/search?q=${searchTerm}`;
-  const encodedURI = encodeURI(url); //replace character with escape sequence of UTF-8 encoding
+  const encodedURI = encodeURI(url);
 
   const response = await fetch(encodedURI, {
     headers: {
@@ -36,9 +37,22 @@ export const loader = async ({ request }) => {
 
 export const action = async ({ request }) => {
   const formData = await request.formData();
-  console.log(formData);
+  const trackId = formData.get('track');
+  const lyrics = formData.get('lyrics');
+  const thought = formData.get('thought');
 
-  return null;
+  const { data } = await supabase.from('post').insert([
+    {
+      author_id: '9c1b9d40-46fb-4608-97b2-08016f6fcd51', //should come from auth
+      lyrics,
+      thought,
+      track_id: trackId,
+    },
+  ]);
+
+  console.log(data);
+
+  return redirect('/search'); // should redirect to home, redirect here for testing only
 };
 
 export default function NewPost() {
@@ -54,19 +68,15 @@ export default function NewPost() {
   const handleChange = e => {
     debouncedSubmit(e.target.value);
   };
-  const handleSelect = selectedItem => {
-    alert(selectedItem);
-  };
 
   return (
     <>
       <h1 className="text-2xl">Add your thought</h1>
       <form method="post">
         <div>
-          <label htmlFor="track">Choose song</label>
-          <Combobox aria-labelledby="track" onSelect={handleSelect}>
+          <Combobox aria-labelledby="track">
             <div>
-              <ComboboxInput name="query" onChange={handleChange} />
+              <ComboboxInput name="track" onChange={handleChange} />
               {fetcher.state === 'submitting' ? <p>fetching..</p> : null}
             </div>
             {fetcher.data ? (
@@ -79,7 +89,7 @@ export default function NewPost() {
                       return (
                         <ComboboxOption
                           key={track.result.id}
-                          value={track.result.title}
+                          value={track.result.id}
                         >
                           <>
                             <img
