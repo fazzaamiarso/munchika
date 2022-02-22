@@ -15,7 +15,7 @@ export default function Index() {
         </ul>
       </nav>
       <button
-        onClick={() => navigate('post/new')}
+        onClick={() => navigate('post/select')}
         className="bg-pink-400 py-1 px-4"
       >
         Add Thought

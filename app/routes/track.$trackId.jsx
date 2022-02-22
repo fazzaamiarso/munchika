@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useLoaderData } from 'remix';
 import { supabase } from '../../server/db.server';
 import { fetchFromGenius } from '../utils/geniusApi.server';
@@ -19,6 +20,7 @@ export const loader = async ({ params }) => {
       geniusUrl: trackData.url,
       thumbnail: trackData.song_art_image_thumbnail_url,
       release_date: trackData.release_date,
+      id: trackData.id,
     },
     trackPosts,
   };
@@ -43,6 +45,9 @@ export default function TrackDetails() {
           >
             Chekout the full lyrics on genius
           </a>
+          <Link to={`/post/new?trackId=${trackData.id}`}>
+            Add thought for this song
+          </Link>
         </div>
       </div>
       <div className="">
