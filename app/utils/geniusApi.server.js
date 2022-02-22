@@ -9,8 +9,8 @@ export const fetchFromGenius = async requestPath => {
       Authorization: `Bearer ${process.env.GENIUS_ACCESS_TOKEN}`,
     },
   });
-  const json = await response.json();
-  const data = json.response;
+  const jsonData = await response.json();
+  const data = jsonData.response;
   return data;
 };
 
