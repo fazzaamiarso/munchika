@@ -7,9 +7,7 @@
   command = "remix watch"
   port = 3000
 
-[functions]
-  node_bundler = "esbuild"
-  external_node_modules = ["@remix-run/react"]
+
 
 [[redirects]]
   from = "/*"
