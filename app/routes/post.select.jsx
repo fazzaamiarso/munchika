@@ -42,7 +42,7 @@ export default function SelectPost() {
             })}
           </ul>
         ) : (
-          <p>No song found</p>
+          <p>No song found. Please try another search</p>
         )
       ) : null}
     </section>

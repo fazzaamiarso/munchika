@@ -1,10 +1,16 @@
-import { Link } from 'react-router-dom';
-import { useLoaderData } from 'remix';
+import { useLoaderData, Link } from 'remix';
 import { supabase } from '../../server/db.server';
 import { fetchFromGenius } from '../utils/geniusApi.server';
+import invariant from 'tiny-invariant';
 
 export const loader = async ({ params }) => {
+  invariant(params.trackId, 'Expected params.trackId');
+
   const track = await fetchFromGenius(`songs/${params.trackId}`);
+  if (!track)
+    throw new Response(`There is no song with id : ${params.trackId}`, {
+      status: 404,
+    });
   const trackData = track.song;
 
   const { data: trackPosts } = await supabase
@@ -72,5 +78,18 @@ export default function TrackDetails() {
         </ul>
       </div>
     </section>
+  );
+}
+
+export function CatchBoundary() {
+  return (
+    <div className="flex h-full w-full flex-col items-center">
+      <h2 className="text-2xl font-bold">
+        Whoopsie.. that page doesn&apos;t exist
+      </h2>
+      <Link to="/" className="bg-blue-500 font-semibold hover:underline">
+        Go back home
+      </Link>
+    </div>
   );
 }

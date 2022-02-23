@@ -1,10 +1,14 @@
-import { useNavigate, redirect, Form, json, useLoaderData } from 'remix';
-import comboboxStyle from '@reach/combobox/styles.css';
+import { useNavigate, redirect, json, useLoaderData, useFetcher } from 'remix';
 import { supabase } from '../../server/db.server';
 import { fetchFromGenius } from '~/utils/geniusApi.server';
 
-export const links = () => {
-  return [{ rel: 'stylesheet', href: comboboxStyle }];
+const validateThought = thought => {
+  if (thought.length < 20)
+    return 'Less than 20 characters. Your thought should be more descriptive so people can understand better';
+};
+const validateLyrics = lyrics => {
+  if (lyrics.length < 10 && lyrics.length > 0)
+    return 'Less than 10 characters. The lyrics should be more than 10 characters or empty';
 };
 
 export const loader = async ({ request }) => {
@@ -22,6 +26,19 @@ export const action = async ({ request }) => {
   const lyrics = formData.get('lyrics');
   const thought = formData.get('thought');
 
+  const fields = {
+    track_id,
+    lyrics,
+    thought,
+  };
+  const fieldErrors = {
+    thought: validateThought(thought),
+    lyrics: validateLyrics(lyrics),
+  };
+  if (Object.values(fieldErrors).some(Boolean)) {
+    return json({ fieldErrors, fields }, { status: 400 });
+  }
+
   const { data } = await supabase.from('post').insert([
     {
       author_id: '9c1b9d40-46fb-4608-97b2-08016f6fcd51', //should come from auth
@@ -37,6 +54,7 @@ export const action = async ({ request }) => {
 export default function NewPost() {
   const navigate = useNavigate();
   const trackData = useLoaderData();
+  const fetcher = useFetcher();
 
   return (
     <>
@@ -52,19 +70,28 @@ export default function NewPost() {
           <p>{trackData.primary_artist.name}</p>
         </div>
       </div>
-      <Form method="post" className="mx-auto mt-4 flex w-10/12 flex-col gap-4">
-        <input type="text" hidden name="trackId" value={trackData.id} />
+      <fetcher.Form
+        method="post"
+        className="mx-auto mt-4 flex w-10/12 flex-col gap-4"
+      >
+        <input type="text" hidden name="trackId" defaultValue={trackData.id} />
         <div className="flex flex-col ">
           <label htmlFor="lyrics" className="font-semibold">
             Lyrics
           </label>
           <textarea type="textarea" name="lyrics" id="lyrics" />
+          {fetcher.data?.fieldErrors?.lyrics ? (
+            <p className="text-red-500">{fetcher.data.fieldErrors.lyrics}</p>
+          ) : null}
         </div>
         <div className="flex flex-col ">
           <label htmlFor="thought" className="font-semibold">
             Thought
           </label>
           <textarea type="textarea" name="thought" id="thought" />
+          {fetcher.data?.fieldErrors?.thought ? (
+            <p className="text-red-500">{fetcher.data.fieldErrors.thought}</p>
+          ) : null}
         </div>
         <div className="flex gap-2 self-end">
           <button
@@ -81,7 +108,7 @@ export default function NewPost() {
             Submit
           </button>
         </div>
-      </Form>
+      </fetcher.Form>
     </>
   );
 }
