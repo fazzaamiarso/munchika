@@ -1,25 +1,7 @@
-import { Link, useNavigate } from 'remix';
-
 export default function Index() {
-  const navigate = useNavigate();
   return (
-    <header className="">
-      <nav>
-        <ul className="">
-          <li className="">
-            <Link to="/">Home</Link>
-          </li>
-          <li className="">
-            <Link to="/search">Search</Link>
-          </li>
-        </ul>
-      </nav>
-      <button
-        onClick={() => navigate('post/select')}
-        className="bg-pink-400 py-1 px-4"
-      >
-        Add Thought
-      </button>
-    </header>
+    <>
+      <h1 className="text-2xl font-bold">Home Page</h1>
+    </>
   );
 }

@@ -1,6 +1,6 @@
 import { useNavigate, redirect, json, useLoaderData, useFetcher } from 'remix';
-import { supabase } from '../../server/db.server';
-import { fetchFromGenius } from '../utils/geniusApi.server';
+import { supabase } from '../../../server/db.server';
+import { fetchFromGenius } from '../../utils/geniusApi.server';
 
 const validateThought = thought => {
   if (thought.length < 20)

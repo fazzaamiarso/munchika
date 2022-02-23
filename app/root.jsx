@@ -5,15 +5,16 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-} from "remix";
-import styles from "./tailwind.css";
+} from 'remix';
+import styles from './tailwind.css';
+import { Navbar } from './components/navbar';
 
 export function links() {
-  return [{ rel: "stylesheet", href: styles }];
+  return [{ rel: 'stylesheet', href: styles }];
 }
 
 export function meta() {
-  return { title: "New Remix App" };
+  return { title: 'New Remix App' };
 }
 
 export default function App() {
@@ -26,6 +27,7 @@ export default function App() {
         <Links />
       </head>
       <body>
+        <Navbar />
         <Outlet />
         <ScrollRestoration />
         <Scripts />

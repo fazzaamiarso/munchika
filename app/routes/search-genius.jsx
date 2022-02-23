@@ -9,3 +9,7 @@ export const loader = async ({ request }) => {
 
   return data;
 };
+
+export default function Bug() {
+  return null;
+}

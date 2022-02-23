@@ -6,7 +6,7 @@ export default function SelectPost() {
   return (
     <section>
       <fetcher.Form method="get" action={`/search-genius`}>
-        <input type="search" name="query" autoComplete={false} />
+        <input type="search" name="query" autoComplete="off" />
         <button type="submit">Search</button>
         {fetcher.state === 'idle' ? <p>Search something</p> : null}
         {fetcher.state === 'loading' ? <p>Searching...</p> : null}
