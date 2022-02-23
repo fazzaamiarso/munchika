@@ -4,6 +4,7 @@
   "description": "",
   "license": "",
   "dependencies": {
+    "@headlessui/react": "^1.5.0",
     "@heroicons/react": "^1.0.5",
     "@netlify/functions": "^0.10.0",
     "@reach/combobox": "^0.16.5",

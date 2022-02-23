@@ -1,5 +1,8 @@
 import { useLoaderData, Link } from 'remix';
-import { fetchFromGenius, removeTranslation } from '~/utils/geniusApi.server';
+import {
+  fetchFromGenius,
+  removeTranslation,
+} from '../../utils/geniusApi.server';
 import { supabase } from '../../../server/db.server';
 
 export const loader = async ({ request }) => {

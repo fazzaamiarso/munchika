@@ -1,5 +1,5 @@
 import { useLoaderData, Link } from 'remix';
-import { fetchFromGenius } from '~/utils/geniusApi.server';
+import { fetchFromGenius } from '../../utils/geniusApi.server';
 
 export const loader = async ({ request }) => {
   const newUrl = new URL(request.url);
