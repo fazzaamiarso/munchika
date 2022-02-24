@@ -1,4 +1,5 @@
 import { useNavigate, redirect, json, useLoaderData, useFetcher } from 'remix';
+import { getUserId, requireUserId } from '~/utils/session.server';
 import { supabase } from '../../../server/db.server';
 import { fetchFromGenius } from '../../utils/geniusApi.server';
 
@@ -13,6 +14,7 @@ const validateLyrics = lyrics => {
 
 export const loader = async ({ request }) => {
   const newUrl = new URL(request.url);
+  await requireUserId(request, newUrl);
   const trackId = newUrl.searchParams.get('trackId');
 
   const track = await fetchFromGenius(`songs/${trackId}`);
@@ -21,6 +23,7 @@ export const loader = async ({ request }) => {
 };
 
 export const action = async ({ request }) => {
+  const userId = await getUserId(request);
   const formData = await request.formData();
   const track_id = formData.get('trackId');
   const lyrics = formData.get('lyrics');
@@ -39,14 +42,16 @@ export const action = async ({ request }) => {
     return json({ fieldErrors, fields }, { status: 400 });
   }
 
-  const { data } = await supabase.from('post').insert([
+  const { data, error } = await supabase.from('post').insert([
     {
-      author_id: '9c1b9d40-46fb-4608-97b2-08016f6fcd51', //should come from auth
+      author_id: userId, //should come from auth
       lyrics,
       thought,
       track_id,
     },
   ]);
+  console.log(data);
+  console.log(error);
 
   return redirect('/search'); // should redirect to home, redirect here for testing only
 };

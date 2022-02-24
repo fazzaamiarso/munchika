@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'remix';
+import { Link, useNavigate, Form } from 'remix';
 import { Fragment } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { MenuIcon, XIcon } from '@heroicons/react/outline';
@@ -11,7 +11,7 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 
-function Navbar() {
+function Navbar({ user }) {
   const navigate = useNavigate();
   const handleAdd = () => navigate('/post/select');
 
@@ -114,14 +114,25 @@ function Navbar() {
                           </Link>
                         </Menu.Item>
                         <Menu.Item>
-                          <Link
-                            to="/login"
-                            className={classNames(
-                              'block px-4 py-2 text-sm text-gray-700',
-                            )}
-                          >
-                            Login
-                          </Link>
+                          {user ? (
+                            <Form action="/logout" method="post">
+                              <button
+                                type="submit"
+                                className="block px-4 py-2 text-sm text-gray-700"
+                              >
+                                Logout
+                              </button>
+                            </Form>
+                          ) : (
+                            <Link
+                              to="/login"
+                              className={classNames(
+                                'block px-4 py-2 text-sm text-gray-700',
+                              )}
+                            >
+                              Login
+                            </Link>
+                          )}
                         </Menu.Item>
                       </Menu.Items>
                     </Transition>

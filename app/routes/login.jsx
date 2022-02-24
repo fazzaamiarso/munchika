@@ -1,45 +1,66 @@
-import { useActionData } from 'remix';
+import { useState } from 'react';
+import { useActionData, useSearchParams, redirect } from 'remix';
 import { supabase } from '../../server/db.server';
-import { createUserSession, destroyUserSession } from '../utils/session.server';
+import { createUserSession, getUserId } from '../utils/session.server';
+
+export const loader = async ({ request }) => {
+  const userId = await getUserId(request);
+  if (userId) throw redirect('/');
+  return null;
+};
 
 export const action = async ({ request }) => {
   const formData = await request.formData();
   const email = formData.get('email');
   const password = formData.get('password');
   const authType = formData.get('authType');
+  const username = formData.get('username');
+  const redirectTo = formData.get('redirectTo') ?? '/';
 
   if (authType === 'signup') {
     const { user, error } = await supabase.auth.signUp({ email, password });
+    console.log(user);
+    console.log(error);
     if (error) return { error };
-    return createUserSession(user.id);
+
+    const redirectPath = redirectTo === '/login' ? '/' : redirectTo;
+    await supabase.from('user').insert([{ username, id: user.id }]); // insert user profile
+    return await createUserSession(user.id, redirectPath);
   }
   if (authType === 'login') {
-    const { user, error } = await supabase.auth.signIn({ email, password });
+    const { user, error, session } = await supabase.auth.signIn({
+      email,
+      password,
+    });
     if (error) return { error };
-    return createUserSession(user.id);
+    console.log(session.access_token);
+    return await createUserSession(user.id, redirectTo);
   }
-  if (authType === 'logout') {
-    await supabase.auth.signOut();
-    return destroyUserSession(request);
-  }
-  return null;
 };
 
 export default function Login() {
   const data = useActionData();
+  const [searchParams] = useSearchParams();
+  const [formType, setFormType] = useState('login');
 
   return (
     <div className="flex h-screen w-screen max-w-lg flex-col items-center justify-center">
       <h1 className="text-2xl font-bold">Login</h1>
       <form method="post" className="space-y-12">
-        <fieldset>
+        <input
+          type="text"
+          name="redirectTo"
+          value={searchParams.get('redirectTo') ?? undefined}
+          hidden
+        />
+        <fieldset onChange={e => setFormType(e.target.value)}>
           <div>
             <input
               id="login"
               name="authType"
               value="login"
               type="radio"
-              defaultChecked
+              defaultChecked={formType === 'login'}
             />
             <label htmlFor="login">Login</label>
           </div>
@@ -48,6 +69,14 @@ export default function Login() {
             <label htmlFor="signup">Signup</label>
           </div>
         </fieldset>
+        {formType === 'signup' ? (
+          <div className="flex flex-col">
+            <label htmlFor="username" className="font-semibold">
+              username
+            </label>
+            <input name="username" id="username" type="text" />
+          </div>
+        ) : null}
         <div className="flex flex-col">
           <label htmlFor="email" className="font-semibold">
             Email
@@ -66,20 +95,7 @@ export default function Login() {
         >
           Submit
         </button>
-        <button
-          type="submit"
-          name="authType"
-          value="logout"
-          className="rounded-sm bg-red-500 px-4 py-1 font-semibold"
-        >
-          Logout
-        </button>
       </form>
-      <div className="space-x-4">
-        <p>Email : {data?.email ? data.email : null}</p>
-        <p>UUID: {data?.id ? data.id : null}</p>
-        <p>{data?.error ? JSON.stringify(data.error.message) : null}</p>
-      </div>
     </div>
   );
 }

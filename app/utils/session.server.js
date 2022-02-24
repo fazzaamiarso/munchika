@@ -22,10 +22,16 @@ export const getUserId = async request => {
   if (!userId) return null;
   return userId;
 };
-export const requireUserId = async request => {
+export const requireUserId = async (
+  request,
+  redirectTo = new URL(request.url).pathname,
+) => {
   const session = await getUserSession(request);
   const userId = session.get('userId');
-  if (!userId) return null;
+  if (!userId) {
+    const searchParams = new URLSearchParams([['redirectTo', redirectTo]]);
+    throw redirect(`/login?${searchParams}`);
+  }
   return userId;
 };
 
