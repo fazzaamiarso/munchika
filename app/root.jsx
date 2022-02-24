@@ -5,6 +5,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLocation,
 } from 'remix';
 import styles from './tailwind.css';
 import { Navbar } from './components/navbar';
@@ -18,6 +19,8 @@ export function meta() {
 }
 
 export default function App() {
+  const location = useLocation();
+
   return (
     <html lang="en">
       <head>
@@ -27,7 +30,7 @@ export default function App() {
         <Links />
       </head>
       <body>
-        <Navbar />
+        {location.pathname.includes('/login') ? null : <Navbar />}
         <Outlet />
         <ScrollRestoration />
         <Scripts />

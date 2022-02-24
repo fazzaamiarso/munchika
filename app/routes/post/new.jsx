@@ -79,7 +79,7 @@ export default function NewPost() {
           <label htmlFor="lyrics" className="font-semibold">
             Lyrics
           </label>
-          <textarea type="textarea" name="lyrics" id="lyrics" />
+          <textarea name="lyrics" id="lyrics" />
           {fetcher.data?.fieldErrors?.lyrics ? (
             <p className="text-red-500">{fetcher.data.fieldErrors.lyrics}</p>
           ) : null}
@@ -88,7 +88,7 @@ export default function NewPost() {
           <label htmlFor="thought" className="font-semibold">
             Thought
           </label>
-          <textarea type="textarea" name="thought" id="thought" />
+          <textarea name="thought" id="thought" />
           {fetcher.data?.fieldErrors?.thought ? (
             <p className="text-red-500">{fetcher.data.fieldErrors.thought}</p>
           ) : null}

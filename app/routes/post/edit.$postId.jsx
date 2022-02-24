@@ -68,19 +68,13 @@ export default function EditPost() {
           <label htmlFor="lyrics" className="font-semibold">
             Lyrics
           </label>
-          <textarea
-            type="textarea"
-            name="lyrics"
-            id="lyrics"
-            defaultValue={postData.lyrics}
-          />
+          <textarea name="lyrics" id="lyrics" defaultValue={postData.lyrics} />
         </div>
         <div className="flex flex-col ">
           <label htmlFor="thought" className="font-semibold">
             Thought
           </label>
           <textarea
-            type="textarea"
             name="thought"
             id="thought"
             defaultValue={postData.thought}
