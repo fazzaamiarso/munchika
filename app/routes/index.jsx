@@ -1,5 +1,3 @@
-import { getUserId } from '../utils/session.server';
-
 export default function Index() {
   return (
     <>

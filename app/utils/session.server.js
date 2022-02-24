@@ -11,6 +11,7 @@ const storage = createCookieSessionStorage({
   secure: true,
   httpOnly: true,
   sameSite: 'lax',
+  maxAge: 10,
 });
 const getUserSession = request => {
   return storage.getSession(request.headers.get('Cookie'), {});
@@ -35,9 +36,10 @@ export const requireUserId = async (
   return userId;
 };
 
-export const createUserSession = async (userId, redirectTo = '/') => {
+export const createUserSession = async (userId, redirectTo = '/', jwtToken) => {
   const session = await storage.getSession();
   session.set('userId', userId);
+  session.set('access_token', jwtToken);
   return redirect(redirectTo, {
     headers: {
       'Set-Cookie': await storage.commitSession(session),
@@ -52,4 +54,9 @@ export const destroyUserSession = async request => {
       'Set-Cookie': await storage.destroySession(session),
     },
   });
+};
+
+export const getAccessToken = async request => {
+  const session = await getUserSession(request);
+  return session.get('access_token');
 };

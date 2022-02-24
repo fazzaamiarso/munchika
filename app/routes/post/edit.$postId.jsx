@@ -9,14 +9,17 @@ import {
 import invariant from 'tiny-invariant';
 import { supabase } from '../../../server/db.server';
 import { fetchFromGenius } from '../../utils/geniusApi.server';
+import { requireUserId } from '../../utils/session.server';
 
-export const loader = async ({ params }) => {
+export const loader = async ({ params, request }) => {
   invariant(params.postId, 'Expected params.postId');
+  const userId = requireUserId(request, new URL(request.url));
 
   const { data: postData } = await supabase
     .from('post')
     .select('*')
     .eq('id', parseInt(params.postId))
+    .eq('author_id', userId)
     .limit(1)
     .single();
   const trackData = (await fetchFromGenius(`songs/${postData.track_id}`)).song;

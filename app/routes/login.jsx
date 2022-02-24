@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useActionData, useSearchParams, redirect } from 'remix';
+import { useSearchParams, redirect } from 'remix';
 import { supabase } from '../../server/db.server';
 import { createUserSession, getUserId } from '../utils/session.server';
 
@@ -18,14 +18,15 @@ export const action = async ({ request }) => {
   const redirectTo = formData.get('redirectTo') ?? '/';
 
   if (authType === 'signup') {
-    const { user, error } = await supabase.auth.signUp({ email, password });
-    console.log(user);
-    console.log(error);
+    const { user, error, session } = await supabase.auth.signUp({
+      email,
+      password,
+    });
     if (error) return { error };
 
     const redirectPath = redirectTo === '/login' ? '/' : redirectTo;
     await supabase.from('user').insert([{ username, id: user.id }]); // insert user profile
-    return await createUserSession(user.id, redirectPath);
+    return await createUserSession(user.id, redirectPath, session.access_token);
   }
   if (authType === 'login') {
     const { user, error, session } = await supabase.auth.signIn({
@@ -33,13 +34,12 @@ export const action = async ({ request }) => {
       password,
     });
     if (error) return { error };
-    console.log(session.access_token);
-    return await createUserSession(user.id, redirectTo);
+
+    return await createUserSession(user.id, '/', session.access_token);
   }
 };
 
 export default function Login() {
-  const data = useActionData();
   const [searchParams] = useSearchParams();
   const [formType, setFormType] = useState('login');
 
