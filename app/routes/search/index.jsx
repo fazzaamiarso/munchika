@@ -4,15 +4,18 @@ import {
   removeTranslation,
 } from '../../utils/geniusApi.server';
 import { supabase } from '../../../server/db.server';
+import { getUserId } from '~/utils/session.server';
+import { DotsVerticalIcon } from '@heroicons/react/solid';
 
 export const loader = async ({ request }) => {
+  const userId = await getUserId(request);
   const newUrl = new URL(request.url);
   const searchTerm = newUrl.searchParams.get('term');
 
   if (searchTerm === null) {
     const { data } = await supabase
       .from('post')
-      .select()
+      .select('*, user (username)')
       .order('created_at', { ascending: false });
 
     const tracks = data.map(async post => {
@@ -20,6 +23,7 @@ export const loader = async ({ request }) => {
       const track = response.song;
       return {
         ...post,
+        username: post.user.username,
         title: removeTranslation(track.title),
         artist: track.primary_artist.name,
         thumbnail: track.song_art_image_thumbnail_url,
@@ -28,13 +32,14 @@ export const loader = async ({ request }) => {
     const trackDatas = await Promise.all(tracks);
     return {
       data: trackDatas,
+      userId,
     };
   }
   return {};
 };
 
 export default function SearchPost() {
-  const { data } = useLoaderData();
+  const { data, userId } = useLoaderData();
 
   return (
     <>
@@ -42,7 +47,16 @@ export default function SearchPost() {
         {data.map(post => {
           return (
             <li key={post.id} className="max-w-lg rounded-md p-4 shadow-lg">
-              <div className="mb-4 flex items-center gap-4 shadow-md">
+              <div className="flex w-full justify-between">
+                <div className="flex gap-1">
+                  <div className="aspect-square h-8 rounded-full bg-gray-300" />
+                  <p>{post.username}</p>
+                </div>
+                {userId === post.author_id ? (
+                  <DotsVerticalIcon className="h-4" />
+                ) : null}
+              </div>
+              <div className="mb-4 flex items-center gap-4 shadow-md transition-transform hover:-translate-y-1 hover:cursor-pointer hover:shadow-lg">
                 <img src={post.thumbnail} alt={post.title} className="h-24" />
                 <div className="pr-4">
                   <p className="text-sm font-semibold">{post.title}</p>

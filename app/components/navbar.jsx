@@ -78,7 +78,7 @@ function Navbar({ user }) {
                         <span className="sr-only">Open user menu</span>
                         <img
                           className="h-8 w-8 rounded-full"
-                          src=""
+                          src={`https://avatars.dicebear.com/api/avataaars/bambang.svg`}
                           alt="profile"
                         />
                       </Menu.Button>
@@ -118,6 +118,7 @@ function Navbar({ user }) {
                             <Form action="/logout" method="post">
                               <button
                                 type="submit"
+                                formMethod="post"
                                 className="block px-4 py-2 text-sm text-gray-700"
                               >
                                 Logout

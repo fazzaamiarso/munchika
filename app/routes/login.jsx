@@ -24,7 +24,7 @@ export const action = async ({ request }) => {
     });
     if (error) return { error };
 
-    const redirectPath = redirectTo === '/login' ? '/' : redirectTo;
+    const redirectPath = redirectTo.include('/login') ? '/' : redirectTo;
     await supabase.from('user').insert([{ username, id: user.id }]); // insert user profile
     return await createUserSession(user.id, redirectPath, session.access_token);
   }
@@ -35,7 +35,7 @@ export const action = async ({ request }) => {
     });
     if (error) return { error };
 
-    return await createUserSession(user.id, '/', session.access_token);
+    return await createUserSession(user.id, redirectTo, session.access_token);
   }
 };
 
