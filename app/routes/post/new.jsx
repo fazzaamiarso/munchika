@@ -44,7 +44,7 @@ export const action = async ({ request }) => {
 
   const { data, error } = await supabase.from('post').insert([
     {
-      author_id: userId, //should come from auth
+      author_id: userId,
       lyrics,
       thought,
       track_id,

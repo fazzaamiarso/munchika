@@ -11,7 +11,6 @@ const storage = createCookieSessionStorage({
   secure: true,
   httpOnly: true,
   sameSite: 'lax',
-  maxAge: 10,
 });
 const getUserSession = request => {
   return storage.getSession(request.headers.get('Cookie'), {});
@@ -49,7 +48,8 @@ export const createUserSession = async (userId, redirectTo = '/', jwtToken) => {
 
 export const destroyUserSession = async request => {
   const session = await getUserSession(request);
-  return redirect('/', {
+  const redirectTo = new URL(request.url);
+  return redirect(redirectTo.pathname, {
     headers: {
       'Set-Cookie': await storage.destroySession(session),
     },

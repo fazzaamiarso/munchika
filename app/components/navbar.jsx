@@ -105,12 +105,12 @@ function Navbar({ user }) {
                         </Menu.Item>
                         <Menu.Item>
                           <Link
-                            to="#"
+                            to="/user/posts"
                             className={classNames(
                               'block px-4 py-2 text-sm text-gray-700',
                             )}
                           >
-                            Settings
+                            Your Posts
                           </Link>
                         </Menu.Item>
                         <Menu.Item>
