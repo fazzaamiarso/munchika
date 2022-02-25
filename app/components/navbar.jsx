@@ -118,7 +118,6 @@ function Navbar({ user }) {
                             <Form action="/logout" method="post">
                               <button
                                 type="submit"
-                                formMethod="post"
                                 className="block px-4 py-2 text-sm text-gray-700"
                               >
                                 Logout

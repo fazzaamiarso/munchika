@@ -35,7 +35,7 @@ export const action = async ({ request }) => {
     });
     if (error) return { error };
 
-    return await createUserSession(user.id, redirectTo, session.access_token);
+    return await createUserSession(user.id, '/', session.access_token);
   }
 };
 
