@@ -1,18 +1,27 @@
 import { Outlet, NavLink, Form, useLocation } from 'remix';
-
+import { useRef } from 'react';
 export default function SearchLayout() {
   const location = useLocation();
+  const searchRef = useRef();
   return (
     <>
-      <h1 className="text-2xl">Search page</h1>
-      <div className="mx-auto flex flex-col items-center gap-4">
+      <div className="mx-auto flex flex-col items-center gap-4 py-8">
         <Form
           method="get"
           action={location.pathname}
           className="flex items-center gap-4"
         >
-          <input name="term" type="text" className="py-1 ring-1 ring-black" />
-          <button type="submit" className="">
+          <input
+            type="search"
+            name="term"
+            autoComplete="off"
+            className="rounded-md ring-gray-400 placeholder:text-gray-400"
+            ref={searchRef}
+          />
+          <button
+            type="submit"
+            className="rounded-md bg-blue-500 px-4 py-2 text-white"
+          >
             Search
           </button>
         </Form>

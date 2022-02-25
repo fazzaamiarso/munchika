@@ -5,7 +5,7 @@ import {
 } from '../../utils/geniusApi.server';
 import { supabase } from '../../../server/db.server';
 import { getUserId } from '~/utils/session.server';
-import { DotsVerticalIcon } from '@heroicons/react/solid';
+import { DotsHorizontalIcon } from '@heroicons/react/solid';
 
 export const loader = async ({ request }) => {
   const userId = await getUserId(request);
@@ -43,17 +43,23 @@ export default function SearchPost() {
 
   return (
     <>
-      <ul className="space-y-12">
+      <ul className="space-y-8">
         {data.map(post => {
           return (
-            <li key={post.id} className="max-w-lg rounded-md p-4 shadow-lg">
-              <div className="flex w-full justify-between">
-                <div className="flex gap-1">
-                  <div className="aspect-square h-8 rounded-full bg-gray-300" />
+            <li
+              key={post.id}
+              className="max-w-lg space-y-2 rounded-md p-4 shadow-lg"
+            >
+              <div className="flex w-full items-center gap-2 ">
+                <div className="aspect-square h-8 rounded-full bg-gray-300" />
+                <div className="flex flex-col items-start gap-1">
                   <p>{post.username}</p>
+                  <span className="text-xs text-gray-400">
+                    {post.created_at}
+                  </span>
                 </div>
                 {userId === post.author_id ? (
-                  <DotsVerticalIcon className="h-4" />
+                  <DotsHorizontalIcon className="ml-auto h-4" />
                 ) : null}
               </div>
               <div className="mb-4 flex items-center gap-4 shadow-md transition-transform hover:-translate-y-1 hover:cursor-pointer hover:shadow-lg">
