@@ -15,7 +15,7 @@ export const loader = async ({ request }) => {
   if (searchTerm === null) {
     const { data } = await supabase
       .from('post')
-      .select('*, user (username)')
+      .select('*, user (username, avatar_url)')
       .order('created_at', { ascending: false });
 
     const tracks = data.map(async post => {
@@ -24,6 +24,7 @@ export const loader = async ({ request }) => {
       return {
         ...post,
         username: post.user.username,
+        avatar: post.user.avatar_url,
         title: removeTranslation(track.title),
         artist: track.primary_artist.name,
         thumbnail: track.song_art_image_thumbnail_url,
@@ -51,7 +52,11 @@ export default function SearchPost() {
               className="max-w-lg space-y-2 rounded-md p-4 shadow-lg"
             >
               <div className="flex w-full items-center gap-2 ">
-                <div className="aspect-square h-8 rounded-full bg-gray-300" />
+                <img
+                  src={post.avatar}
+                  alt={post.username}
+                  className="aspect-square h-8 rounded-full bg-gray-200"
+                />
                 <div className="flex flex-col items-start gap-1">
                   <p>{post.username}</p>
                   <span className="text-xs text-gray-400">

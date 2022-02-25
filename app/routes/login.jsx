@@ -16,17 +16,23 @@ export const action = async ({ request }) => {
   const authType = formData.get('authType');
   const username = formData.get('username');
   const redirectTo = formData.get('redirectTo') ?? '/';
-
+  console.log(redirectTo);
   if (authType === 'signup') {
     const { user, error, session } = await supabase.auth.signUp({
       email,
       password,
     });
     if (error) return { error };
-
-    const redirectPath = redirectTo.include('/login') ? '/' : redirectTo;
-    await supabase.from('user').insert([{ username, id: user.id }]); // insert user profile
-    return await createUserSession(user.id, redirectPath, session.access_token);
+    console.log(error);
+    const redirectPath = redirectTo.includes('/login') ? '/' : redirectTo;
+    await supabase.from('user').insert([
+      {
+        username,
+        id: user.id,
+        avatar_url: `https://avatars.dicebear.com/api/micah/${username}.svg`,
+      },
+    ]); // insert user profile
+    return await createUserSession(user.id, '/', session.access_token);
   }
   if (authType === 'login') {
     const { user, error, session } = await supabase.auth.signIn({

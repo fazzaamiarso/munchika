@@ -1,8 +1,13 @@
 import { Outlet, NavLink, Form, useLocation } from 'remix';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 export default function SearchLayout() {
   const location = useLocation();
   const searchRef = useRef();
+
+  useEffect(() => {
+    searchRef.current.focus();
+  }, []);
+
   return (
     <>
       <div className="mx-auto flex flex-col items-center gap-4 py-8">
