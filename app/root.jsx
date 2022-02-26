@@ -5,18 +5,21 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-} from "remix";
-import styles from "./tailwind.css";
+  useLocation,
+} from 'remix';
+import styles from './tailwind.css';
+import { Navbar } from './components/navbar';
 
 export function links() {
-  return [{ rel: "stylesheet", href: styles }];
+  return [{ rel: 'stylesheet', href: styles }];
 }
 
 export function meta() {
-  return { title: "New Remix App" };
+  return { title: 'New Remix App' };
 }
 
 export default function App() {
+  const location = useLocation();
   return (
     <html lang="en">
       <head>
@@ -26,6 +29,7 @@ export default function App() {
         <Links />
       </head>
       <body>
+        {location.pathname.includes('/login') ? null : <Navbar />}
         <Outlet />
         <ScrollRestoration />
         <Scripts />

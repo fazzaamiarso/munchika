@@ -1,47 +1,63 @@
-import { Outlet, NavLink, Form, useLocation } from 'remix';
-
+import { Outlet, Form, useLocation, Link } from 'remix';
+import { useEffect, useRef } from 'react';
 export default function SearchLayout() {
   const location = useLocation();
+  const searchRef = useRef();
+
+  useEffect(() => {
+    searchRef.current.focus();
+  }, []);
+
   return (
     <>
-      <h1 className="text-2xl">Search page</h1>
-      <div className="mx-auto flex flex-col items-center gap-4">
+      <div className="mx-auto flex flex-col items-center gap-4 py-8">
         <Form
           method="get"
           action={location.pathname}
           className="flex items-center gap-4"
         >
-          <input name="term" type="text" className="py-1 ring-1 ring-black" />
-          <button type="submit" className="">
+          <input
+            type="search"
+            name="term"
+            autoComplete="off"
+            className="rounded-md ring-gray-400 placeholder:text-gray-400"
+            ref={searchRef}
+          />
+          <button
+            type="submit"
+            className="rounded-md bg-blue-500 px-4 py-2 text-white"
+          >
             Search
           </button>
         </Form>
-        <div className="flex gap-4">
-          <NavLink to=".">
-            {({ isActive }) => (
-              <span
-                className={`${
-                  isActive ? 'text-red-500' : ''
-                } font-semibold text-blue-500`}
-              >
-                Post
-              </span>
-            )}
-          </NavLink>
-          <NavLink to="track">
-            {({ isActive }) => (
-              <span
-                className={`${
-                  isActive ? 'text-red-500' : ''
-                } font-semibold text-blue-500`}
-              >
-                Song
-              </span>
-            )}
-          </NavLink>
-        </div>
+        <ul className="flex gap-4">
+          <li>
+            <Link
+              to="."
+              className={`rounded-md font-semibold leading-none ${
+                location.pathname === '/search'
+                  ? 'px-3 py-1  text-blue-500 shadow-md ring-1  ring-gray-300'
+                  : ' text-gray-400 '
+              }`}
+            >
+              Post
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="track"
+              className={`rounded-md font-semibold leading-none ${
+                location.pathname === '/search/track'
+                  ? 'px-3 py-1  text-blue-500 shadow-md ring-1  ring-gray-300'
+                  : ' text-gray-400 '
+              }`}
+            >
+              Song
+            </Link>
+          </li>
+        </ul>
       </div>
-      <main className="mx-auto w-5/6">
+      <main className="mx-auto w-5/6 max-w-xl">
         <Outlet />
       </main>
     </>
