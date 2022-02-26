@@ -1,4 +1,4 @@
-import { Form, Link, useLoaderData, useFetcher } from 'remix';
+import { Link, useLoaderData, useFetcher } from 'remix';
 import { getUserId } from '../../utils/session.server';
 import {
   fetchFromGenius,
@@ -105,14 +105,6 @@ export default function UserPost() {
                     <h4 className="text-md font-semibold">Thought</h4>
                     <p className="text-justify indent-8">{post.thought}</p>
                   </div>
-                  <button
-                    name="postId"
-                    value={post.id}
-                    type="submit"
-                    className="block px-4 py-2 text-sm text-gray-700"
-                  >
-                    Delete post
-                  </button>
                 </section>
               </li>
             );

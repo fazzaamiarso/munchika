@@ -56,21 +56,28 @@ export default function EditPost() {
   const { postId } = useParams();
   const navigate = useNavigate();
   return (
-    <>
+    <div className="mx-auto mt-4 flex w-10/12 flex-col">
       <h1>Editing Post {postId}</h1>
-      <div className="flex items-center">
-        <img src={trackData.thumbnail} alt={trackData.title} className="h-40" />
-        <div>
-          <h2>{trackData.title}</h2>
-          <p>{trackData.artist}</p>
+      <div className="flex items-center  rounded-md ring-1 ring-gray-400">
+        <img src={trackData.thumbnail} alt={trackData.title} className="h-24" />
+        <div className="px-3 leading-5">
+          <h2 className="font-semibold">{trackData.title}</h2>
+          <p className="text-sm">{trackData.artist}</p>
         </div>
       </div>
-      <Form method="post" className="mx-auto mt-4 flex w-10/12 flex-col gap-4">
+      <Form method="post" className="mt-4 flex  flex-col gap-6 py-4">
         <div className="flex flex-col ">
           <label htmlFor="lyrics" className="font-semibold">
             Lyrics
           </label>
-          <textarea name="lyrics" id="lyrics" defaultValue={postData.lyrics} />
+          <textarea
+            name="lyrics"
+            id="lyrics"
+            defaultValue={postData.lyrics}
+            rows={5}
+            autoFocus
+            className="resize-none rounded-md text-sm"
+          />
         </div>
         <div className="flex flex-col ">
           <label htmlFor="thought" className="font-semibold">
@@ -80,6 +87,9 @@ export default function EditPost() {
             name="thought"
             id="thought"
             defaultValue={postData.thought}
+            rows={5}
+            placeholder="Share your thoughts to the world about how this song had helped you .."
+            className="resize-none rounded-md text-sm"
           />
         </div>
         <div className="flex gap-2 self-end">
@@ -92,12 +102,12 @@ export default function EditPost() {
           </button>
           <button
             type="submit"
-            className="bg-pink-500 py-1 px-4 font-semibold text-white"
+            className="rounded-sm bg-blue-500 py-1 px-4 font-semibold text-white"
           >
             Save
           </button>
         </div>
       </Form>
-    </>
+    </div>
   );
 }
