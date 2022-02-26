@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSearchParams, redirect } from 'remix';
+import { useSearchParams, redirect, Form } from 'remix';
 import { supabase } from '../../server/db.server';
 import { createUserSession, getUserId } from '../utils/session.server';
 
@@ -17,6 +17,7 @@ export const action = async ({ request }) => {
   const username = formData.get('username');
   const redirectTo = formData.get('redirectTo') ?? '/';
   console.log(redirectTo);
+
   if (authType === 'signup') {
     const { user, error, session } = await supabase.auth.signUp({
       email,
@@ -50,17 +51,25 @@ export default function Login() {
   const [formType, setFormType] = useState('login');
 
   return (
-    <div className="flex h-screen w-screen max-w-lg flex-col items-center justify-center">
-      <h1 className="text-2xl font-bold">Login</h1>
-      <form method="post" className="space-y-12">
+    <div className="mx-auto flex h-screen w-screen max-w-lg flex-col items-center justify-center gap-6">
+      <h1 className="text-2xl font-bold">
+        {formType === 'login' ? 'Login' : 'Signup'}
+      </h1>
+      <Form
+        method="post"
+        className="flex w-10/12 flex-col gap-6 rounded-md py-4 px-6 ring-1 ring-gray-200"
+      >
         <input
           type="text"
           name="redirectTo"
           value={searchParams.get('redirectTo') ?? undefined}
           hidden
         />
-        <fieldset onChange={e => setFormType(e.target.value)}>
-          <div>
+        <fieldset
+          onChange={e => setFormType(e.target.value)}
+          className="flex items-center gap-4"
+        >
+          <div className="flex items-center gap-2 font-semibold">
             <input
               id="login"
               name="authType"
@@ -70,38 +79,53 @@ export default function Login() {
             />
             <label htmlFor="login">Login</label>
           </div>
-          <div>
+          <div className="flex items-center gap-2 font-semibold">
             <input id="signup" name="authType" value="signup" type="radio" />
             <label htmlFor="signup">Signup</label>
           </div>
         </fieldset>
         {formType === 'signup' ? (
           <div className="flex flex-col">
-            <label htmlFor="username" className="font-semibold">
+            <label htmlFor="username" className=" font-semibold ">
               username
             </label>
-            <input name="username" id="username" type="text" />
+            <input
+              name="username"
+              id="username"
+              type="text"
+              className="w-full rounded-md ring-gray-300 "
+            />
           </div>
         ) : null}
         <div className="flex flex-col">
-          <label htmlFor="email" className="font-semibold">
+          <label htmlFor="email" className=" font-semibold ">
             Email
           </label>
-          <input name="email" id="email" type="email" />
+          <input
+            name="email"
+            id="email"
+            type="email"
+            className="w-full rounded-md ring-gray-300 "
+          />
         </div>
         <div className="flex flex-col">
           <label htmlFor="password" className="font-semibold">
             Password
           </label>
-          <input name="password" id="password" type="password" />
+          <input
+            name="password"
+            id="password"
+            type="password"
+            className="w-full rounded-md ring-gray-300 "
+          />
         </div>
         <button
-          className="bg-blue-500 px-4 py-1 font-semibold text-white"
+          className="rounded-md bg-blue-500 px-4 py-1 font-semibold  text-white"
           type="submit"
         >
           Submit
         </button>
-      </form>
+      </Form>
     </div>
   );
 }
