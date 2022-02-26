@@ -71,7 +71,7 @@ export default function SearchPost() {
                 ) : null}
               </div>
               <div className="mb-4 flex items-center gap-4 shadow-md transition-transform hover:-translate-y-1 hover:cursor-pointer hover:shadow-lg">
-                <img src={post.thumbnail} alt={post.title} className="h-24" />
+                <img src={post.thumbnail} alt={post.title} className="h-16" />
                 <div className="pr-4">
                   <p className="text-sm font-semibold">{post.title}</p>
                   <p className="text-xs">{post.artist}</p>

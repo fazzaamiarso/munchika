@@ -27,13 +27,13 @@ export default function SearchTrack() {
     );
   return (
     <>
-      <ul>
+      <ul className=" divide-y divide-gray-200 ">
         {data.length ? (
           data.map(track => {
             return (
               <li
                 key={track.result.id}
-                className="flex w-full items-center gap-4 leading-none"
+                className="flex w-full items-center gap-4 py-2 leading-none"
               >
                 <img
                   className="h-12"
@@ -44,14 +44,16 @@ export default function SearchTrack() {
                   <h3 className="text-semibold sm:text-md text-sm line-clamp-2">
                     {track.result.title}
                   </h3>
-                  <p className="text-xs sm:text-sm">
+                  <p className="text-xs text-gray-400 sm:text-sm">
                     {track.result.primary_artist.name}
                   </p>
                 </div>
-                <Form action="/post/new" method="get" className="group ml-auto">
+                <Form
+                  action={`/track/${track.result.id}`}
+                  method="get"
+                  className="group ml-auto"
+                >
                   <button
-                    name="trackId"
-                    value={track.result.id}
                     className="flex items-center gap-1 rounded-full px-2 py-1 text-xs text-gray-600 ring-1 ring-gray-300"
                     type="submit"
                   >

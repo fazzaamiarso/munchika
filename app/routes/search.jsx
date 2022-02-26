@@ -1,4 +1,4 @@
-import { Outlet, NavLink, Form, useLocation } from 'remix';
+import { Outlet, Form, useLocation, Link } from 'remix';
 import { useEffect, useRef } from 'react';
 export default function SearchLayout() {
   const location = useLocation();
@@ -30,30 +30,32 @@ export default function SearchLayout() {
             Search
           </button>
         </Form>
-        <div className="flex gap-4">
-          <NavLink to=".">
-            {({ isActive }) => (
-              <span
-                className={`${
-                  isActive ? 'text-red-500' : ''
-                } font-semibold text-blue-500`}
-              >
-                Post
-              </span>
-            )}
-          </NavLink>
-          <NavLink to="track">
-            {({ isActive }) => (
-              <span
-                className={`${
-                  isActive ? 'text-red-500' : ''
-                } font-semibold text-blue-500`}
-              >
-                Song
-              </span>
-            )}
-          </NavLink>
-        </div>
+        <ul className="flex gap-4">
+          <li>
+            <Link
+              to="."
+              className={`rounded-md font-semibold leading-none ${
+                location.pathname === '/search'
+                  ? 'px-3 py-1  text-blue-500 shadow-md ring-1  ring-gray-300'
+                  : ' text-gray-400 '
+              }`}
+            >
+              Post
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="track"
+              className={`rounded-md font-semibold leading-none ${
+                location.pathname === '/search/track'
+                  ? 'px-3 py-1  text-blue-500 shadow-md ring-1  ring-gray-300'
+                  : ' text-gray-400 '
+              }`}
+            >
+              Song
+            </Link>
+          </li>
+        </ul>
       </div>
       <main className="mx-auto w-5/6 max-w-xl">
         <Outlet />
