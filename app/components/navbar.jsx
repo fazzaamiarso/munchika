@@ -1,5 +1,5 @@
-import { Link, useNavigate, useFetcher } from 'remix';
-import { Fragment } from 'react';
+import { Link, useNavigate, useFetcher, useTransition } from 'remix';
+import { Fragment, useEffect } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { MenuIcon, XIcon } from '@heroicons/react/outline';
 import { UserCircleIcon } from '@heroicons/react/solid';
@@ -12,10 +12,16 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 
-function Navbar({ user }) {
+function Navbar() {
   const logout = useFetcher();
   const navigate = useNavigate();
   const handleAdd = () => navigate('/post/select');
+  const transition = useTransition();
+
+  useEffect(() => {
+    if (transition.state === 'loading' || transition.state === 'idle')
+      logout.load('/navbarUser');
+  }, [transition]);
 
   return (
     <header className="">
@@ -78,11 +84,11 @@ function Navbar({ user }) {
                     <div>
                       <Menu.Button className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
                         <span className="sr-only">Open user menu</span>
-                        {user ? (
+                        {logout.data ? (
                           <img
                             className="h-8 w-8 rounded-full"
-                            src={user.avatar_url}
-                            alt={user.username}
+                            src={logout.data.avatar_url}
+                            alt={logout.data.username}
                           />
                         ) : (
                           <UserCircleIcon className="h-8 w-8 rounded-full text-gray-300" />
@@ -99,7 +105,7 @@ function Navbar({ user }) {
                       leaveTo="transform opacity-0 scale-95"
                     >
                       <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                        {user ? (
+                        {logout.data ? (
                           <>
                             <Menu.Item>
                               <Link
@@ -114,7 +120,7 @@ function Navbar({ user }) {
                           </>
                         ) : null}
                         <Menu.Item>
-                          {user ? (
+                          {logout.data ? (
                             <logout.Form action="/logout" method="post">
                               <button
                                 type="submit"
