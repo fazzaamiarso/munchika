@@ -1,13 +1,12 @@
-import { Link, useLoaderData, useFetcher } from 'remix';
+import { Link, useLoaderData } from 'remix';
 import { getUserId } from '../../utils/session.server';
 import {
   fetchFromGenius,
   removeTranslation,
 } from '../../utils/geniusApi.server';
 import { supabase } from '../../../server/db.server';
-import { Menu } from '@headlessui/react';
-import { DotsHorizontalIcon } from '@heroicons/react/solid';
 import { AnnotationIcon, PlusIcon } from '@heroicons/react/outline';
+import { PostMenu } from '../../components/post-menu';
 
 export const loader = async ({ request }) => {
   const userId = await getUserId(request);
@@ -44,7 +43,6 @@ export const action = async ({ request }) => {
 
 export default function UserPost() {
   const { postsData } = useLoaderData();
-  const deletePost = useFetcher();
 
   return (
     <main>
@@ -54,34 +52,7 @@ export default function UserPost() {
             return (
               <li key={post.id} className="max-w-lg rounded-md p-4 shadow-lg ">
                 <div className="flex w-full justify-end ">
-                  <Menu as="div" className="relative ml-3 py-2">
-                    <Menu.Button className="flex rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
-                      <DotsHorizontalIcon className="h-4" />
-                    </Menu.Button>
-                    <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                      <Menu.Item>
-                        <Link
-                          to={`/post/edit/${post.id}`}
-                          className="block px-4 py-2 text-sm text-gray-700"
-                        >
-                          Edit post
-                        </Link>
-                      </Menu.Item>
-                      <Menu.Item>
-                        <deletePost.Form method="post" action="/user/posts">
-                          <button
-                            className="block px-4 py-2 text-sm text-gray-700"
-                            name="postId"
-                            value={post.id}
-                            type="submit"
-                            onClick={e => deletePost.submit(e.currentTarget)}
-                          >
-                            Delete post
-                          </button>
-                        </deletePost.Form>
-                      </Menu.Item>
-                    </Menu.Items>
-                  </Menu>
+                  <PostMenu postId={postsData.id} />
                 </div>
                 <div className="mb-4 flex items-center gap-4 shadow-md transition-transform hover:-translate-y-1 hover:cursor-pointer hover:shadow-lg">
                   <img src={post.thumbnail} alt={post.title} className="h-24" />

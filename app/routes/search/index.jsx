@@ -5,7 +5,7 @@ import {
 } from '../../utils/geniusApi.server';
 import { supabase } from '../../../server/db.server';
 import { getUserId } from '~/utils/session.server';
-import { DotsHorizontalIcon } from '@heroicons/react/solid';
+import { PostMenu } from '../../components/post-menu';
 
 export const loader = async ({ request }) => {
   const userId = await getUserId(request);
@@ -23,6 +23,7 @@ export const loader = async ({ request }) => {
       const track = response.song;
       return {
         ...post,
+        created_at: new Date(post.created_at).toDateString(),
         username: post.user.username,
         avatar: post.user.avatar_url,
         title: removeTranslation(track.title),
@@ -43,8 +44,8 @@ export default function SearchPost() {
   const { data, userId } = useLoaderData();
 
   return (
-    <>
-      <ul className="space-y-8">
+    <div className="flex w-full flex-col items-center">
+      <ul className=" space-y-8">
         {data.map(post => {
           return (
             <li
@@ -57,14 +58,16 @@ export default function SearchPost() {
                   alt={post.username}
                   className="aspect-square h-8 rounded-full bg-gray-200"
                 />
-                <div className="flex flex-col items-start gap-1">
+                <div className="flex w-full flex-col items-start ">
                   <p>{post.username}</p>
                   <span className="text-xs text-gray-400">
                     {post.created_at}
                   </span>
                 </div>
                 {userId === post.author_id ? (
-                  <DotsHorizontalIcon className="ml-auto h-4" />
+                  <div className="ml-auto ">
+                    <PostMenu postId={post.id} />
+                  </div>
                 ) : null}
               </div>
               <div className="mb-4 flex items-center gap-4 shadow-md transition-transform hover:-translate-y-1 hover:cursor-pointer hover:shadow-lg">
@@ -94,6 +97,6 @@ export default function SearchPost() {
           );
         })}
       </ul>
-    </>
+    </div>
   );
 }

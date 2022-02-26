@@ -55,7 +55,7 @@ export default function SearchLayout() {
           </NavLink>
         </div>
       </div>
-      <main className="mx-auto w-5/6">
+      <main className="mx-auto w-5/6 max-w-xl">
         <Outlet />
       </main>
     </>

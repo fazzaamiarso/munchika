@@ -3,8 +3,9 @@ import { supabase } from '../../server/db.server';
 import { fetchFromGenius } from '../utils/geniusApi.server';
 import invariant from 'tiny-invariant';
 import { getUserId } from '../utils/session.server';
-import { DotsHorizontalIcon, PlusIcon } from '@heroicons/react/solid';
+import { PlusIcon } from '@heroicons/react/solid';
 import { EmojiSadIcon } from '@heroicons/react/outline';
+import { PostMenu } from '../components/post-menu';
 
 export const loader = async ({ params, request }) => {
   invariant(params.trackId, 'Expected params.trackId');
@@ -93,7 +94,9 @@ export default function TrackDetails() {
                     </span>
                   </div>
                   {userId === post.author_id ? (
-                    <DotsHorizontalIcon className="ml-auto h-4" />
+                    <div className="flex w-full justify-end ">
+                      <PostMenu postId={post.id} />
+                    </div>
                   ) : null}
                 </div>
                 <div>
