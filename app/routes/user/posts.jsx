@@ -45,12 +45,15 @@ export default function UserPost() {
   const { postsData } = useLoaderData();
 
   return (
-    <main>
+    <main className="mt-6">
       {postsData.length ? (
-        <ul className="flex w-full flex-col items-center px-4 ">
+        <ul className="flex w-full flex-col items-center gap-4 px-4 ">
           {postsData.map(post => {
             return (
-              <li key={post.id} className="max-w-lg rounded-md p-4 shadow-lg ">
+              <li
+                key={post.id}
+                className="max-w-lg rounded-md p-4 pt-2 shadow-md ring-1 ring-slate-200 "
+              >
                 <div className="flex w-full justify-end ">
                   <PostMenu postId={postsData.id} />
                 </div>

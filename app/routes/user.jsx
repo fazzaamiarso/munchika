@@ -19,7 +19,7 @@ export default function Users() {
   const { userData } = useLoaderData();
   return (
     <>
-      <section className="flex flex-col items-center gap-4 border-b-2 border-gray-300 py-4">
+      <section className="flex flex-col items-center gap-4 border-b-2 border-slate-200 py-4">
         <img
           src={userData.avatar_url}
           alt={userData.username}

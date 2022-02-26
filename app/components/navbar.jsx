@@ -103,16 +103,6 @@ function Navbar({ user }) {
                           <>
                             <Menu.Item>
                               <Link
-                                to="#"
-                                className={classNames(
-                                  'block px-4 py-2 text-sm text-gray-700',
-                                )}
-                              >
-                                Your Profile
-                              </Link>
-                            </Menu.Item>
-                            <Menu.Item>
-                              <Link
                                 to="/user/posts"
                                 className={classNames(
                                   'block px-4 py-2 text-sm text-gray-700',
