@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSearchParams, redirect, Form } from 'remix';
+import { redirect, useFetcher, useSearchParams } from 'remix';
 import { supabase } from '../../server/db.server';
 import { createUserSession, getUserId } from '../utils/session.server';
 
@@ -24,8 +24,6 @@ export const action = async ({ request }) => {
       password,
     });
     if (error) return { error };
-    console.log(error);
-    const redirectPath = redirectTo.includes('/login') ? '/' : redirectTo;
     await supabase.from('user').insert([
       {
         username,
@@ -33,7 +31,7 @@ export const action = async ({ request }) => {
         avatar_url: `https://avatars.dicebear.com/api/micah/${username}.svg`,
       },
     ]); // insert user profile
-    return await createUserSession(user.id, '/', session.access_token);
+    return await createUserSession(user.id, redirectTo, session.access_token);
   }
   if (authType === 'login') {
     const { user, error, session } = await supabase.auth.signIn({
@@ -42,13 +40,14 @@ export const action = async ({ request }) => {
     });
     if (error) return { error };
 
-    return await createUserSession(user.id, '/', session.access_token);
+    return await createUserSession(user.id, redirectTo, session.access_token);
   }
 };
 
 export default function Login() {
   const [searchParams] = useSearchParams();
   const [formType, setFormType] = useState('login');
+  const fetcher = useFetcher();
 
   return (
     <div className="flex h-screen w-screen items-center justify-center">
@@ -56,15 +55,15 @@ export default function Login() {
         <h1 className="text-2xl font-bold">
           {formType === 'login' ? 'Login' : 'Signup'}
         </h1>
-        <Form
+        <fetcher.Form
           method="post"
           className="flex w-10/12 flex-col gap-6 rounded-md py-4 px-6 ring-1 ring-gray-200"
         >
           <input
             type="text"
-            name="redirectTo"
-            value={searchParams.get('redirectTo') ?? undefined}
             hidden
+            name="redirectTo"
+            defaultValue={searchParams.get('redirectTo') ?? null}
           />
           <fieldset
             onChange={e => setFormType(e.target.value)}
@@ -126,7 +125,7 @@ export default function Login() {
           >
             Submit
           </button>
-        </Form>
+        </fetcher.Form>
       </div>
     </div>
   );
