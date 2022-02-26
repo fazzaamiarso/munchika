@@ -6,7 +6,7 @@ import {
 } from '../../utils/geniusApi.server';
 import { supabase } from '../../../server/db.server';
 import { AnnotationIcon, PlusIcon } from '@heroicons/react/outline';
-import { PostMenu } from '../../components/post-menu';
+import { PostCard } from '../../components/post-card';
 
 export const loader = async ({ request }) => {
   const userId = await getUserId(request);
@@ -50,37 +50,11 @@ export default function UserPost() {
         <ul className="flex w-full flex-col items-center gap-4 px-4 ">
           {postsData.map(post => {
             return (
-              <li
+              <PostCard
                 key={post.id}
-                className="max-w-lg rounded-md p-4 pt-2 shadow-md ring-1 ring-slate-200 "
-              >
-                <div className="flex w-full justify-end ">
-                  <PostMenu postId={postsData.id} />
-                </div>
-                <div className="mb-4 flex items-center gap-4 shadow-md transition-transform hover:-translate-y-1 hover:cursor-pointer hover:shadow-lg">
-                  <img src={post.thumbnail} alt={post.title} className="h-24" />
-                  <div className="pr-4">
-                    <p className="text-sm font-semibold">{post.title}</p>
-                    <p className="text-xs">{post.artist}</p>
-                    <Link
-                      to={`/track/${post.track_id}`}
-                      className="text-xs text-blue-500 hover:underline"
-                    >
-                      Go to song&apos;s feed ➡
-                    </Link>
-                  </div>
-                </div>
-                <section className="space-y-4">
-                  <div>
-                    <h4 className="text-md font-semibold">Featured lyrics</h4>
-                    <p className="text-justify indent-8">{post.lyrics}</p>
-                  </div>
-                  <div>
-                    <h4 className="text-md font-semibold">Thought</h4>
-                    <p className="text-justify indent-8">{post.thought}</p>
-                  </div>
-                </section>
-              </li>
+                currentUserId={post.author_id}
+                postWithUser={post}
+              />
             );
           })}
         </ul>

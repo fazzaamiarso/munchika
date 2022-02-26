@@ -5,7 +5,7 @@ import invariant from 'tiny-invariant';
 import { getUserId } from '../utils/session.server';
 import { PlusIcon } from '@heroicons/react/solid';
 import { EmojiSadIcon } from '@heroicons/react/outline';
-import { PostMenu } from '../components/post-menu';
+import { PostCard } from '../components/post-card';
 
 export const loader = async ({ params, request }) => {
   invariant(params.trackId, 'Expected params.trackId');
@@ -77,37 +77,11 @@ export default function TrackDetails() {
         <ul className="flex flex-col items-center">
           {trackPosts.map(post => {
             return (
-              <li
+              <PostCard
                 key={post.id}
-                className="w-10/12 max-w-lg space-y-4 rounded-md p-4 shadow-lg  "
-              >
-                <div className="flex w-full items-center gap-2 ">
-                  <img
-                    src={post.user.avatar_url}
-                    alt={post.user.username}
-                    className="aspect-square h-8 rounded-full bg-gray-200"
-                  />
-                  <div className="flex flex-col items-start gap-1">
-                    <p>{post.user.username}</p>
-                    <span className="text-xs text-gray-400">
-                      {post.created_at}
-                    </span>
-                  </div>
-                  {userId === post.author_id ? (
-                    <div className="flex w-full justify-end ">
-                      <PostMenu postId={post.id} />
-                    </div>
-                  ) : null}
-                </div>
-                <div>
-                  <h4 className="font-semibold">Featured lyrics</h4>
-                  <p className="indent-8">{post.lyrics}</p>
-                </div>
-                <div>
-                  <h4 className=" font-semibold">Thought</h4>
-                  <p className="indent-8">{post.thought}</p>
-                </div>
-              </li>
+                currentUserId={userId}
+                postWithUser={post}
+              />
             );
           })}
         </ul>
