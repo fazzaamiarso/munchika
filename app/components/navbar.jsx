@@ -1,4 +1,4 @@
-import { Link, useNavigate, Form } from 'remix';
+import { Link, useNavigate, useFetcher } from 'remix';
 import { Fragment } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { MenuIcon, XIcon } from '@heroicons/react/outline';
@@ -13,6 +13,7 @@ function classNames(...classes) {
 }
 
 function Navbar({ user }) {
+  const logout = useFetcher();
   const navigate = useNavigate();
   const handleAdd = () => navigate('/post/select');
 
@@ -124,14 +125,14 @@ function Navbar({ user }) {
                         ) : null}
                         <Menu.Item>
                           {user ? (
-                            <Form action="/logout" method="post">
+                            <logout.Form action="/logout" method="post">
                               <button
                                 type="submit"
                                 className="block px-4 py-2 text-sm text-gray-700"
                               >
                                 Logout
                               </button>
-                            </Form>
+                            </logout.Form>
                           ) : (
                             <Link
                               to="/login"
