@@ -11,7 +11,7 @@ export default function SelectPost() {
   }, []);
 
   return (
-    <section className="mx-auto flex w-10/12 flex-col items-center ">
+    <section className="mx-auto flex min-h-screen w-10/12 max-w-xl flex-col items-center ">
       <div className="flex flex-col items-center pt-8 pb-6 leading-none">
         <MusicNoteIcon className="mb-2 h-8 text-gray-400" />
         <h2 className="text-lg font-semibold">Pick a song</h2>
@@ -32,22 +32,24 @@ export default function SelectPost() {
         />
         <button
           type="submit"
-          className="rounded-md bg-blue-500 px-4 py-2 text-white"
+          className="rounded-md bg-blue-500 px-4 py-2 text-white hover:opacity-90 disabled:opacity-75"
+          disabled={
+            fetcher.state === 'submitting' || fetcher.state === 'loading'
+          }
         >
-          Search
+          {fetcher.state === 'submitting' ? 'Searching...' : 'Search'}
         </button>
       </fetcher.Form>
-      {fetcher.state === 'submitting' ? <p>Fetching your song</p> : null}
       {fetcher.data ? (
         fetcher.data.error ? (
           <p>Unable to fetch data</p>
         ) : fetcher.data.length ? (
-          <ul className="mx-auto flex w-11/12 flex-col gap-4 py-6">
+          <ul className="mx-auto flex w-11/12 flex-col divide-y divide-gray-200 py-8">
             {fetcher.data.map(track => {
               return (
                 <li
                   key={track.result.id}
-                  className="flex w-full items-center gap-4 leading-none"
+                  className="flex w-full items-center gap-4 py-2 leading-none"
                 >
                   <img
                     className="h-12"
@@ -55,8 +57,8 @@ export default function SelectPost() {
                     alt={track.result.title}
                   />
                   <div className="flex flex-col items-start">
-                    <h3 className="text-semibold  ">{track.result.title}</h3>
-                    <p className="text-sm">
+                    <h3 className="font-semibold  ">{track.result.title}</h3>
+                    <p className="text-sm text-gray-400">
                       {track.result.primary_artist.name}
                     </p>
                   </div>
@@ -64,7 +66,7 @@ export default function SelectPost() {
                     <button
                       name="trackId"
                       value={track.result.id}
-                      className="rounded-full px-2 py-1 text-sm text-gray-600 ring-1 ring-gray-300"
+                      className="rounded-full px-2 py-1 text-sm text-gray-600 ring-1 ring-gray-300 hover:ring-2"
                       type="submit"
                     >
                       Select

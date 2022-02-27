@@ -1,8 +1,9 @@
-import { Outlet, Form, useLocation, Link } from 'remix';
+import { Outlet, Form, useLocation, Link, useTransition } from 'remix';
 import { useEffect, useRef } from 'react';
 export default function SearchLayout() {
   const location = useLocation();
   const searchRef = useRef();
+  const transition = useTransition();
 
   useEffect(() => {
     searchRef.current.focus();
@@ -10,24 +11,30 @@ export default function SearchLayout() {
 
   return (
     <>
-      <div className="mx-auto flex flex-col items-center gap-4 py-8">
+      <div className="mx-auto flex w-10/12 max-w-lg flex-col items-center gap-4 py-8">
         <Form
           method="get"
           action={location.pathname}
-          className="flex items-center gap-4"
+          className="flex w-full items-center gap-4"
         >
           <input
             type="search"
             name="term"
             autoComplete="off"
-            className="rounded-md ring-gray-400 placeholder:text-gray-400"
+            className="w-full rounded-md ring-gray-400 placeholder:text-gray-400"
             ref={searchRef}
+            required
+            placeholder="Try searching by keyword"
           />
           <button
             type="submit"
             className="rounded-md bg-blue-500 px-4 py-2 text-white"
+            disabled={
+              transition.state === 'submitting' ||
+              transition.state === 'loading'
+            }
           >
-            Search
+            {transition.state === 'submitting' ? 'Searching...' : 'Search'}
           </button>
         </Form>
         <ul className="flex gap-4">
