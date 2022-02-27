@@ -50,7 +50,7 @@ export const action = async ({ request }) => {
       track_id,
     },
   ]);
-  return redirect('/search'); // should redirect to home, redirect here for testing only
+  return redirect('/user/posts');
 };
 
 export default function NewPost() {
@@ -73,6 +73,17 @@ export default function NewPost() {
             <p className="text-sm">{trackData.primary_artist.name}</p>
           </div>
         </div>
+        <p className="text-sm">
+          Need the lyrics?{' '}
+          <a
+            href={trackData.url}
+            target="_blank"
+            rel="noreferrer"
+            className="text-blue-500 hover:underline"
+          >
+            Check it out on Genius
+          </a>
+        </p>
         <fetcher.Form method="post" className=" mt-4 flex  flex-col gap-6 py-4">
           <input
             type="text"
@@ -89,11 +100,15 @@ export default function NewPost() {
               id="lyrics"
               rows={5}
               autoFocus
-              className="resize-none rounded-md text-sm"
+              className={`"resize-none rounded-md text-sm ${
+                fetcher.data?.fieldErrors?.lyrics ? 'border-red-400' : ''
+              }`}
               placeholder="What are the lyrics you want to feature?"
             />
             {fetcher.data?.fieldErrors?.lyrics ? (
-              <p className="text-red-500">{fetcher.data.fieldErrors.lyrics}</p>
+              <p className="text-sm text-red-500">
+                {fetcher.data.fieldErrors.lyrics}
+              </p>
             ) : null}
           </div>
           <div className="flex flex-col gap-2 ">
@@ -105,10 +120,14 @@ export default function NewPost() {
               id="thought"
               rows={5}
               placeholder="Share your thoughts to the world about how this song had helped you .."
-              className="resize-none rounded-md text-sm"
+              className={`"resize-none rounded-md text-sm ${
+                fetcher.data?.fieldErrors?.thought ? 'border-red-400' : ''
+              }`}
             />
             {fetcher.data?.fieldErrors?.thought ? (
-              <p className="text-red-500">{fetcher.data.fieldErrors.thought}</p>
+              <p className="text-sm text-red-500">
+                {fetcher.data.fieldErrors.thought}
+              </p>
             ) : null}
           </div>
           <div className="mt-4 flex gap-2 self-end">

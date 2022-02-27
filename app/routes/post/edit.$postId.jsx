@@ -29,6 +29,7 @@ export const loader = async ({ params, request }) => {
       title: trackData.title,
       thumbnail: trackData.song_art_image_url,
       artist: trackData.primary_artist.name,
+      url: trackData.url,
     },
   });
 };
@@ -56,7 +57,7 @@ export default function EditPost() {
   const { postId } = useParams();
   const navigate = useNavigate();
   return (
-    <div className="mx-auto mt-4 flex w-10/12 flex-col">
+    <div className="mx-auto mt-4 flex w-10/12 flex-col py-8">
       <h1>Editing Post {postId}</h1>
       <div className="flex items-center  rounded-md ring-1 ring-gray-400">
         <img src={trackData.thumbnail} alt={trackData.title} className="h-24" />
@@ -65,6 +66,17 @@ export default function EditPost() {
           <p className="text-sm">{trackData.artist}</p>
         </div>
       </div>
+      <p className="text-sm">
+        Need the lyrics?{' '}
+        <a
+          href={trackData.url}
+          target="_blank"
+          rel="noreferrer"
+          className="text-blue-500 hover:underline"
+        >
+          Check it out on Genius
+        </a>
+      </p>
       <Form method="post" className="mt-4 flex  flex-col gap-6 py-4">
         <div className="flex flex-col ">
           <label htmlFor="lyrics" className="font-semibold">
@@ -76,7 +88,10 @@ export default function EditPost() {
             defaultValue={postData.lyrics}
             rows={5}
             autoFocus
-            className="resize-none rounded-md text-sm"
+            className={`"resize-none rounded-md text-sm ${
+              fetcher.data?.fieldErrors?.lyrics ? 'border-red-400' : ''
+            }`}
+            placeholder="What are the lyrics you want to feature?"
           />
         </div>
         <div className="flex flex-col ">
@@ -89,7 +104,9 @@ export default function EditPost() {
             defaultValue={postData.thought}
             rows={5}
             placeholder="Share your thoughts to the world about how this song had helped you .."
-            className="resize-none rounded-md text-sm"
+            className={`"resize-none rounded-md text-sm ${
+              fetcher.data?.fieldErrors?.thought ? 'border-red-400' : ''
+            }`}
           />
         </div>
         <div className="flex gap-2 self-end">

@@ -1,4 +1,4 @@
-import { Link } from 'remix';
+import { useNavigate } from 'remix';
 import { PostMenu } from './post-menu';
 
 export const PostCard = ({
@@ -7,7 +7,10 @@ export const PostCard = ({
   displayUser = true,
   displayTrack = true,
 }) => {
+  const navigate = useNavigate();
   const isPostOwner = post.author_id === currentUserId;
+
+  const handleToFeed = () => navigate(`/track/${post.track_id}`);
 
   return (
     <li className="max-w-lg space-y-2 self-stretch rounded-md p-4 shadow-md ring-1 ring-slate-200">
@@ -34,17 +37,14 @@ export const PostCard = ({
         ) : null}
       </div>
       {displayTrack ? (
-        <div className="mb-4 flex items-center gap-4 rounded-sm shadow-md ring-1 ring-slate-200 transition-transform hover:-translate-y-1 hover:cursor-pointer hover:shadow-lg">
+        <div
+          onClick={handleToFeed}
+          className="mb-4 flex items-center gap-4 rounded-sm shadow-md ring-1 ring-slate-200 transition-transform hover:-translate-y-1 hover:cursor-pointer hover:shadow-lg"
+        >
           <img src={post.thumbnail} alt={post.title} className="h-16" />
           <div className="pr-4">
             <p className="text-sm font-semibold">{post.title}</p>
             <p className="text-xs">{post.artist}</p>
-            <Link
-              to={`/track/${post.track_id}`}
-              className="text-xs text-blue-500 hover:underline"
-            >
-              Go to song&apos;s feed ➡
-            </Link>
           </div>
         </div>
       ) : null}
