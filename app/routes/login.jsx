@@ -1,23 +1,19 @@
 import { useState } from 'react';
-import { json, redirect, useFetcher, useSearchParams } from 'remix';
+import {
+  json,
+  redirect,
+  useFetcher,
+  useSearchParams,
+  useTransition,
+} from 'remix';
 import { supabase } from '../../server/db.server';
 import { createUserSession, getUserId } from '../utils/session.server';
 import { validateUsername } from '../utils/supabase.server';
-
-const validatePassword = password => {
-  if (password.length < 6)
-    return 'Password should be at least 6 characters long';
-  if (!/\d/i.test(password)) return 'Password should contain at least a number';
-};
-const validateEmail = email => {
-  const regexp =
-    /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
-  if (!regexp.test(email)) return 'Invalid email address';
-};
-
-const haveErrors = fieldErrors => {
-  return Object.values(fieldErrors).some(Boolean);
-};
+import {
+  validateEmail,
+  validatePassword,
+  haveErrors,
+} from '../utils/formUtils';
 
 export const loader = async ({ request }) => {
   const userId = await getUserId(request);
@@ -80,6 +76,7 @@ export default function Login() {
   const [searchParams] = useSearchParams();
   const [formType, setFormType] = useState('login');
   const fetcher = useFetcher();
+  const transition = useTransition();
 
   return (
     <div className="flex h-screen w-screen items-center justify-center">
@@ -125,13 +122,14 @@ export default function Login() {
                 name="username"
                 id="username"
                 type="text"
-                className={`w-full rounded-md ${
-                  fetcher.data?.fieldErrors?.username ? 'border-red-400' : ''
-                }`}
+                placeholder="cool_kidz"
                 required
                 defaultValue={
                   fetcher.data?.fields ? fetcher.data.fields.username : ''
                 }
+                className={`w-full rounded-md ${
+                  fetcher.data?.fieldErrors?.username ? 'border-red-400' : ''
+                }`}
               />
               {fetcher.data?.fieldErrors ? (
                 <span className="text-sm text-red-500">
@@ -148,13 +146,14 @@ export default function Login() {
               name="email"
               id="email"
               type="email"
-              className={`w-full rounded-md ${
-                fetcher.data?.fieldErrors?.email ? 'border-red-400' : ''
-              }`}
+              placeholder="email@example.com"
               required
               defaultValue={
                 fetcher.data?.fields ? fetcher.data.fields.email : ''
               }
+              className={`w-full rounded-md ${
+                fetcher.data?.fieldErrors?.email ? 'border-red-400' : ''
+              }`}
             />
             {fetcher.data?.fieldErrors ? (
               <span className="text-sm text-red-500">
@@ -170,13 +169,14 @@ export default function Login() {
               name="password"
               id="password"
               type="password"
-              className={`w-full rounded-md ${
-                fetcher.data?.fieldErrors?.password ? 'border-red-400' : ''
-              }`}
+              placeholder="password"
               required
               defaultValue={
                 fetcher.data?.fields ? fetcher.data.fields.password : ''
               }
+              className={`w-full rounded-md ${
+                fetcher.data?.fieldErrors?.password ? 'border-red-400' : ''
+              }`}
             />
             {fetcher.data?.fieldErrors ? (
               <span className="text-sm text-red-500">
@@ -185,10 +185,17 @@ export default function Login() {
             ) : null}
           </div>
           <button
-            className="mt-4 rounded-sm bg-blue-500 px-4 py-1  font-semibold text-white"
+            className="mt-4 rounded-sm bg-blue-500 px-4 py-1  font-semibold text-white hover:opacity-90 disabled:opacity-75"
             type="submit"
+            disabled={
+              fetcher.state === 'submitting' || transition.state === 'loading'
+            }
           >
-            Submit
+            {fetcher.state === 'submitting'
+              ? 'Submitting'
+              : transition.state === 'loading'
+              ? 'Logging you in'
+              : 'Submit'}
           </button>
         </fetcher.Form>
       </div>
