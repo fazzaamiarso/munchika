@@ -1,5 +1,5 @@
 import { ArrowRightIcon } from '@heroicons/react/solid';
-import { useLoaderData, Form } from 'remix';
+import { useLoaderData, Link } from 'remix';
 import { fetchFromGenius } from '../../utils/geniusApi.server';
 
 export const loader = async ({ request }) => {
@@ -49,19 +49,15 @@ export default function SearchTrack() {
                     {track.result.primary_artist.name}
                   </p>
                 </div>
-                <Form
-                  action={`/track/${track.result.id}`}
-                  method="get"
-                  className="group ml-auto"
+
+                <Link
+                  className="flex items-center gap-1 rounded-full px-2 py-1 text-xs text-gray-600 ring-1 ring-gray-300"
+                  to={`/track/${track.result.id}`}
+                  prefetch="intent"
                 >
-                  <button
-                    className="flex items-center gap-1 rounded-full px-2 py-1 text-xs text-gray-600 ring-1 ring-gray-300"
-                    type="submit"
-                  >
-                    Details
-                    <ArrowRightIcon className="h-3 transition-transform group-hover:translate-x-1" />
-                  </button>
-                </Form>
+                  Details
+                  <ArrowRightIcon className="h-3 transition-transform group-hover:translate-x-1" />
+                </Link>
               </li>
             );
           })
