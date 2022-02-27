@@ -15,7 +15,7 @@ export const loader = async () => {
     const track = response.song;
     return {
       ...post,
-      created_at: new Date(post.created_at).toDateString(),
+      created_at: post.created_at,
       username: post.user.username,
       avatar: post.user.avatar_url,
       title: removeTranslation(track.title),

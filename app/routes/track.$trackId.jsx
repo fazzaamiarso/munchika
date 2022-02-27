@@ -74,17 +74,25 @@ export default function TrackDetails() {
         </div>
       </div>
       {trackPosts.length ? (
-        <ul className="flex flex-col items-center">
-          {trackPosts.map(post => {
-            return (
-              <PostCard
-                key={post.id}
-                currentUserId={userId}
-                postWithUser={post}
-              />
-            );
-          })}
-        </ul>
+        <main className="flex w-full flex-col items-center py-4">
+          <ul className="space-y-4">
+            {trackPosts.map(post => {
+              const modifiedPost = {
+                ...post,
+                avatar: post.user.avatar_url,
+                username: post.user.username,
+              };
+              return (
+                <PostCard
+                  key={post.id}
+                  currentUserId={userId}
+                  postWithUser={modifiedPost}
+                  displayTrack={false}
+                />
+              );
+            })}
+          </ul>
+        </main>
       ) : (
         <div className="my-12 flex w-full items-center justify-center">
           <div className="flex w-max flex-col items-center space-y-6">

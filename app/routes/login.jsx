@@ -72,7 +72,6 @@ export const action = async ({ request }) => {
       fieldErrors.password = error.message;
       return json({ fields, fieldErrors }, { status: 400 });
     }
-
     return await createUserSession(user.id, redirectTo, session.access_token);
   }
 };
@@ -90,7 +89,7 @@ export default function Login() {
         </h1>
         <fetcher.Form
           method="post"
-          className="flex w-10/12 flex-col gap-6 rounded-md py-4 px-6 ring-1 ring-gray-200"
+          className="flex w-10/12 flex-col gap-6 rounded-md py-4 px-6 shadow-md ring-1 ring-gray-300"
         >
           <input
             type="text"
@@ -100,7 +99,7 @@ export default function Login() {
           />
           <fieldset
             onChange={e => setFormType(e.target.value)}
-            className="flex items-center gap-4"
+            className="mb-4 flex items-center gap-4 self-center"
           >
             <div className="flex items-center gap-2 font-semibold">
               <input
@@ -120,7 +119,7 @@ export default function Login() {
           {formType === 'signup' ? (
             <div className="flex flex-col">
               <label htmlFor="username" className=" font-semibold ">
-                username
+                Username
               </label>
               <input
                 name="username"
@@ -130,7 +129,9 @@ export default function Login() {
                   fetcher.data?.fieldErrors?.username ? 'border-red-400' : ''
                 }`}
                 required
-                defaultValue={fetcher.data ? fetcher.data.fields.username : ''}
+                defaultValue={
+                  fetcher.data?.fields ? fetcher.data.fields.username : ''
+                }
               />
               {fetcher.data?.fieldErrors ? (
                 <span className="text-sm text-red-500">
@@ -151,7 +152,9 @@ export default function Login() {
                 fetcher.data?.fieldErrors?.email ? 'border-red-400' : ''
               }`}
               required
-              defaultValue={fetcher.data ? fetcher.data.fields.email : ''}
+              defaultValue={
+                fetcher.data?.fields ? fetcher.data.fields.email : ''
+              }
             />
             {fetcher.data?.fieldErrors ? (
               <span className="text-sm text-red-500">
@@ -171,7 +174,9 @@ export default function Login() {
                 fetcher.data?.fieldErrors?.password ? 'border-red-400' : ''
               }`}
               required
-              defaultValue={fetcher.data ? fetcher.data.fields.password : ''}
+              defaultValue={
+                fetcher.data?.fields ? fetcher.data.fields.password : ''
+              }
             />
             {fetcher.data?.fieldErrors ? (
               <span className="text-sm text-red-500">
@@ -180,7 +185,7 @@ export default function Login() {
             ) : null}
           </div>
           <button
-            className="rounded-sm bg-blue-500 px-4 py-1 font-semibold  text-white"
+            className="mt-4 rounded-sm bg-blue-500 px-4 py-1  font-semibold text-white"
             type="submit"
           >
             Submit
