@@ -20,14 +20,15 @@ export default function SearchTrack() {
 
   if (!data)
     return (
-      <div className="flex flex-col items-center">
-        <div className="text-xl ">👆</div>
-        <h2 className="text-xl font-semibold">Start searching there</h2>
+      <div className="mt-12 flex min-h-screen flex-col items-center ">
+        <h2 className="text-xl font-semibold">
+          Start searching a song you would like to find
+        </h2>
       </div>
     );
   return (
     <>
-      <ul className=" divide-y divide-gray-200 ">
+      <ul className=" min-h-screen divide-y divide-gray-200 ">
         {data.length ? (
           data.map(track => {
             return (
@@ -65,7 +66,12 @@ export default function SearchTrack() {
             );
           })
         ) : (
-          <p className="text-lg">Whoops... No matching song found</p>
+          <div className="mt-12 flex flex-col items-center">
+            <p className="text-lg font-bold">
+              Whoops... No matching song found
+            </p>
+            <p className="">Try another song</p>
+          </div>
         )}
       </ul>
     </>

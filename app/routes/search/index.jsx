@@ -1,4 +1,4 @@
-import { useLoaderData, json } from 'remix';
+import { useLoaderData, json, Link } from 'remix';
 import {
   fetchFromGenius,
   removeTranslation,
@@ -74,18 +74,30 @@ export default function SearchPost() {
   if (!data) return <p>No data Found</p>;
 
   return (
-    <div className="flex h-screen w-full flex-col items-center">
-      <ul className=" space-y-8">
-        {data.map(post => {
-          return (
-            <PostCard
-              key={post.id}
-              postWithUser={post}
-              currentUserId={userId}
-            />
-          );
-        })}
-      </ul>
+    <div className="flex min-h-screen w-full flex-col items-center">
+      {data.length ? (
+        <ul className=" space-y-8">
+          {data.map(post => {
+            return (
+              <PostCard
+                key={post.id}
+                postWithUser={post}
+                currentUserId={userId}
+              />
+            );
+          })}
+        </ul>
+      ) : (
+        <div className="mt-12 flex flex-col items-center gap-4">
+          <p className="text-lg font-bold">Whoops... There is no post found</p>
+          <Link
+            to={'/search'}
+            className="rounded-md bg-blue-500 px-4 py-2 text-white hover:opacity-90 disabled:opacity-75"
+          >
+            Clear
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

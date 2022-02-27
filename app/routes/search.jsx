@@ -7,7 +7,7 @@ export default function SearchLayout() {
 
   useEffect(() => {
     searchRef.current.focus();
-  }, []);
+  }, [location]);
 
   return (
     <>
@@ -28,7 +28,7 @@ export default function SearchLayout() {
           />
           <button
             type="submit"
-            className="rounded-md bg-blue-500 px-4 py-2 text-white"
+            className="rounded-md bg-blue-500 px-4 py-2 text-white hover:opacity-90 disabled:opacity-75"
             disabled={
               transition.state === 'submitting' ||
               transition.state === 'loading'
@@ -36,6 +36,16 @@ export default function SearchLayout() {
           >
             {transition.state === 'submitting' ? 'Searching...' : 'Search'}
           </button>
+          <Link
+            to={location.pathname}
+            className="rounded-md px-4 py-2 text-blue-500 ring-1 ring-blue-500 "
+            disabled={
+              transition.state === 'submitting' ||
+              transition.state === 'loading'
+            }
+          >
+            Clear
+          </Link>
         </Form>
         <ul className="flex gap-4">
           <li>
