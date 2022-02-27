@@ -1,9 +1,18 @@
-import { json, Form, useLoaderData, useNavigate, redirect } from 'remix';
+import {
+  json,
+  Form,
+  useLoaderData,
+  useNavigate,
+  redirect,
+  useTransition,
+  useActionData,
+} from 'remix';
 import invariant from 'tiny-invariant';
 import { supabase } from '../../../server/db.server';
 import { fetchFromGenius } from '../../utils/geniusApi.server';
 import { requireUserId } from '../../utils/session.server';
 import { validateThought, validateLyrics } from '../../utils/formUtils';
+import { ExternalLinkIcon } from '@heroicons/react/outline';
 
 export const loader = async ({ params, request }) => {
   invariant(params.postId, 'Expected params.postId');
@@ -36,7 +45,6 @@ export const action = async ({ params, request }) => {
   const postId = parseInt(params.postId);
 
   const fields = {
-    track_id,
     lyrics,
     thought,
   };
@@ -61,17 +69,23 @@ export const action = async ({ params, request }) => {
 
 export default function EditPost() {
   const { postData, trackData } = useLoaderData();
+  const actionData = useActionData();
   const navigate = useNavigate();
+  const transition = useTransition();
+
+  const isSaving =
+    transition.state === 'loading' || transition.state === 'submitting';
+
   return (
     <div className="mx-auto mt-4 flex w-10/12 flex-col py-8">
       <section className="space-y-4">
-        <div className="mb-4  ">
+        <div className="mb-8  ">
           <h1 className="text-xl font-semibold">Editing Post</h1>
           <p className="text-gray-400">
             Last edited at : {new Date(postData.updated_at).toDateString()}
           </p>
         </div>
-        <div className="flex items-center  rounded-md ring-1 ring-gray-400">
+        <div className="flex max-w-lg items-center  gap-4 rounded-md ring-1 ring-gray-400">
           <img
             src={trackData.thumbnail}
             alt={trackData.title}
@@ -82,15 +96,15 @@ export default function EditPost() {
             <p className="text-sm">{trackData.artist}</p>
           </div>
         </div>
-        <p className="text-sm ">
+        <p className="flex items-center gap-1 text-sm">
           Need the lyrics?{' '}
           <a
             href={trackData.url}
             target="_blank"
             rel="noreferrer"
-            className="text-blue-500 hover:underline"
+            className="flex items-center gap-1 text-blue-500 hover:underline"
           >
-            Check it out on Genius
+            Check it out on Genius <ExternalLinkIcon className="h-4" />
           </a>
         </p>
       </section>
@@ -105,14 +119,14 @@ export default function EditPost() {
             defaultValue={postData.lyrics}
             rows={5}
             autoFocus
-            className={`"resize-none rounded-md text-sm ${
-              fetcher.data?.fieldErrors?.lyrics ? 'border-red-400' : ''
+            className={`resize-none rounded-md text-sm ${
+              actionData?.fieldErrors?.lyrics ? 'border-red-400' : ''
             }`}
             placeholder="What are the lyrics you want to feature?"
           />
-          {fetcher.data?.fieldErrors?.lyrics ? (
+          {actionData?.fieldErrors?.lyrics ? (
             <p className="text-sm text-red-500">
-              {fetcher.data.fieldErrors.lyrics}
+              {actionData.fieldErrors.lyrics}
             </p>
           ) : null}
         </div>
@@ -126,13 +140,13 @@ export default function EditPost() {
             defaultValue={postData.thought}
             rows={5}
             placeholder="Share your thoughts to the world about how this song had helped you .."
-            className={`"resize-none rounded-md text-sm ${
-              fetcher.data?.fieldErrors?.thought ? 'border-red-400' : ''
+            className={`resize-none rounded-md text-sm ${
+              actionData?.fieldErrors?.thought ? 'border-red-400' : ''
             }`}
           />
-          {fetcher.data?.fieldErrors?.thought ? (
+          {actionData?.fieldErrors?.thought ? (
             <p className="text-sm text-red-500">
-              {fetcher.data.fieldErrors.thought}
+              {actionData.fieldErrors.thought}
             </p>
           ) : null}
         </div>
@@ -140,15 +154,17 @@ export default function EditPost() {
           <button
             type="button"
             onClick={() => navigate(-1)}
+            disabled={isSaving}
             className="py-1 px-4 font-semibold"
           >
             Cancel
           </button>
           <button
             type="submit"
+            disabled={isSaving}
             className="rounded-sm bg-blue-500 py-1 px-4 font-semibold text-white"
           >
-            Save
+            {isSaving ? 'Saving...' : 'Save'}
           </button>
         </div>
       </Form>

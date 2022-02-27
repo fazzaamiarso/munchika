@@ -3,6 +3,7 @@ import { getUserId, requireUserId } from '~/utils/session.server';
 import { supabase } from '../../../server/db.server';
 import { fetchFromGenius } from '../../utils/geniusApi.server';
 import { validateThought, validateLyrics } from '../../utils/formUtils';
+import { ExternalLinkIcon } from '@heroicons/react/outline';
 
 export const loader = async ({ request }) => {
   const newUrl = new URL(request.url);
@@ -53,29 +54,31 @@ export default function NewPost() {
   return (
     <>
       <div className="mx-auto mt-4 flex w-10/12 flex-col">
-        <h1 className=" mb-6 text-xl font-semibold">Add your thought</h1>
-        <div className="flex items-center  rounded-md ring-1 ring-gray-400">
-          <img
-            src={trackData.song_art_image_url}
-            alt={trackData.title}
-            className="h-24"
-          />
-          <div className="px-3 leading-5">
-            <h2 className="font-semibold">{trackData.title}</h2>
-            <p className="text-sm">{trackData.primary_artist.name}</p>
+        <section className="space-y-4">
+          <h1 className=" mb-6 text-xl font-semibold">Add your thought</h1>
+          <div className="flex max-w-lg items-center  gap-4 rounded-md ring-1 ring-gray-400">
+            <img
+              src={trackData.song_art_image_url}
+              alt={trackData.title}
+              className="h-24"
+            />
+            <div className="px-3 leading-5">
+              <h2 className="font-semibold">{trackData.title}</h2>
+              <p className="text-sm">{trackData.primary_artist.name}</p>
+            </div>
           </div>
-        </div>
-        <p className="text-sm">
-          Need the lyrics?{' '}
-          <a
-            href={trackData.url}
-            target="_blank"
-            rel="noreferrer"
-            className="text-blue-500 hover:underline"
-          >
-            Check it out on Genius
-          </a>
-        </p>
+          <p className="flex items-center gap-1 text-sm">
+            Need the lyrics?{' '}
+            <a
+              href={trackData.url}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1 text-blue-500 hover:underline"
+            >
+              Check it out on Genius <ExternalLinkIcon className="h-4" />
+            </a>
+          </p>
+        </section>
         <fetcher.Form method="post" className=" mt-4 flex  flex-col gap-6 py-4">
           <input
             type="text"
@@ -90,9 +93,9 @@ export default function NewPost() {
             <textarea
               name="lyrics"
               id="lyrics"
-              rows={5}
+              rows={7}
               autoFocus
-              className={`"resize-none rounded-md text-sm ${
+              className={`resize-none rounded-md text-sm ${
                 fetcher.data?.fieldErrors?.lyrics ? 'border-red-400' : ''
               }`}
               placeholder="What are the lyrics you want to feature?"
@@ -110,9 +113,9 @@ export default function NewPost() {
             <textarea
               name="thought"
               id="thought"
-              rows={5}
+              rows={7}
               placeholder="Share your thoughts to the world about how this song had helped you .."
-              className={`"resize-none rounded-md text-sm ${
+              className={`resize-none rounded-md text-sm ${
                 fetcher.data?.fieldErrors?.thought ? 'border-red-400' : ''
               }`}
             />
@@ -126,15 +129,21 @@ export default function NewPost() {
             <button
               type="button"
               onClick={() => navigate(-1)}
+              disabled={
+                fetcher.state === 'loading' || fetcher.state === 'submitting'
+              }
               className="py-1 px-4 font-semibold"
             >
               Back
             </button>
             <button
               type="submit"
-              className="rounded-sm bg-blue-500 py-1 px-4 font-semibold text-white"
+              disabled={
+                fetcher.state === 'loading' || fetcher.state === 'submitting'
+              }
+              className="rounded-sm bg-blue-500 py-1 px-4 font-semibold text-white hover:opacity-90 disabled:opacity-75"
             >
-              Submit
+              {fetcher.state === 'submitting' ? 'Posting..' : 'Post'}
             </button>
           </div>
         </fetcher.Form>
