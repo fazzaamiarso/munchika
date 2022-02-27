@@ -1,7 +1,23 @@
 import { useState } from 'react';
-import { redirect, useFetcher, useSearchParams } from 'remix';
+import { json, redirect, useFetcher, useSearchParams } from 'remix';
 import { supabase } from '../../server/db.server';
 import { createUserSession, getUserId } from '../utils/session.server';
+import { validateUsername } from '../utils/supabase.server';
+
+const validatePassword = password => {
+  if (password.length < 6)
+    return 'Password should be at least 6 characters long';
+  if (!/\d/i.test(password)) return 'Password should contain at least a number';
+};
+const validateEmail = email => {
+  const regexp =
+    /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+  if (!regexp.test(email)) return 'Invalid email address';
+};
+
+const haveErrors = fieldErrors => {
+  return Object.values(fieldErrors).some(Boolean);
+};
 
 export const loader = async ({ request }) => {
   const userId = await getUserId(request);
@@ -14,23 +30,36 @@ export const action = async ({ request }) => {
   const email = formData.get('email');
   const password = formData.get('password');
   const authType = formData.get('authType');
-  const username = formData.get('username');
+  const username = formData.get('username') ?? null;
   const redirectTo = formData.get('redirectTo') ?? '/';
-  console.log(redirectTo);
+
+  const fields = { email, password, username };
+  const fieldErrors = {
+    username: await validateUsername(username),
+    password: validatePassword(password),
+    email: validateEmail(email),
+  };
+  if (haveErrors(fieldErrors))
+    return json({ fieldErrors, fields }, { status: 400 });
 
   if (authType === 'signup') {
     const { user, error, session } = await supabase.auth.signUp({
       email,
       password,
     });
-    if (error) return { error };
+    if (error) {
+      fieldErrors.email = error.message;
+      return json({ fields, fieldErrors }, { status: 400 });
+    }
+
     await supabase.from('user').insert([
       {
         username,
         id: user.id,
         avatar_url: `https://avatars.dicebear.com/api/micah/${username}.svg`,
       },
-    ]); // insert user profile
+    ]); //  user profile
+
     return await createUserSession(user.id, redirectTo, session.access_token);
   }
   if (authType === 'login') {
@@ -38,7 +67,11 @@ export const action = async ({ request }) => {
       email,
       password,
     });
-    if (error) return { error };
+    if (error) {
+      fieldErrors.email = error.message;
+      fieldErrors.password = error.message;
+      return json({ fields, fieldErrors }, { status: 400 });
+    }
 
     return await createUserSession(user.id, redirectTo, session.access_token);
   }
@@ -63,7 +96,7 @@ export default function Login() {
             type="text"
             hidden
             name="redirectTo"
-            defaultValue={searchParams.get('redirectTo') ?? null}
+            defaultValue={searchParams.get('redirectTo') ?? undefined}
           />
           <fieldset
             onChange={e => setFormType(e.target.value)}
@@ -93,8 +126,17 @@ export default function Login() {
                 name="username"
                 id="username"
                 type="text"
-                className="w-full rounded-md ring-gray-300 "
+                className={`w-full rounded-md ${
+                  fetcher.data?.fieldErrors?.username ? 'border-red-400' : ''
+                }`}
+                required
+                defaultValue={fetcher.data ? fetcher.data.fields.username : ''}
               />
+              {fetcher.data?.fieldErrors ? (
+                <span className="text-sm text-red-500">
+                  {fetcher.data.fieldErrors.username}
+                </span>
+              ) : null}
             </div>
           ) : null}
           <div className="flex flex-col">
@@ -105,8 +147,17 @@ export default function Login() {
               name="email"
               id="email"
               type="email"
-              className="w-full rounded-md ring-gray-300 "
+              className={`w-full rounded-md ${
+                fetcher.data?.fieldErrors?.email ? 'border-red-400' : ''
+              }`}
+              required
+              defaultValue={fetcher.data ? fetcher.data.fields.email : ''}
             />
+            {fetcher.data?.fieldErrors ? (
+              <span className="text-sm text-red-500">
+                {fetcher.data.fieldErrors.email}
+              </span>
+            ) : null}
           </div>
           <div className="flex flex-col">
             <label htmlFor="password" className="font-semibold">
@@ -116,11 +167,20 @@ export default function Login() {
               name="password"
               id="password"
               type="password"
-              className="w-full rounded-md ring-gray-300 "
+              className={`w-full rounded-md ${
+                fetcher.data?.fieldErrors?.password ? 'border-red-400' : ''
+              }`}
+              required
+              defaultValue={fetcher.data ? fetcher.data.fields.password : ''}
             />
+            {fetcher.data?.fieldErrors ? (
+              <span className="text-sm text-red-500">
+                {fetcher.data.fieldErrors.password}
+              </span>
+            ) : null}
           </div>
           <button
-            className="rounded-md bg-blue-500 px-4 py-1 font-semibold  text-white"
+            className="rounded-sm bg-blue-500 px-4 py-1 font-semibold  text-white"
             type="submit"
           >
             Submit
