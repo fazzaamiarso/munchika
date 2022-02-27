@@ -1,4 +1,4 @@
-import { useFetcher } from 'remix';
+import { useFetcher, Link } from 'remix';
 import { MusicNoteIcon } from '@heroicons/react/outline';
 import { useEffect, useRef } from 'react';
 
@@ -15,20 +15,20 @@ export default function SelectPost() {
       <div className="flex flex-col items-center pt-8 pb-6 leading-none">
         <MusicNoteIcon className="mb-2 h-8 text-gray-400" />
         <h2 className="text-lg font-semibold">Pick a song</h2>
-        <p className="text-gray-400">What song you have in mind to post?</p>
+        <p className="text-gray-500">What song you have in mind to post?</p>
       </div>
       <fetcher.Form
         method="get"
         action={`/search-genius`}
-        className="flex items-center gap-2 "
+        className="flex w-full items-center justify-center gap-2 "
       >
         <input
           type="search"
           name="query"
           autoComplete="off"
-          className="rounded-md ring-gray-400 placeholder:text-gray-400"
+          className="w-full max-w-xs rounded-md ring-gray-400 placeholder:text-gray-400"
           ref={searchRef}
-          placeholder="Search song"
+          placeholder="Search here..."
         />
         <button
           type="submit"
@@ -44,7 +44,7 @@ export default function SelectPost() {
         fetcher.data.error ? (
           <p>Unable to fetch data</p>
         ) : fetcher.data.length ? (
-          <ul className="mx-auto flex w-11/12 flex-col divide-y divide-gray-200 py-8">
+          <ul className="mx-auto my-8 flex w-11/12 flex-col divide-y divide-gray-400 rounded-md bg-white px-6 py-4 shadow-md ring-1 ring-slate-600">
             {fetcher.data.map(track => {
               return (
                 <li
@@ -58,26 +58,24 @@ export default function SelectPost() {
                   />
                   <div className="flex flex-col items-start">
                     <h3 className="font-semibold  ">{track.result.title}</h3>
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-gray-500">
                       {track.result.primary_artist.name}
                     </p>
                   </div>
-                  <form action="/post/new" method="get" className="ml-auto ">
-                    <button
-                      name="trackId"
-                      value={track.result.id}
-                      className="rounded-full px-2 py-1 text-sm text-gray-600 ring-1 ring-gray-300 hover:ring-2"
-                      type="submit"
-                    >
-                      Select
-                    </button>
-                  </form>
+                  <Link
+                    prefetch="intent"
+                    to={`/post/new?trackId=${track.result.id}`}
+                    className="ml-auto rounded-full bg-white px-2 py-1 text-sm text-gray-600 ring-1 ring-gray-300 hover:ring-2"
+                    type="submit"
+                  >
+                    Select
+                  </Link>
                 </li>
               );
             })}
           </ul>
         ) : (
-          <p>No song found. Please try another search</p>
+          <p className="font-bold">No song found. Please try another search</p>
         )
       ) : null}
     </section>

@@ -85,7 +85,7 @@ export default function EditPost() {
             Last edited at : {new Date(postData.updated_at).toDateString()}
           </p>
         </div>
-        <div className="flex max-w-lg items-center  gap-4 rounded-md ring-1 ring-gray-400">
+        <div className="flex max-w-lg items-center  gap-4 rounded-md bg-white ring-1 ring-gray-400">
           <img
             src={trackData.thumbnail}
             alt={trackData.title}
@@ -109,7 +109,7 @@ export default function EditPost() {
         </p>
       </section>
       <Form method="post" className="mt-4 flex  flex-col gap-6 py-4">
-        <div className="flex flex-col ">
+        <div className="flex flex-col gap-2">
           <label htmlFor="lyrics" className="font-semibold">
             Lyrics
           </label>
@@ -119,7 +119,7 @@ export default function EditPost() {
             defaultValue={postData.lyrics}
             rows={5}
             autoFocus
-            className={`resize-none rounded-md text-sm ${
+            className={`resize-none rounded-md  ${
               actionData?.fieldErrors?.lyrics ? 'border-red-400' : ''
             }`}
             placeholder="What are the lyrics you want to feature?"
@@ -130,7 +130,7 @@ export default function EditPost() {
             </p>
           ) : null}
         </div>
-        <div className="flex flex-col ">
+        <div className="flex flex-col gap-2">
           <label htmlFor="thought" className="font-semibold">
             Thought
           </label>
@@ -140,7 +140,7 @@ export default function EditPost() {
             defaultValue={postData.thought}
             rows={5}
             placeholder="Share your thoughts to the world about how this song had helped you .."
-            className={`resize-none rounded-md text-sm ${
+            className={`resize-none rounded-md  ${
               actionData?.fieldErrors?.thought ? 'border-red-400' : ''
             }`}
           />

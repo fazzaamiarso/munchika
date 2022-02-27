@@ -58,6 +58,7 @@ function Navbar() {
                     <div className="flex space-x-4">
                       {navigation.map(item => (
                         <NavLink
+                          prefetch="intent"
                           key={item.name}
                           to={item.href}
                           className={({ isActive }) =>
@@ -75,8 +76,12 @@ function Navbar() {
                 </div>
                 <div className="absolute inset-y-0 right-0 flex items-center gap-4 pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
                   <button
-                    className="hidden rounded-sm bg-blue-400 py-1 px-3 text-sm font-semibold text-white sm:block"
+                    className="hidden rounded-sm bg-blue-400 py-1 px-3 text-sm font-semibold text-white hover:opacity-90 sm:block"
                     onClick={handleAdd}
+                    disabled={
+                      transition.state === 'submitting' ||
+                      transition.state === 'loading'
+                    }
                   >
                     Add Thought
                   </button>

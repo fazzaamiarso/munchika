@@ -47,7 +47,7 @@ export default function SearchLayout() {
             Clear
           </Link>
         </Form>
-        <ul className="flex gap-4">
+        <ul className="mt-2 flex gap-4">
           <li>
             <Link
               to="."

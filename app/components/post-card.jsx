@@ -13,7 +13,7 @@ export const PostCard = ({
   const handleToFeed = () => navigate(`/track/${post.track_id}`);
 
   return (
-    <li className="max-w-lg space-y-2 self-stretch rounded-md p-4 shadow-md ring-1 ring-slate-200">
+    <li className="max-w-lg space-y-4 self-stretch rounded-md bg-white p-4 shadow-md ring-1 ring-slate-300">
       <div className="flex w-full items-center gap-2 ">
         {displayUser ? (
           <>
@@ -39,7 +39,7 @@ export const PostCard = ({
       {displayTrack ? (
         <div
           onClick={handleToFeed}
-          className="mb-4 flex items-center gap-4 rounded-sm shadow-md ring-1 ring-slate-200 transition-transform hover:-translate-y-1 hover:cursor-pointer hover:shadow-lg"
+          className="mb-4 flex  items-center gap-4 rounded-sm shadow-md ring-1 ring-slate-200 transition-all hover:cursor-pointer hover:ring-2 hover:ring-gray-300"
         >
           <img src={post.thumbnail} alt={post.title} className="h-16" />
           <div className="pr-4">
@@ -48,14 +48,18 @@ export const PostCard = ({
           </div>
         </div>
       ) : null}
-      <section className="space-y-4">
+      <section className="space-y-4 ">
+        {post.lyrics === '' ? null : (
+          <div>
+            <h4 className="text-lg font-semibold">Featured lyrics</h4>
+            <p className="text-justify indent-8  text-gray-700">
+              {post.lyrics}
+            </p>
+          </div>
+        )}
         <div>
-          <h4 className="text-md font-semibold">Featured lyrics</h4>
-          <p className="text-justify indent-8">{post.lyrics}</p>
-        </div>
-        <div>
-          <h4 className="text-md font-semibold">Thought</h4>
-          <p className="text-justify indent-8">{post.thought}</p>
+          <h4 className=" font-semibold">Thought</h4>
+          <p className="text-justify indent-8 text-gray-700">{post.thought}</p>
         </div>
       </section>
     </li>

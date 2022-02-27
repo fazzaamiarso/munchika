@@ -79,7 +79,7 @@ export default function Login() {
   const transition = useTransition();
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center">
+    <div className="flex h-screen w-screen items-center justify-center bg-white">
       <div className="flex w-11/12 max-w-lg flex-col items-center gap-6">
         <h1 className="text-2xl font-bold">
           {formType === 'login' ? 'Login' : 'Signup'}

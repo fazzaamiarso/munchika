@@ -56,7 +56,7 @@ export default function NewPost() {
       <div className="mx-auto mt-4 flex w-10/12 flex-col">
         <section className="space-y-4">
           <h1 className=" mb-6 text-xl font-semibold">Add your thought</h1>
-          <div className="flex max-w-lg items-center  gap-4 rounded-md ring-1 ring-gray-400">
+          <div className="flex max-w-lg items-center  gap-4 rounded-md bg-white ring-1 ring-gray-400">
             <img
               src={trackData.song_art_image_url}
               alt={trackData.title}

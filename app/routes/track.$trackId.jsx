@@ -47,7 +47,7 @@ export default function TrackDetails() {
         <img src={trackData.thumbnail} alt={trackData.title} className="h-40" />
         <div className="flex flex-col items-center gap-2 leading-none">
           <h2 className="text-center text-lg font-bold">{trackData.title}</h2>
-          <p className="text-sm ">{trackData.artist}</p>
+          <p className=" ">{trackData.artist}</p>
           <p className="text-gray-500">
             Release date : {trackData.release_date}
           </p>
