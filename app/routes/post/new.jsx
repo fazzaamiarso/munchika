@@ -2,15 +2,7 @@ import { useNavigate, redirect, json, useLoaderData, useFetcher } from 'remix';
 import { getUserId, requireUserId } from '~/utils/session.server';
 import { supabase } from '../../../server/db.server';
 import { fetchFromGenius } from '../../utils/geniusApi.server';
-
-const validateThought = thought => {
-  if (thought.length < 20)
-    return 'Less than 20 characters. Your thought should be more descriptive so people can understand better';
-};
-const validateLyrics = lyrics => {
-  if (lyrics.length < 10 && lyrics.length > 0)
-    return 'Less than 10 characters. The lyrics should be more than 10 characters or empty';
-};
+import { validateThought, validateLyrics } from '../../utils/formUtils';
 
 export const loader = async ({ request }) => {
   const newUrl = new URL(request.url);
