@@ -30,7 +30,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="overflow-x-hidden">
         {location.pathname.includes('/login') ? null : <Navbar />}
         <Outlet />
         {location.pathname.includes('/login') ? null : <Footer />}

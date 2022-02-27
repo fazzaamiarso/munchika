@@ -1,18 +1,14 @@
 export const Footer = () => {
   return (
-    <footer className="mt-4 w-screen bg-gray-800 py-8 text-white">
-      <section>
-        <p>Created by Fazza Razaq Amiarso for Hashnode x Netlify Hackathon</p>
-        <p>This website is not a commercial product</p>
-      </section>
-      <section>
+    <footer className="mt-12 flex  w-screen flex-col gap-6 bg-gray-800 py-8 px-16 text-white">
+      <section className="flex w-full flex-col items-center sm:flex-row sm:justify-between">
         <p>
           All user avatar come from{' '}
           <a
             target="_blank"
             rel="noreferrer"
             href="https://www.figma.com/community/file/829741575478342595"
-            className="hover:underline"
+            className="font-semibold hover:underline"
           >
             Avatar Illustration System
           </a>{' '}
@@ -24,11 +20,15 @@ export const Footer = () => {
             target="_blank"
             rel="noreferrer"
             href="https://genius.com"
-            className="hover:underline"
+            className="font-semibold hover:underline"
           >
             Genius
           </a>
         </p>
+      </section>
+      <section className="self-center text-center">
+        <p>Created by Fazza Razaq Amiarso for Hashnode x Netlify Hackathon</p>
+        <p>This website is not a commercial product</p>
       </section>
     </footer>
   );
