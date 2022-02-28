@@ -47,26 +47,26 @@ export default function TrackDetails() {
         <img src={trackData.thumbnail} alt={trackData.title} className="h-40" />
         <div className="flex flex-col items-center gap-2 leading-none">
           <h2 className="text-center text-lg font-bold">{trackData.title}</h2>
-          <p className="text-sm">{trackData.artist}</p>
+          <p className=" ">{trackData.artist}</p>
           <p className="text-gray-500">
             Release date : {trackData.release_date}
           </p>
         </div>
-        <div className="flex flex-col items-center gap-2 pt-4 leading-none ">
+        <div className="flex flex-col items-center gap-2 pt-4 text-xs leading-none sm:text-sm ">
           <a
             href={trackData.geniusUrl}
-            className="text-xs text-blue-500 hover:underline"
+            className=" text-blue-500 hover:underline"
             target="_blank"
             rel="noreferrer"
           >
             Chekout the full lyrics on genius
           </a>
-          <span className="text-xs font-semibold text-gray-400">OR</span>
+          <span className=" font-semibold text-gray-400">OR</span>
           <div className="flex items-center gap-2 ">
-            <span className="text-xs  ">Have thought for this song?</span>
+            <span className="  ">Have thought for this song?</span>
             <Link
               to={`/post/new?trackId=${trackData.id}`}
-              className="flex items-center space-x-1 rounded-sm bg-blue-500 px-2  py-1 text-xs text-white "
+              className="flex items-center space-x-1 rounded-sm bg-blue-500  px-2 py-1 text-white "
             >
               Add thought
             </Link>
@@ -74,17 +74,25 @@ export default function TrackDetails() {
         </div>
       </div>
       {trackPosts.length ? (
-        <ul className="flex flex-col items-center">
-          {trackPosts.map(post => {
-            return (
-              <PostCard
-                key={post.id}
-                currentUserId={userId}
-                postWithUser={post}
-              />
-            );
-          })}
-        </ul>
+        <main className="flex w-full flex-col items-center py-4">
+          <ul className="space-y-4">
+            {trackPosts.map(post => {
+              const modifiedPost = {
+                ...post,
+                avatar: post.user.avatar_url,
+                username: post.user.username,
+              };
+              return (
+                <PostCard
+                  key={post.id}
+                  currentUserId={userId}
+                  postWithUser={modifiedPost}
+                  displayTrack={false}
+                />
+              );
+            })}
+          </ul>
+        </main>
       ) : (
         <div className="my-12 flex w-full items-center justify-center">
           <div className="flex w-max flex-col items-center space-y-6">

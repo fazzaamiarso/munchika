@@ -8,12 +8,19 @@ import { supabase } from '../../../server/db.server';
 import { AnnotationIcon, PlusIcon } from '@heroicons/react/outline';
 import { PostCard } from '../../components/post-card';
 
+export function meta() {
+  return {
+    title: 'Munchika | My Posts',
+    description: 'Manage all your posts here',
+  };
+}
+
 export const loader = async ({ request }) => {
   const userId = await getUserId(request);
 
   const { data: userPosts } = await supabase
     .from('post')
-    .select('*')
+    .select('*, user (username, avatar_url)')
     .eq('author_id', userId);
 
   const tracks = userPosts.map(async post => {
@@ -21,6 +28,8 @@ export const loader = async ({ request }) => {
     const track = response.song;
     return {
       ...post,
+      avatar: post.user.avatar_url,
+      username: post.user.username,
       title: removeTranslation(track.title),
       artist: track.primary_artist.name,
       thumbnail: track.song_art_image_thumbnail_url,
@@ -45,9 +54,9 @@ export default function UserPost() {
   const { postsData } = useLoaderData();
 
   return (
-    <main className="mt-6">
+    <main className="mt-6 flex w-full flex-col items-center">
       {postsData.length ? (
-        <ul className="flex w-full flex-col items-center gap-4 px-4 ">
+        <ul className=" space-y-4 px-4">
           {postsData.map(post => {
             return (
               <PostCard

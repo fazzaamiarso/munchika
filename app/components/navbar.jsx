@@ -1,12 +1,14 @@
-import { Link, useNavigate, useFetcher, useTransition } from 'remix';
+import { Link, useNavigate, useFetcher, useTransition, NavLink } from 'remix';
 import { Fragment, useEffect } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { MenuIcon, XIcon } from '@heroicons/react/outline';
 import { UserCircleIcon } from '@heroicons/react/solid';
+import Logo from '../images/MunchikaRed.svg';
+import Munchika from '../images/LogoMunchika.svg';
 
 const navigation = [
   { name: 'Home', href: '/' },
-  { name: 'Search', href: '/search' },
+  { name: 'Browse', href: '/search' },
 ];
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
@@ -42,39 +44,46 @@ function Navbar() {
                   </Disclosure.Button>
                 </div>
                 <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-                  <div className="flex flex-shrink-0 items-center">
+                  <div className="flex  items-center">
                     <img
-                      className="block h-8 w-auto lg:hidden"
-                      src="https://tailwindui.com/img/logos/workflow-mark-indigo-500.svg"
-                      alt="Workflow"
+                      className="block h-8 w-auto md:hidden"
+                      src={Logo}
+                      alt="Munchika"
                     />
                     <img
-                      className="hidden h-8 w-auto lg:block"
-                      src="https://tailwindui.com/img/logos/workflow-logo-indigo-500-mark-white-text.svg"
-                      alt="Workflow"
+                      className="hidden h-8 w-auto md:block"
+                      src={Munchika}
+                      alt="Munchika"
                     />
                   </div>
                   <div className="hidden sm:ml-6 sm:block">
                     <div className="flex space-x-4">
                       {navigation.map(item => (
-                        <Link
+                        <NavLink
+                          prefetch="intent"
                           key={item.name}
                           to={item.href}
-                          className={classNames(
-                            'text-gray-300 hover:bg-gray-700 hover:text-white',
-                            'rounded-md px-3 py-2 text-sm font-medium',
-                          )}
+                          className={({ isActive }) =>
+                            classNames(
+                              isActive ? 'bg-gray-900 text-white' : '',
+                              'rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white',
+                            )
+                          }
                         >
                           {item.name}
-                        </Link>
+                        </NavLink>
                       ))}
                     </div>
                   </div>
                 </div>
                 <div className="absolute inset-y-0 right-0 flex items-center gap-4 pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
                   <button
-                    className="hidden rounded-sm bg-blue-400 py-1 px-3 text-sm font-semibold text-white sm:block"
+                    className="hidden rounded-sm bg-blue-400 py-1 px-3 text-sm font-semibold text-white hover:opacity-90 sm:block"
                     onClick={handleAdd}
+                    disabled={
+                      transition.state === 'submitting' ||
+                      transition.state === 'loading'
+                    }
                   >
                     Add Thought
                   </button>
@@ -114,7 +123,7 @@ function Navbar() {
                                   'block px-4 py-2 text-sm text-gray-700',
                                 )}
                               >
-                                Your Posts
+                                My Posts
                               </Link>
                             </Menu.Item>
                           </>

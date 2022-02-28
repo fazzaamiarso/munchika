@@ -15,7 +15,7 @@ export const loader = async () => {
     const track = response.song;
     return {
       ...post,
-      created_at: new Date(post.created_at).toDateString(),
+      created_at: post.created_at,
       username: post.user.username,
       avatar: post.user.avatar_url,
       title: removeTranslation(track.title),
@@ -35,8 +35,10 @@ export default function Index() {
   return (
     <>
       <section className="mx-auto flex w-11/12 max-w-2xl flex-col items-center gap-2 pt-8 text-center">
-        <h1 className="text-3xl font-bold">See Other&apos;s Thought</h1>
-        <p className="max-w-[50ch] text-gray-400">
+        <h1 className="text-3xl font-bold md:text-4xl">
+          See Other&apos;s Thought
+        </h1>
+        <p className="max-w-[50ch] text-gray-600">
           Find song that actually help them (maybe they can help you too) or{' '}
           <Link
             to="/post/select"
