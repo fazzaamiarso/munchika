@@ -44,7 +44,7 @@ export default function SelectPost() {
         fetcher.data.error ? (
           <p className="font-bold">Unable to fetch data</p>
         ) : fetcher.data.length ? (
-          <ul className="mx-auto my-8 flex w-11/12 flex-col divide-y divide-gray-400 rounded-md bg-white px-6 py-4 shadow-md ring-1 ring-slate-600">
+          <ul className="mx-auto my-8 flex flex-col divide-y divide-gray-400 rounded-md bg-white px-6 py-4 shadow-md ring-1 ring-slate-600">
             {fetcher.data.map(track => {
               return (
                 <li
@@ -57,7 +57,9 @@ export default function SelectPost() {
                     alt={track.result.title}
                   />
                   <div className="flex flex-col items-start">
-                    <h3 className="font-semibold  ">{track.result.title}</h3>
+                    <h3 className="font-semibold line-clamp-2 ">
+                      {track.result.title}
+                    </h3>
                     <p className="text-sm text-gray-500">
                       {track.result.primary_artist.name}
                     </p>
