@@ -1,4 +1,11 @@
-import { useLoaderData, json, Link, useFetcher, useTransition } from 'remix';
+import {
+  useLoaderData,
+  json,
+  Link,
+  useFetcher,
+  useTransition,
+  redirect,
+} from 'remix';
 import {
   fetchFromGenius,
   removeTranslation,
@@ -20,6 +27,10 @@ export const loader = async ({ request }) => {
   const currPage = newUrl.searchParams.get('currPage')
     ? parseInt(newUrl.searchParams.get('currPage'))
     : 0;
+  const actionType = newUrl.searchParams.get('_action');
+
+  if (actionType === 'clear') return redirect('/search');
+
   if (searchTerm === null) {
     const { data } = await supabase
       .from('post')
@@ -90,12 +101,13 @@ export default function SearchPost() {
   useEffect(() => {
     if (transition.type === 'loaderSubmission') return setInitial(true);
 
-    if (fetcher.type === 'done') {
+    if (fetcher.type === 'done' && !initial) {
       setPostList(prev => [...prev, ...fetcher.data.data]);
       return;
     }
     if (transition.type === 'idle' && initial) {
       setPostList(data);
+      return;
     }
   }, [fetcher, transition, data]);
   return (

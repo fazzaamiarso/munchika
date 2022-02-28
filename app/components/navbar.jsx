@@ -3,10 +3,12 @@ import { Fragment, useEffect } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { MenuIcon, XIcon } from '@heroicons/react/outline';
 import { UserCircleIcon } from '@heroicons/react/solid';
+import Logo from '../images/MunchikaRed.svg';
+import Munchika from '../images/LogoMunchika.svg';
 
 const navigation = [
   { name: 'Home', href: '/' },
-  { name: 'Search', href: '/search' },
+  { name: 'Browse', href: '/search' },
 ];
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
@@ -42,16 +44,16 @@ function Navbar() {
                   </Disclosure.Button>
                 </div>
                 <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-                  <div className="flex flex-shrink-0 items-center">
+                  <div className="flex  items-center">
                     <img
-                      className="block h-8 w-auto lg:hidden"
-                      src="https://tailwindui.com/img/logos/workflow-mark-indigo-500.svg"
-                      alt="Workflow"
+                      className="block h-8 w-auto md:hidden"
+                      src={Logo}
+                      alt="Munchika"
                     />
                     <img
-                      className="hidden h-8 w-auto lg:block"
-                      src="https://tailwindui.com/img/logos/workflow-logo-indigo-500-mark-white-text.svg"
-                      alt="Workflow"
+                      className="hidden h-8 w-auto md:block"
+                      src={Munchika}
+                      alt="Munchika"
                     />
                   </div>
                   <div className="hidden sm:ml-6 sm:block">
@@ -121,7 +123,7 @@ function Navbar() {
                                   'block px-4 py-2 text-sm text-gray-700',
                                 )}
                               >
-                                Your Posts
+                                My Posts
                               </Link>
                             </Menu.Item>
                           </>

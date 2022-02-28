@@ -17,7 +17,11 @@ export function links() {
 }
 
 export function meta() {
-  return { title: 'New Remix App' };
+  return {
+    title: 'Munchika',
+    description:
+      "See other's thought and find song that can help you or help others by sharing your thought",
+  };
 }
 
 export default function App() {
@@ -43,22 +47,22 @@ export default function App() {
   );
 }
 
-// export const ErrorBoundary = ({ error }) => {
-//   return (
-//     <html>
-//       <head>
-//         <title>Oh no!</title>
-//         <Meta />
-//         <Links />
-//       </head>
-//       <body className="flex h-screen w-screen flex-col items-center justify-center">
-//         <h1 className="text-5xl font-bold">Something Went wrong...</h1>
-//         <pre>{error.message}</pre>
-//         <Scripts />
-//       </body>
-//     </html>
-//   );
-// };
+export const ErrorBoundary = ({ error }) => {
+  return (
+    <html>
+      <head>
+        <title>Oh no!</title>
+        <Meta />
+        <Links />
+      </head>
+      <body className="flex h-screen w-screen flex-col items-center justify-center">
+        <h1 className="text-5xl font-bold">Something Went wrong...</h1>
+        <pre>{error.message}</pre>
+        <Scripts />
+      </body>
+    </html>
+  );
+};
 
 export const CatchBoundary = () => {
   return (

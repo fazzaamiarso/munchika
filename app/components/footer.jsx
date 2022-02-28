@@ -1,7 +1,7 @@
 export const Footer = () => {
   return (
     <footer className="mt-12 flex  w-screen flex-col gap-6 bg-gray-800 py-8 px-16 text-white">
-      <section className="flex w-full flex-col items-center sm:flex-row sm:justify-between">
+      <section className="flex w-full flex-col items-center gap-2 text-center sm:flex-row sm:justify-between">
         <p>
           All user avatar come from{' '}
           <a

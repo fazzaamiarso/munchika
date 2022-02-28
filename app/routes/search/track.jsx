@@ -1,12 +1,21 @@
 import { ArrowRightIcon } from '@heroicons/react/solid';
 import { useEffect, useState } from 'react';
-import { useLoaderData, Link, useFetcher, useTransition } from 'remix';
+import {
+  useLoaderData,
+  Link,
+  useFetcher,
+  useTransition,
+  redirect,
+} from 'remix';
 import { fetchFromGenius } from '../../utils/geniusApi.server';
 
 export const loader = async ({ request }) => {
   const newUrl = new URL(request.url);
   const searchTerm = newUrl.searchParams.get('term');
   const currPage = newUrl.searchParams.get('currPage') ?? 1;
+  const actionType = newUrl.searchParams.get('_action');
+
+  if (actionType === 'clear') return redirect('/search/track');
 
   if (searchTerm === null) return {};
   const response = await fetchFromGenius(
@@ -50,7 +59,7 @@ export default function SearchTrack() {
   if (!trackList)
     return (
       <div className="mt-12 flex min-h-screen flex-col items-center ">
-        <h2 className="text-xl font-semibold">
+        <h2 className="text-center text-xl font-semibold">
           Start searching a song you would like to find
         </h2>
       </div>

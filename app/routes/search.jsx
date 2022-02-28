@@ -1,5 +1,14 @@
 import { Outlet, Form, useLocation, Link, useTransition } from 'remix';
 import { useEffect, useRef } from 'react';
+import { RefreshIcon } from '@heroicons/react/outline';
+
+export function meta() {
+  return {
+    title: 'Munchika | Browse',
+    description: 'Search for song or post keyword to find what you looking for',
+  };
+}
+
 export default function SearchLayout() {
   const location = useLocation();
   const searchRef = useRef();
@@ -24,11 +33,9 @@ export default function SearchLayout() {
             className="w-full rounded-md ring-gray-400 placeholder:text-gray-400"
             ref={searchRef}
             required
-            placeholder="Try searching by keyword"
+            placeholder="Try search a word"
           />
           <button
-            name="_action"
-            value="search"
             type="submit"
             className="rounded-md bg-blue-500 px-4 py-2 text-white hover:opacity-90 disabled:opacity-75"
             disabled={
@@ -38,16 +45,19 @@ export default function SearchLayout() {
           >
             {transition.state === 'submitting' ? 'Searching...' : 'Search'}
           </button>
-          <Link
-            to={location.pathname}
-            className="rounded-md px-4 py-2 text-blue-500 ring-1 ring-blue-500 "
+          <button
+            type="submit"
+            name="_action"
+            value="clear"
+            className="flex items-center gap-1 rounded-md px-4 py-2 text-blue-500 ring-1 ring-blue-500 "
             disabled={
               transition.state === 'submitting' ||
               transition.state === 'loading'
             }
           >
-            Clear
-          </Link>
+            <span className="hidden sm:inline">Clear</span>{' '}
+            <RefreshIcon className="h-5 text-blue-500" />
+          </button>
         </Form>
         <ul className="mt-2 flex gap-4">
           <li>
@@ -55,7 +65,7 @@ export default function SearchLayout() {
               to="."
               className={`rounded-md font-semibold leading-none ${
                 location.pathname === '/search'
-                  ? 'px-3 py-1  text-blue-500 shadow-md ring-1  ring-gray-300'
+                  ? 'bg-white px-3  py-1 text-blue-500 shadow-md  ring-1 ring-gray-300'
                   : ' text-gray-400 '
               }`}
             >
@@ -67,7 +77,7 @@ export default function SearchLayout() {
               to="track"
               className={`rounded-md font-semibold leading-none ${
                 location.pathname === '/search/track'
-                  ? 'px-3 py-1  text-blue-500 shadow-md ring-1  ring-gray-300'
+                  ? 'bg-white px-3  py-1 text-blue-500 shadow-md  ring-1 ring-gray-300'
                   : ' text-gray-400 '
               }`}
             >

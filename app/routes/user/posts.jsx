@@ -8,6 +8,13 @@ import { supabase } from '../../../server/db.server';
 import { AnnotationIcon, PlusIcon } from '@heroicons/react/outline';
 import { PostCard } from '../../components/post-card';
 
+export function meta() {
+  return {
+    title: 'Munchika | My Posts',
+    description: 'Manage all your posts here',
+  };
+}
+
 export const loader = async ({ request }) => {
   const userId = await getUserId(request);
 
