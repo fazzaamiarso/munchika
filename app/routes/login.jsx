@@ -124,6 +124,7 @@ export default function Login() {
                 type="text"
                 placeholder="cool_kidz"
                 required
+                autoComplete="off"
                 defaultValue={
                   fetcher.data?.fields ? fetcher.data.fields.username : ''
                 }
