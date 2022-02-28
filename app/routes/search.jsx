@@ -27,6 +27,8 @@ export default function SearchLayout() {
             placeholder="Try searching by keyword"
           />
           <button
+            name="_action"
+            value="search"
             type="submit"
             className="rounded-md bg-blue-500 px-4 py-2 text-white hover:opacity-90 disabled:opacity-75"
             disabled={

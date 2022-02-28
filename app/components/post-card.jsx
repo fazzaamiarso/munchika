@@ -51,7 +51,7 @@ export const PostCard = ({
       <section className="space-y-4 ">
         {post.lyrics === '' ? null : (
           <div>
-            <h4 className="text-lg font-semibold">Featured lyrics</h4>
+            <h4 className="font-semibold">Featured lyrics</h4>
             <p className="text-justify indent-8  text-gray-700">
               {post.lyrics}
             </p>

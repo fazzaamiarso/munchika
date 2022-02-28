@@ -42,7 +42,7 @@ export default function SelectPost() {
       </fetcher.Form>
       {fetcher.data ? (
         fetcher.data.error ? (
-          <p>Unable to fetch data</p>
+          <p className="font-bold">Unable to fetch data</p>
         ) : fetcher.data.length ? (
           <ul className="mx-auto my-8 flex w-11/12 flex-col divide-y divide-gray-400 rounded-md bg-white px-6 py-4 shadow-md ring-1 ring-slate-600">
             {fetcher.data.map(track => {
