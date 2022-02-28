@@ -1,4 +1,4 @@
-import { useLoaderData, json, Link, useFetcher } from 'remix';
+import { useLoaderData, json, Link, useFetcher, useTransition } from 'remix';
 import {
   fetchFromGenius,
   removeTranslation,
@@ -75,19 +75,29 @@ export const loader = async ({ request }) => {
 export default function SearchPost() {
   const { data, userId } = useLoaderData();
   const fetcher = useFetcher();
+  const transition = useTransition();
   const [currPage, setCurrentPage] = useState(1);
   const [postList, setPostList] = useState(data);
+  const [initial, setInitial] = useState(true);
 
   const handleLoadMore = () => {
     fetcher.load(`/search?currPage=${currPage}`);
+    setInitial(false);
+
     setCurrentPage(prevPage => prevPage + 1);
   };
 
   useEffect(() => {
+    if (transition.type === 'loaderSubmission') return setInitial(true);
+
     if (fetcher.type === 'done') {
       setPostList(prev => [...prev, ...fetcher.data.data]);
+      return;
     }
-  }, [fetcher]);
+    if (transition.type === 'idle' && initial) {
+      setPostList(data);
+    }
+  }, [fetcher, transition, data]);
   return (
     <div className="flex min-h-screen w-full flex-col items-center">
       {postList.length ? (
@@ -103,7 +113,7 @@ export default function SearchPost() {
               );
             })}
           </ul>
-          {fetcher.data?.data.length < 10 ? null : (
+          {fetcher.data?.data.length < 10 || data.length < 10 ? null : (
             <button
               className="mt-4 rounded-full bg-blue-600 px-3 py-1 font-semibold text-white"
               onClick={handleLoadMore}
