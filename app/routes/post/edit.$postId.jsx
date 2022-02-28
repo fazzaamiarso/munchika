@@ -111,7 +111,10 @@ export default function EditPost() {
       <Form method="post" className="mt-4 flex  flex-col gap-6 py-4">
         <div className="flex flex-col gap-2">
           <label htmlFor="lyrics" className="font-semibold">
-            Lyrics
+            Lyrics{' '}
+            <span className="font-normal text-slate-400">
+              ( You can leave it empty )
+            </span>
           </label>
           <textarea
             name="lyrics"

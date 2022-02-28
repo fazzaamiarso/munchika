@@ -88,7 +88,10 @@ export default function NewPost() {
           />
           <div className="flex flex-col  gap-2  ">
             <label htmlFor="lyrics" className="font-semibold">
-              Lyrics
+              Lyrics{' '}
+              <span className="font-normal text-slate-400">
+                ( You can leave it empty )
+              </span>
             </label>
             <textarea
               name="lyrics"
