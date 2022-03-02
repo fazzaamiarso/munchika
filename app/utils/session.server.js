@@ -6,11 +6,13 @@ if (!sessionSecret) {
 }
 
 const storage = createCookieSessionStorage({
-  name: 'auth_session',
-  secrets: [sessionSecret],
-  secure: true,
-  httpOnly: true,
-  sameSite: 'lax',
+  cookie: {
+    name: 'auth_session',
+    secrets: [sessionSecret],
+    secure: true,
+    httpOnly: true,
+    sameSite: 'lax',
+  },
 });
 const getUserSession = request => {
   return storage.getSession(request.headers.get('Cookie'), {});

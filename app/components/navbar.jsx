@@ -29,9 +29,9 @@ function Navbar() {
   const transition = useTransition();
 
   useEffect(() => {
-    if (transition.state === 'loading' || transition.state === 'idle')
-      logout.load('/navbarUser');
-  }, [transition, logout]);
+    if (transition.state === 'idle') logout.load('/navbarUser'); //check every route change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transition]);
 
   return (
     <header className="">
@@ -172,8 +172,8 @@ function Navbar() {
                 {navigation.map(item => (
                   <Disclosure.Button
                     key={item.name}
-                    as="a"
-                    href={item.href}
+                    as={Link}
+                    to={item.href}
                     className={classNames(
                       'text-gray-300 hover:bg-gray-700 hover:text-white',
                       'block rounded-md px-3 py-2 text-base font-medium',
