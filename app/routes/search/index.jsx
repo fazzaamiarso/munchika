@@ -20,50 +20,8 @@ const toTextSearchFormat = query => {
   return formatted.join('|');
 };
 
-export const loader = async ({ request }) => {
-  const userId = await getUserId(request);
-  const newUrl = new URL(request.url);
-  const searchTerm = newUrl.searchParams.get('term') ?? null;
-  const currPage = newUrl.searchParams.get('currPage')
-    ? parseInt(newUrl.searchParams.get('currPage'))
-    : 0;
-  const actionType = newUrl.searchParams.get('_action');
-
-  if (actionType === 'clear') return redirect('/search');
-
-  if (searchTerm === null) {
-    const { data } = await supabase
-      .from('post')
-      .select('*, user (username, avatar_url)')
-      .order('created_at', { ascending: false })
-      .range(currPage * 10, (currPage + 1) * 10 - 1);
-
-    const tracks = data.map(async post => {
-      const response = await fetchFromGenius(`songs/${post.track_id}`);
-      const track = response.song;
-      return {
-        ...post,
-        created_at: post.created_at,
-        username: post.user.username,
-        avatar: post.user.avatar_url,
-        title: removeTranslation(track.title),
-        artist: track.primary_artist.name,
-        thumbnail: track.song_art_image_thumbnail_url,
-      };
-    });
-    const trackDatas = await Promise.all(tracks);
-    return json({
-      data: trackDatas,
-      userId,
-    });
-  }
-  const ftsText = toTextSearchFormat(searchTerm) ?? null;
-  const { data: fullTextData } = await supabase
-    .from('post')
-    .select('*, user (username, avatar_url)')
-    .textSearch('thought', ftsText);
-
-  const tracks = fullTextData.map(async post => {
+const getPostWithTrack = async posts => {
+  const tracks = posts.map(async post => {
     const response = await fetchFromGenius(`songs/${post.track_id}`);
     const track = response.song;
     return {
@@ -77,8 +35,40 @@ export const loader = async ({ request }) => {
     };
   });
   const trackDatas = await Promise.all(tracks);
+  return trackDatas;
+};
+
+export const loader = async ({ request }) => {
+  const userId = await getUserId(request);
+  const { searchParams } = new URL(request.url);
+  const searchTerm = searchParams.get('term') ?? null;
+  const currPage = searchParams.get('currPage')
+    ? parseInt(searchParams.get('currPage'))
+    : 0;
+  const actionType = searchParams.get('_action');
+
+  if (actionType === 'clear') return redirect('/search');
+
+  if (searchTerm === null) {
+    const { data } = await supabase
+      .from('post')
+      .select('*, user (username, avatar_url)')
+      .order('created_at', { ascending: false })
+      .range(currPage * 10, (currPage + 1) * 10 - 1);
+
+    return json({
+      data: await getPostWithTrack(data),
+      userId,
+    });
+  }
+  const ftsText = toTextSearchFormat(searchTerm);
+  const { data: fullTextData } = await supabase
+    .from('post')
+    .select('*, user (username, avatar_url)')
+    .textSearch('thought', ftsText);
+
   return json({
-    data: trackDatas,
+    data: await getPostWithTrack(fullTextData),
     userId,
   });
 };
@@ -94,20 +84,16 @@ export default function SearchPost() {
   const handleLoadMore = () => {
     fetcher.load(`/search?currPage=${currPage}`);
     setInitial(false);
-
     setCurrentPage(prevPage => prevPage + 1);
   };
 
   useEffect(() => {
     if (transition.type === 'loaderSubmission') return setInitial(true);
-
     if (fetcher.type === 'done' && !initial) {
-      setPostList(prev => [...prev, ...fetcher.data.data]);
-      return;
+      return setPostList(prev => [...prev, ...fetcher.data.data]);
     }
     if (transition.type === 'idle' && initial) {
-      setPostList(data);
-      return;
+      return setPostList(data);
     }
   }, [fetcher, transition, data, initial]);
   return (
