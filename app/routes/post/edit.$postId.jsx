@@ -74,7 +74,7 @@ export default function EditPost() {
   const transition = useTransition();
 
   const isSaving =
-    transition.state === 'loading' || transition.state === 'submitting';
+    transition.type === 'actionRedirect' || transition.state === 'submitting';
 
   return (
     <div className="mx-auto mt-4 flex w-10/12 flex-col py-8">

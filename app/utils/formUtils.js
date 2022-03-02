@@ -1,3 +1,4 @@
+import { json } from 'remix';
 export const validateThought = thought => {
   if (thought.length < 20)
     return 'Less than 20 characters. Your thought should be more descriptive so people can understand better';
@@ -19,4 +20,8 @@ export const validateEmail = email => {
 
 export const haveErrors = fieldErrors => {
   return Object.values(fieldErrors).some(Boolean);
+};
+
+export const badRequest = data => {
+  return json(data, { status: 400 });
 };
