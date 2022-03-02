@@ -1,4 +1,11 @@
-import { Link, useNavigate, useFetcher, useTransition, NavLink } from 'remix';
+import {
+  Link,
+  useNavigate,
+  useFetcher,
+  useTransition,
+  useLocation,
+  NavLink,
+} from 'remix';
 import { Fragment, useEffect } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { MenuIcon, XIcon } from '@heroicons/react/outline';
@@ -16,6 +23,7 @@ function classNames(...classes) {
 
 function Navbar() {
   const logout = useFetcher();
+  const location = useLocation();
   const navigate = useNavigate();
   const handleAdd = () => navigate('/post/select');
   const transition = useTransition();
@@ -23,7 +31,7 @@ function Navbar() {
   useEffect(() => {
     if (transition.state === 'loading' || transition.state === 'idle')
       logout.load('/navbarUser');
-  }, [transition]);
+  }, [transition, logout]);
 
   return (
     <header className="">
@@ -130,7 +138,10 @@ function Navbar() {
                         ) : null}
                         <Menu.Item>
                           {logout.data ? (
-                            <logout.Form action="/logout" method="post">
+                            <logout.Form
+                              action={`/logout?redirectTo=${location.pathname}`}
+                              method="post"
+                            >
                               <button
                                 type="submit"
                                 className="block px-4 py-2 text-sm text-gray-700"
@@ -140,7 +151,7 @@ function Navbar() {
                             </logout.Form>
                           ) : (
                             <Link
-                              to="/login"
+                              to={`/login?redirectTo=${location.pathname}`}
                               className={classNames(
                                 'block px-4 py-2 text-sm text-gray-700',
                               )}

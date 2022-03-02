@@ -74,7 +74,7 @@ export default function TrackDetails() {
         </div>
       </div>
       {trackPosts.length ? (
-        <main className="flex w-full flex-col items-center py-4">
+        <main className="mx-auto flex w-11/12 flex-col items-center py-4">
           <ul className="space-y-4">
             {trackPosts.map(post => {
               const modifiedPost = {

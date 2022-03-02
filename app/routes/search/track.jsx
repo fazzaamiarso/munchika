@@ -54,7 +54,7 @@ export default function SearchTrack() {
     if (transition.type === 'idle' && initial) {
       setTrackList(data);
     }
-  }, [fetcher, transition, data]);
+  }, [fetcher, transition, data, initial]);
 
   if (!trackList)
     return (

@@ -109,7 +109,7 @@ export default function SearchPost() {
       setPostList(data);
       return;
     }
-  }, [fetcher, transition, data]);
+  }, [fetcher, transition, data, initial]);
   return (
     <div className="flex min-h-screen w-full flex-col items-center">
       {postList.length ? (
