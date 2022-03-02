@@ -49,14 +49,20 @@ export default function SearchLayout() {
             type="submit"
             name="_action"
             value="clear"
-            className="flex items-center gap-1 rounded-md px-4 py-2 text-blue-500 ring-1 ring-blue-500 "
+            className=" flex items-center gap-1 rounded-md px-4 py-2 text-blue-500 ring-1 ring-blue-500 "
             disabled={
               transition.state === 'submitting' ||
               transition.state === 'loading'
             }
           >
             <span className="hidden sm:inline">Clear</span>{' '}
-            <RefreshIcon className="h-5 text-blue-500" />
+            <RefreshIcon
+              className={`h-5 text-blue-500 ${
+                transition.submission?.formData.get('_action') === 'clear'
+                  ? 'animate-spin'
+                  : ''
+              }`}
+            />
           </button>
         </Form>
         <ul className="mt-2 flex gap-4">

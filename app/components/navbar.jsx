@@ -144,7 +144,7 @@ function Navbar() {
                             >
                               <button
                                 type="submit"
-                                className="block px-4 py-2 text-sm text-gray-700"
+                                className="block w-full px-4 py-2 text-left text-sm text-gray-700"
                               >
                                 Logout
                               </button>
