@@ -1,9 +1,6 @@
 import { Link, useLoaderData } from 'remix';
 import { getUserId } from '../../utils/session.server';
-import {
-  fetchFromGenius,
-  removeTranslation,
-} from '../../utils/geniusApi.server';
+import { getPostWithTrack } from '../../utils/geniusApi.server';
 import { supabase } from '../../../server/db.server';
 import { AnnotationIcon, PlusIcon } from '@heroicons/react/outline';
 import { PostCard } from '../../components/post-card';
@@ -23,22 +20,8 @@ export const loader = async ({ request }) => {
     .select('*, user (username, avatar_url)')
     .eq('author_id', userId);
 
-  const tracks = userPosts.map(async post => {
-    const response = await fetchFromGenius(`songs/${post.track_id}`);
-    const track = response.song;
-    return {
-      ...post,
-      avatar: post.user.avatar_url,
-      username: post.user.username,
-      title: removeTranslation(track.title),
-      artist: track.primary_artist.name,
-      thumbnail: track.song_art_image_thumbnail_url,
-    };
-  });
-  const postsData = await Promise.all(tracks);
-  return {
-    postsData,
-  };
+  const postsData = await getPostWithTrack(userPosts);
+  return { postsData };
 };
 
 export const action = async ({ request }) => {

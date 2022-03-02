@@ -149,6 +149,7 @@ export default function Login() {
               type="email"
               placeholder="email@example.com"
               required
+              autoComplete="off"
               defaultValue={
                 fetcher.data?.fields ? fetcher.data.fields.email : ''
               }

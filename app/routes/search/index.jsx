@@ -6,37 +6,12 @@ import {
   useTransition,
   redirect,
 } from 'remix';
-import {
-  fetchFromGenius,
-  removeTranslation,
-} from '../../utils/geniusApi.server';
+import { getPostWithTrack } from '../../utils/geniusApi.server';
+export { toTextSearchFormat } from '../../utils/supabase.server';
 import { supabase } from '../../../server/db.server';
 import { getUserId } from '~/utils/session.server';
 import { PostCard } from '../../components/post-card';
 import { useEffect, useState } from 'react';
-
-const toTextSearchFormat = query => {
-  const formatted = query.trim().split(' ');
-  return formatted.join('|');
-};
-
-const getPostWithTrack = async posts => {
-  const tracks = posts.map(async post => {
-    const response = await fetchFromGenius(`songs/${post.track_id}`);
-    const track = response.song;
-    return {
-      ...post,
-      created_at: post.created_at,
-      username: post.user.username,
-      avatar: post.user.avatar_url,
-      title: removeTranslation(track.title),
-      artist: track.primary_artist.name,
-      thumbnail: track.song_art_image_thumbnail_url,
-    };
-  });
-  const trackDatas = await Promise.all(tracks);
-  return trackDatas;
-};
 
 export const loader = async ({ request }) => {
   const userId = await getUserId(request);

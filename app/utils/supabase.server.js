@@ -1,5 +1,10 @@
 import { supabase } from '../../server/db.server';
 
+export const toTextSearchFormat = query => {
+  const formatted = query.trim().split(' ');
+  return formatted.join('|');
+};
+
 export const validateUsername = async username => {
   const { data: userFound } = await supabase
     .from('user')
