@@ -15,6 +15,10 @@ export default function SearchLayout() {
   const transition = useTransition();
 
   useEffect(() => {
+    if (transition.type === 'loaderSubmissionRedirect')
+      searchRef.current.value = '';
+  }, [transition]);
+  useEffect(() => {
     searchRef.current.focus();
   }, [location]);
 

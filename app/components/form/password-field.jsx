@@ -16,6 +16,7 @@ export const PasswordField = ({ fieldData }) => {
           type={show ? 'text' : 'password'}
           placeholder="password"
           required
+          autoComplete="off"
           defaultValue={fieldData?.fields ? fieldData.fields.password : ''}
           className={`w-full rounded-md ${
             fieldData?.fieldErrors?.password ? 'border-red-400' : ''

@@ -9,6 +9,7 @@ const storage = createCookieSessionStorage({
   cookie: {
     name: 'auth_session',
     secrets: [sessionSecret],
+    maxAge: 60 * 60,
     secure: true,
     httpOnly: true,
     sameSite: 'lax',

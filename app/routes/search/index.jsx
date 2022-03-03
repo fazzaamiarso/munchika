@@ -7,7 +7,7 @@ import {
   redirect,
 } from 'remix';
 import { getPostWithTrack } from '../../utils/geniusApi.server';
-export { toTextSearchFormat } from '../../utils/supabase.server';
+import { toTextSearchFormat } from '../../utils/supabase.server';
 import { supabase } from '../../../server/db.server';
 import { getUserId } from '~/utils/session.server';
 import { PostCard } from '../../components/post-card';

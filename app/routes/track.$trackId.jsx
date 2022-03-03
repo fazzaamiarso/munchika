@@ -5,6 +5,7 @@ import invariant from 'tiny-invariant';
 import { getUserId } from '../utils/session.server';
 import { PlusIcon } from '@heroicons/react/solid';
 import { EmojiSadIcon } from '@heroicons/react/outline';
+import { ExternalLinkIcon } from '@heroicons/react/solid';
 import { PostCard } from '../components/post-card';
 
 export const loader = async ({ params, request }) => {
@@ -52,14 +53,14 @@ export default function TrackDetails() {
             Release date : {trackData.release_date}
           </p>
         </div>
-        <div className="flex flex-col items-center gap-2 pt-4 text-xs leading-none sm:text-sm ">
+        <div className="flex flex-col items-center gap-2 pt-4  text-xs leading-none sm:text-base">
           <a
             href={trackData.geniusUrl}
-            className=" text-blue-500 hover:underline"
             target="_blank"
             rel="noreferrer"
+            className="flex items-center gap-1 text-blue-500 hover:underline"
           >
-            Chekout the full lyrics on genius
+            Check it out on Genius <ExternalLinkIcon className="h-4" />
           </a>
           <span className=" font-semibold text-gray-400">OR</span>
           <div className="flex items-center gap-2 ">
