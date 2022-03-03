@@ -10,7 +10,7 @@ import { getPostWithTrack } from '../../utils/geniusApi.server';
 import { toTextSearchFormat } from '../../utils/supabase.server';
 import { supabase } from '../../../server/db.server';
 import { getUserId } from '~/utils/session.server';
-import { PostCard } from '../../components/post-card';
+import { PostCard, PostCardSkeleton } from '../../components/post-card';
 import { useEffect, useState } from 'react';
 
 export const loader = async ({ request }) => {
@@ -71,6 +71,18 @@ export default function SearchPost() {
       return setPostList(data);
     }
   }, [fetcher, transition, data, initial]);
+
+  if (
+    transition.type === 'loaderSubmission' ||
+    transition.type === 'loaderSubmissionRedirect'
+  )
+    return (
+      <div className="space-y-4">
+        <PostCardSkeleton />
+        <PostCardSkeleton />
+      </div>
+    );
+
   return (
     <div className="flex min-h-screen w-full flex-col items-center">
       {postList.length ? (

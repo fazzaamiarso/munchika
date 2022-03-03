@@ -32,11 +32,14 @@ export const loader = async ({ request }) => {
 
 export default function SearchTrack() {
   const { data, searchTerm } = useLoaderData();
-  const transition = useTransition();
   const fetcher = useFetcher();
+  const transition = useTransition();
   const [trackList, setTrackList] = useState(data);
   const [currPage, setCurrPage] = useState(2);
   const [initial, setInitial] = useState(true);
+  const isPending =
+    transition.type === 'loaderSubmission' ||
+    transition.type === 'loaderSubmissionRedirect';
 
   const handleLoadMore = () => {
     fetcher.load(`/search/track?term=${searchTerm}&currPage=${currPage}`);
@@ -56,6 +59,16 @@ export default function SearchTrack() {
     }
   }, [fetcher, transition, data, initial]);
 
+  if (isPending)
+    return (
+      <>
+        <TrackSkeleton />
+        <TrackSkeleton />
+        <TrackSkeleton />
+        <TrackSkeleton />
+        <TrackSkeleton />
+      </>
+    );
   if (!trackList)
     return (
       <div className="mt-12 flex min-h-screen flex-col items-center ">
@@ -65,58 +78,77 @@ export default function SearchTrack() {
       </div>
     );
   return (
-    <>
-      {trackList.length ? (
-        <div className="flex flex-col">
-          <ul className=" min-h-screen divide-y divide-gray-200 ">
-            {trackList.map(track => {
-              return (
-                <li
-                  key={`${track.result.id}${Date.now()}`}
-                  className="flex w-full items-center gap-4 py-2 leading-none"
+    <div className="flex flex-col">
+      <ul className=" min-h-screen divide-y divide-gray-200 ">
+        {trackList?.length ? (
+          trackList.map(track => {
+            return (
+              <li
+                key={track.result.id}
+                className="flex w-full items-center gap-4 py-2 leading-none"
+              >
+                <img
+                  className="h-12"
+                  src={track.result.song_art_image_thumbnail_url}
+                  alt={track.result.title}
+                />
+                <div className="flex flex-col items-start">
+                  <h3 className="text-semibold sm:text-md text-sm line-clamp-2">
+                    {track.result.title}
+                  </h3>
+                  <p className="text-xs text-gray-400 sm:text-sm">
+                    {track.result.primary_artist.name}
+                  </p>
+                </div>
+                <Link
+                  className="group ml-auto flex items-center gap-1 rounded-full px-2 py-1 text-xs text-gray-600 ring-1 ring-gray-300"
+                  to={`/track/${track.result.id}`}
+                  prefetch="intent"
                 >
-                  <img
-                    className="h-12"
-                    src={track.result.song_art_image_thumbnail_url}
-                    alt={track.result.title}
-                  />
-                  <div className="flex flex-col items-start">
-                    <h3 className="text-semibold sm:text-md text-sm line-clamp-2">
-                      {track.result.title}
-                    </h3>
-                    <p className="text-xs text-gray-400 sm:text-sm">
-                      {track.result.primary_artist.name}
-                    </p>
-                  </div>
-                  <Link
-                    className="group ml-auto flex items-center gap-1 rounded-full px-2 py-1 text-xs text-gray-600 ring-1 ring-gray-300"
-                    to={`/track/${track.result.id}`}
-                    prefetch="intent"
-                  >
-                    Details
-                    <ArrowRightIcon className="h-3 transition-transform group-hover:translate-x-1" />
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-          {fetcher.data?.data.length < 10 ? null : (
-            <button
-              className="mt-4 self-center rounded-full bg-blue-600 px-3 py-1 font-semibold text-white hover:opacity-90 disabled:opacity-75"
-              onClick={handleLoadMore}
-            >
-              {fetcher.state === 'loading' || fetcher.state === 'submitting'
-                ? 'Loading..'
-                : 'Load More'}
-            </button>
-          )}
-        </div>
-      ) : (
-        <div className="mt-12 flex flex-col items-center">
-          <p className="text-lg font-bold">Whoops... No matching song found</p>
-          <p className="">Try another song</p>
-        </div>
+                  Details
+                  <ArrowRightIcon className="h-3 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </li>
+            );
+          })
+        ) : (
+          <div className="mt-12 flex flex-col items-center">
+            <p className="text-lg font-bold">
+              Whoops... No matching song found
+            </p>
+            <p className="">Try another song</p>
+          </div>
+        )}
+        {fetcher.type === 'normalLoad' ? (
+          <>
+            <TrackSkeleton />
+            <TrackSkeleton />
+            <TrackSkeleton />
+          </>
+        ) : null}
+      </ul>
+      {fetcher.data?.data.length < 10 ? null : (
+        <button
+          className="mt-4 self-center rounded-full bg-blue-600 px-3 py-1 font-semibold text-white hover:opacity-90 disabled:opacity-75"
+          onClick={handleLoadMore}
+        >
+          {fetcher.state === 'loading' || fetcher.state === 'submitting'
+            ? 'Loading..'
+            : 'Load More'}
+        </button>
       )}
-    </>
+    </div>
   );
 }
+
+const TrackSkeleton = () => {
+  return (
+    <div className="flex w-full animate-pulse items-center gap-4 py-2 leading-none">
+      <div className="aspect-square h-12 bg-gray-300" />
+      <div className="flex w-full flex-col items-start gap-1">
+        <div className="h-4 w-7/12 bg-gray-300" />
+        <div className="h-3 w-5/12 bg-gray-300" />
+      </div>
+    </div>
+  );
+};

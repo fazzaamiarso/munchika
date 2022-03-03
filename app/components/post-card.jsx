@@ -65,3 +65,47 @@ export const PostCard = ({
     </li>
   );
 };
+
+export const PostCardSkeleton = ({
+  displayUser = true,
+  displayTrack = true,
+}) => {
+  return (
+    <div className="max-w-lg animate-pulse space-y-4 self-stretch rounded-md bg-white p-4 shadow-md ring-1 ring-slate-300">
+      <div className="flex w-full items-center gap-2 ">
+        {displayUser ? (
+          <>
+            <div className="aspect-square h-8 rounded-full bg-gray-300" />
+            <div className="flex w-full flex-col items-start gap-1">
+              <div className="h-4 w-5/12 bg-gray-300 " />
+              <div className="h-2 w-3/12 bg-gray-300 " />
+            </div>
+          </>
+        ) : null}
+      </div>
+      {displayTrack ? (
+        <div className="mb-4 flex w-full items-center  gap-4 rounded-sm shadow-md ">
+          <div className="aspect-square h-16 bg-gray-300" />
+          <div className="w-full space-y-1 pr-4">
+            <div className="h-4 w-7/12 bg-gray-300 " />
+            <div className="h-2 w-5/12 bg-gray-300 " />
+          </div>
+        </div>
+      ) : null}
+      <section className="space-y-4 ">
+        <div className="space-y-1 overflow-hidden">
+          <div className="h-4  w-2/12 bg-gray-300" />
+          <div className="ml-4 h-2 w-full bg-gray-300" />
+          <div className="h-2 w-full bg-gray-300" />
+          <div className="h-2  w-full bg-gray-300" />
+        </div>
+        <div className="space-y-1 overflow-hidden">
+          <div className="h-4  w-2/12 bg-gray-300" />
+          <div className="ml-4 h-2 w-full bg-gray-300" />
+          <div className="h-2  w-full bg-gray-300" />
+          <div className="h-2  w-full bg-gray-300" />
+        </div>
+      </section>
+    </div>
+  );
+};
