@@ -31,6 +31,7 @@ export const loader = async ({ params, request }) => {
       artist: trackData.primary_artist.name,
       geniusUrl: trackData.url,
       thumbnail: trackData.song_art_image_thumbnail_url,
+      bgImage: trackData.song_art_image_url,
       release_date: trackData.release_date,
       id: trackData.id,
     },
@@ -44,30 +45,42 @@ export default function TrackDetails() {
 
   return (
     <section className="mx-auto ">
-      <div className="flex flex-col items-center gap-4 border-b-2 border-gray-200 p-8 ">
-        <img src={trackData.thumbnail} alt={trackData.title} className="h-40" />
-        <div className="flex flex-col items-center gap-2 leading-none">
-          <h2 className="text-center text-lg font-bold">{trackData.title}</h2>
-          <p className=" ">{trackData.artist}</p>
-          <p className="text-gray-500">
-            Release date : {trackData.release_date}
-          </p>
+      <div className="relative flex flex-col items-center border-b-2 border-gray-200 p-8 text-white md:gap-4">
+        <div className="absolute inset-0 h-full w-full overflow-hidden  ">
+          <img src={trackData.bgImage} className="h-full w-full object-cover" />
+          <div className="absolute inset-0 h-full w-full bg-black/60"></div>
         </div>
-        <div className="flex flex-col items-center gap-2 pt-4  text-xs leading-none sm:text-base">
+        <div className="relative z-10 flex flex-col items-center gap-4">
+          <img
+            src={trackData.thumbnail}
+            alt={trackData.title}
+            className="h-40 ring-2 ring-black/10 drop-shadow-md"
+          />
+          <div className="relative flex flex-col items-center gap-2 leading-none ">
+            <div className="absolute inset-0 -z-10 h-full w-full bg-black/20 blur-xl " />
+            <h2 className="text-center text-lg font-bold ">
+              {trackData.title}
+            </h2>
+            <p className="text-gray-200">{trackData.artist}</p>
+            <p className="">Release date : {trackData.release_date}</p>
+          </div>
+        </div>
+        <div className="relative z-10  flex flex-col items-center gap-2 pt-4  text-xs leading-none sm:text-base md:flex-row md:gap-4">
+          <div className="absolute inset-0 -z-10 h-full w-full bg-black/20 blur-xl " />
           <a
             href={trackData.geniusUrl}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-1 text-blue-500 hover:underline"
+            className="flex items-center gap-1 text-white underline hover:no-underline"
           >
             Check it out on Genius <ExternalLinkIcon className="h-4" />
           </a>
-          <span className=" font-semibold text-gray-400">OR</span>
+          <span className=" font-semibold ">OR</span>
           <div className="flex items-center gap-2 ">
             <span className="  ">Have thought for this song?</span>
             <Link
               to={`/post/new?trackId=${trackData.id}`}
-              className="flex items-center space-x-1 rounded-sm bg-blue-500  px-2 py-1 text-white "
+              className="flex items-center space-x-1 rounded-sm bg-blue-500  px-2 py-1 text-white hover:opacity-90"
             >
               Add thought
             </Link>
