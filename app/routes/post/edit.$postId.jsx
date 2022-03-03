@@ -30,7 +30,7 @@ export const loader = async ({ params, request }) => {
     postData,
     trackData: {
       title: trackData.title,
-      thumbnail: trackData.song_art_image_url,
+      thumbnail: trackData.song_art_image_thumbnail_url,
       artist: trackData.primary_artist.name,
       url: trackData.url,
     },

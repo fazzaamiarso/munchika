@@ -53,7 +53,7 @@ export default function SelectPost() {
                 >
                   <img
                     className="h-12"
-                    src={track.result.song_art_image_url}
+                    src={track.result.song_art_image_thumbnail_url}
                     alt={track.result.title}
                   />
                   <div className="flex flex-col items-start">

@@ -58,7 +58,7 @@ export default function NewPost() {
           <h1 className=" mb-6 text-xl font-semibold">Add your thought</h1>
           <div className="flex max-w-lg items-center  gap-4 rounded-md bg-white ring-1 ring-gray-400">
             <img
-              src={trackData.song_art_image_url}
+              src={trackData.song_art_image_thumbnail_url}
               alt={trackData.title}
               className="h-24"
             />
