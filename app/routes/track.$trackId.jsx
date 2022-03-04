@@ -1,11 +1,11 @@
-import { useLoaderData, Link } from 'remix';
+import { useLoaderData, Link, useNavigate } from 'remix';
 import { supabase } from '../../server/db.server';
 import { fetchFromGenius } from '../utils/geniusApi.server';
 import invariant from 'tiny-invariant';
 import { getUserId } from '../utils/session.server';
 import { PlusIcon } from '@heroicons/react/solid';
 import { EmojiSadIcon } from '@heroicons/react/outline';
-import { ExternalLinkIcon } from '@heroicons/react/solid';
+import { ExternalLinkIcon, ArrowLeftIcon } from '@heroicons/react/solid';
 import { PostCard } from '../components/post-card';
 
 export const loader = async ({ params, request }) => {
@@ -42,10 +42,17 @@ export const loader = async ({ params, request }) => {
 
 export default function TrackDetails() {
   const { trackData, trackPosts, userId } = useLoaderData();
+  const navigate = useNavigate();
 
   return (
     <section className="mx-auto ">
-      <div className="relative flex flex-col items-center border-b-2 border-gray-200 p-8 text-white md:gap-4">
+      <div className="relative flex  flex-col items-center border-b-2 border-gray-200 p-8 text-white md:gap-4">
+        <button
+          className="group absolute left-1/4 z-30 hidden rounded-full p-2 ring-1 ring-gray-300 sm:block"
+          onClick={() => navigate(-1)}
+        >
+          <ArrowLeftIcon className="h-4 transition-transform group-hover:-translate-x-1" />
+        </button>
         <div className="absolute inset-0 h-full w-full overflow-hidden  ">
           <img src={trackData.bgImage} className="h-full w-full object-cover" />
           <div className="absolute inset-0 h-full w-full bg-black/60"></div>
