@@ -1,7 +1,6 @@
 import {
   useLoaderData,
   json,
-  Form,
   useFetcher,
   useTransition,
   redirect,
@@ -111,16 +110,15 @@ export default function SearchPost() {
       ) : (
         <div className="mt-12 flex flex-col items-center gap-4">
           <p className="text-lg font-bold">Whoops... There is no post found</p>
-          <Form method="get">
-            <button
-              type="submit"
-              name="_action"
-              value="clear"
-              className="rounded-md bg-blue-500 px-4 py-2 text-white hover:opacity-90 disabled:opacity-75"
-            >
-              Clear
-            </button>
-          </Form>
+          <button
+            form="search"
+            type="submit"
+            name="_action"
+            value="clear"
+            className="rounded-md bg-blue-500 px-4 py-2 text-white hover:opacity-90 disabled:opacity-75"
+          >
+            Clear
+          </button>
         </div>
       )}
     </div>

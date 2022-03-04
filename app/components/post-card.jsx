@@ -1,5 +1,7 @@
-import { useNavigate } from 'remix';
+import { useFetcher, useNavigate } from 'remix';
 import { PostMenu } from './post-menu';
+import { useState } from 'react';
+import { Dialog } from '@headlessui/react';
 
 export const PostCard = ({
   postWithUser: post,
@@ -7,10 +9,20 @@ export const PostCard = ({
   displayUser = true,
   displayTrack = true,
 }) => {
+  const deleteFetcher = useFetcher();
   const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
+
   const isPostOwner = post.author_id === currentUserId;
 
   const handleToFeed = () => navigate(`/track/${post.track_id}`);
+  const handleDelete = e => {
+    setIsOpen(false);
+    deleteFetcher.submit(
+      { postId: e.target.value },
+      { action: '/user/posts', method: 'post' },
+    );
+  };
 
   return (
     <li className="max-w-lg space-y-4 self-stretch rounded-md bg-white p-4 shadow-md ring-1 ring-slate-300">
@@ -32,7 +44,7 @@ export const PostCard = ({
         ) : null}
         {isPostOwner ? (
           <div className="ml-auto ">
-            <PostMenu postId={post.id} />
+            <PostMenu postId={post.id} openDialog={() => setIsOpen(true)} />
           </div>
         ) : null}
       </div>
@@ -62,6 +74,28 @@ export const PostCard = ({
           <p className="text-justify indent-8 text-gray-700">{post.thought}</p>
         </div>
       </section>
+      {isOpen ? (
+        <Dialog
+          className="fixed inset-0 z-20 "
+          open={isOpen}
+          onClose={() => setIsOpen(false)}
+        >
+          <div className="h-screen w-screen">
+            <Dialog.Overlay className="fixed inset-0 bg-gray-400/25" />
+            <div className="fixed top-1/2 left-1/2 z-30 -translate-x-1/2 -translate-y-1/2 bg-white">
+              <Dialog.Title>Delete post</Dialog.Title>
+
+              <button
+                className="bg-red-500 px-3 py-1 text-white"
+                value={post.id}
+                onClick={handleDelete}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </Dialog>
+      ) : null}
     </li>
   );
 };

@@ -1,6 +1,7 @@
 import { Outlet, Form, useLocation, Link, useTransition } from 'remix';
 import { useEffect, useRef } from 'react';
 import { RefreshIcon } from '@heroicons/react/outline';
+import { Listbox } from '@headlessui/react';
 
 export function meta() {
   return {
@@ -8,6 +9,19 @@ export function meta() {
     description: 'Search for song or post keyword to find what you looking for',
   };
 }
+
+const navigation = [
+  {
+    name: 'Post',
+    to: '.',
+    resetDestination: '/search',
+  },
+  {
+    name: 'Song',
+    to: 'track',
+    resetDestination: '/search/track',
+  },
+];
 
 export default function SearchLayout() {
   const location = useLocation();
@@ -27,6 +41,7 @@ export default function SearchLayout() {
     <>
       <div className="mx-auto flex w-10/12 max-w-lg flex-col items-center gap-4 py-8">
         <Form
+          id="search"
           method="get"
           action={location.pathname}
           className="flex w-full items-center gap-4"
@@ -70,32 +85,36 @@ export default function SearchLayout() {
             />
           </button>
         </Form>
-        <ul className="mt-2 flex gap-4">
-          <li>
-            <Link
-              to="."
-              className={`rounded-md font-semibold leading-none ${
-                location.pathname === '/search'
-                  ? 'bg-white px-3  py-1 text-blue-500 shadow-md  ring-1 ring-gray-300'
-                  : ' text-gray-400 '
-              }`}
-            >
-              Post
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="track"
-              className={`rounded-md font-semibold leading-none ${
-                location.pathname === '/search/track'
-                  ? 'bg-white px-3  py-1 text-blue-500 shadow-md  ring-1 ring-gray-300'
-                  : ' text-gray-400 '
-              }`}
-            >
-              Song
-            </Link>
-          </li>
-        </ul>
+        <div className="flex w-full justify-between">
+          <ul className="mt-2 flex gap-4">
+            {navigation.map(item => {
+              return (
+                <li key={item.name}>
+                  <Link
+                    to={item.to}
+                    className={`rounded-md font-semibold leading-none ${
+                      location.pathname === item.resetDestination
+                        ? 'bg-white px-3  py-1 text-blue-500 shadow-md  ring-1 ring-gray-300'
+                        : ' text-gray-400 '
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+          <Listbox>
+            <div className="relative">
+              <Listbox.Button className="w-max rounded-md bg-blue-500 px-4 py-1 text-white">
+                Sorter
+              </Listbox.Button>
+              <Listbox.Options className="absolute z-10 bg-white shadow-md">
+                <Listbox.Option>Date asc</Listbox.Option>
+              </Listbox.Options>
+            </div>
+          </Listbox>
+        </div>
       </div>
       <main className="mx-auto w-5/6 max-w-xl">
         <Outlet />
