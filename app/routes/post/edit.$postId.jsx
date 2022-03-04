@@ -77,7 +77,7 @@ export default function EditPost() {
     transition.type === 'actionRedirect' || transition.state === 'submitting';
 
   return (
-    <div className="mx-auto mt-4 flex w-10/12 flex-col py-8">
+    <div className="mx-auto mt-4 flex w-10/12 max-w-2xl flex-col py-8">
       <section className="space-y-4">
         <div className="mb-8  ">
           <h1 className="text-xl font-semibold">Editing Post</h1>
