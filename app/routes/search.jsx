@@ -15,6 +15,7 @@ export default function SearchLayout() {
   const transition = useTransition();
 
   useEffect(() => {
+    console.log(transition.type);
     if (transition.type === 'loaderSubmissionRedirect')
       searchRef.current.value = '';
   }, [transition]);
