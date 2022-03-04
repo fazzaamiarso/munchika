@@ -84,7 +84,7 @@ export default function SearchPost() {
     );
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center">
+    <div className="flex min-h-screen w-full flex-col items-center gap-4">
       {postList.length ? (
         <>
           <ul className=" space-y-8">
@@ -98,9 +98,10 @@ export default function SearchPost() {
               );
             })}
           </ul>
-          {fetcher.data?.data.length < 10 || data.length < 10 ? null : (
+          {data.length < 10 && initial ? null : fetcher.data?.data.length <
+              10 && !initial ? null : (
             <button
-              className="mt-4 rounded-full bg-blue-600 px-3 py-1 font-semibold text-white"
+              className="rounded-full px-3 py-1 text-blue-500  ring-1 ring-blue-500  "
               onClick={handleLoadMore}
             >
               {fetcher.state === 'loading' || fetcher.state === 'submitting'

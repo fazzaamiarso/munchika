@@ -23,6 +23,7 @@ export const PasswordField = ({ fieldData }) => {
           }`}
         />
         <button
+          type="button"
           onClick={toggleShow}
           className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:opacity-70"
         >

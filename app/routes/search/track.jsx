@@ -78,13 +78,13 @@ export default function SearchTrack() {
       </div>
     );
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-4">
       <ul className=" min-h-screen divide-y divide-gray-200 ">
         {trackList?.length ? (
           trackList.map(track => {
             return (
               <li
-                key={track.result.id}
+                key={`${track.result.id}${Math.random() * 100}`}
                 className="flex w-full items-center gap-4 py-2 leading-none"
               >
                 <img
@@ -105,7 +105,10 @@ export default function SearchTrack() {
                   to={`/track/${track.result.id}`}
                   prefetch="intent"
                 >
-                  Details
+                  {transition.state === 'loading' &&
+                  transition.location.pathname === `/track/${track.result.id}`
+                    ? 'Loading..'
+                    : 'Details'}
                   <ArrowRightIcon className="h-3 transition-transform group-hover:translate-x-1" />
                 </Link>
               </li>
@@ -127,9 +130,9 @@ export default function SearchTrack() {
           </>
         ) : null}
       </ul>
-      {fetcher.data?.data.length < 10 ? null : (
+      {fetcher.data?.data.length < 10 && !initial ? null : (
         <button
-          className="mt-4 self-center rounded-full bg-blue-600 px-3 py-1 font-semibold text-white hover:opacity-90 disabled:opacity-75"
+          className="self-center rounded-full  px-3  py-1 text-blue-500 ring-2 ring-blue-500 transition-colors  hover:bg-blue-500 hover:text-white disabled:opacity-75"
           onClick={handleLoadMore}
         >
           {fetcher.state === 'loading' || fetcher.state === 'submitting'
