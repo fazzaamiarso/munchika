@@ -37,7 +37,7 @@ export default function UserPost() {
   const { postsData } = useLoaderData();
 
   return (
-    <main className="mt-6 flex w-full flex-col items-center">
+    <main className="mt-6 flex min-h-screen w-full flex-col items-center">
       {postsData.length ? (
         <ul className=" space-y-4 px-4">
           {postsData.map(post => {

@@ -1,4 +1,4 @@
-import { useLoaderData, Link, useNavigate } from 'remix';
+import { useLoaderData, Link, useNavigate, json } from 'remix';
 import { supabase } from '../../server/db.server';
 import { fetchFromGenius } from '../utils/geniusApi.server';
 import invariant from 'tiny-invariant';
@@ -25,7 +25,7 @@ export const loader = async ({ params, request }) => {
     .eq('track_id', params.trackId)
     .limit(5);
 
-  return {
+  return json({
     trackData: {
       title: trackData.title,
       artist: trackData.primary_artist.name,
@@ -37,7 +37,7 @@ export const loader = async ({ params, request }) => {
     },
     trackPosts,
     userId,
-  };
+  });
 };
 
 export default function TrackDetails() {
