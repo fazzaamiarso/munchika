@@ -10,6 +10,7 @@ import { supabase } from '../../../server/db.server';
 import { getUserId } from '~/utils/session.server';
 import { PostCard, PostCardSkeleton } from '../../components/post-card';
 import { useEffect, useState } from 'react';
+import { Listbox } from '@headlessui/react';
 
 export const loader = async ({ request }) => {
   const userId = await getUserId(request);
@@ -45,6 +46,21 @@ export const loader = async ({ request }) => {
   });
 };
 
+const SORTER = [
+  {
+    name: 'None',
+    value: 'DEFAULT',
+  },
+  {
+    name: 'Recent',
+    value: 'CREATED_ASC',
+  },
+  {
+    name: 'Oldest',
+    value: 'CREATED_DESC',
+  },
+];
+
 export default function SearchPost() {
   const { data, userId } = useLoaderData();
   const fetcher = useFetcher();
@@ -52,6 +68,16 @@ export default function SearchPost() {
   const [currPage, setCurrentPage] = useState(1);
   const [postList, setPostList] = useState(data);
   const [initial, setInitial] = useState(true);
+  const [sortValue, setSortValue] = useState(SORTER[0]);
+
+  const sortedData =
+    sortValue.value === 'DEFAULT'
+      ? postList
+      : sortValue.value === 'CREATED_DESC'
+      ? [...postList].sort(
+          (a, b) => Date.parse(a.created_at) - Date.parse(b.created_at),
+        )
+      : postList;
 
   const handleLoadMore = () => {
     fetcher.load(`/search?currPage=${currPage}`);
@@ -82,10 +108,26 @@ export default function SearchPost() {
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center gap-4">
+      <Listbox value={sortValue} onChange={setSortValue}>
+        <div className="relative">
+          <Listbox.Button className="w-max rounded-md bg-blue-500 px-4 py-1 text-white">
+            {sortValue.value === 'DEFAULT' ? 'Sort' : sortValue.name}
+          </Listbox.Button>
+          <Listbox.Options className="absolute z-10 cursor-default bg-white shadow-md">
+            {SORTER.map((item, idx) => {
+              return (
+                <Listbox.Option key={idx} value={item}>
+                  {item.name}
+                </Listbox.Option>
+              );
+            })}
+          </Listbox.Options>
+        </div>
+      </Listbox>
       {postList.length ? (
         <>
           <ul className=" space-y-8">
-            {postList.map(post => {
+            {sortedData.map(post => {
               return (
                 <PostCard
                   key={post.id}

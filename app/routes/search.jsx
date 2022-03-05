@@ -1,7 +1,6 @@
 import { Outlet, Form, useLocation, Link, useTransition } from 'remix';
 import { useEffect, useRef } from 'react';
 import { RefreshIcon } from '@heroicons/react/outline';
-import { Listbox } from '@headlessui/react';
 
 export function meta() {
   return {
@@ -29,7 +28,6 @@ export default function SearchLayout() {
   const transition = useTransition();
 
   useEffect(() => {
-    console.log(transition.type);
     if (transition.type === 'loaderSubmissionRedirect')
       searchRef.current.value = '';
   }, [transition]);
@@ -104,16 +102,6 @@ export default function SearchLayout() {
               );
             })}
           </ul>
-          <Listbox>
-            <div className="relative">
-              <Listbox.Button className="w-max rounded-md bg-blue-500 px-4 py-1 text-white">
-                Sorter
-              </Listbox.Button>
-              <Listbox.Options className="absolute z-10 bg-white shadow-md">
-                <Listbox.Option>Date asc</Listbox.Option>
-              </Listbox.Options>
-            </div>
-          </Listbox>
         </div>
       </div>
       <main className="mx-auto w-5/6 max-w-xl">
