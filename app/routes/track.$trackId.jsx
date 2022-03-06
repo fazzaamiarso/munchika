@@ -1,5 +1,5 @@
 import { useLoaderData, Link, useNavigate, json } from 'remix';
-import { supabase } from '../../server/db.server';
+import { supabase } from '../utils/supabase.server';
 import { fetchFromGenius } from '../utils/geniusApi.server';
 import invariant from 'tiny-invariant';
 import { getUserId } from '../utils/session.server';

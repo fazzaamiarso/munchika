@@ -1,5 +1,5 @@
 import { Link, useLoaderData } from 'remix';
-import { supabase } from '../../server/db.server';
+import { supabase } from '../utils/supabase.server';
 import { getPostWithTrack } from '../utils/geniusApi.server';
 import { PostCard } from '../components/post-card';
 

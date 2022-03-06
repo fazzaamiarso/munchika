@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { redirect, useFetcher, useSearchParams, useTransition } from 'remix';
-import { supabase } from '../../server/db.server';
 import { createUserSession, getUserId } from '../utils/session.server';
-import { validateUsername } from '../utils/supabase.server';
+import { validateUsername, supabase } from '../utils/supabase.server';
 import {
   validateEmail,
   validatePassword,

@@ -8,7 +8,7 @@ import {
   useActionData,
 } from 'remix';
 import invariant from 'tiny-invariant';
-import { supabase } from '../../../server/db.server';
+import { supabase } from '../../utils/supabase.server';
 import { fetchFromGenius } from '../../utils/geniusApi.server';
 import { requireUserId } from '../../utils/session.server';
 import { validateThought, validateLyrics } from '../../utils/formUtils';

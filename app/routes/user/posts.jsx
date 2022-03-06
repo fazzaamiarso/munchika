@@ -1,7 +1,7 @@
 import { Link, useLoaderData } from 'remix';
 import { getUserId } from '../../utils/session.server';
 import { getPostWithTrack } from '../../utils/geniusApi.server';
-import { supabase } from '../../../server/db.server';
+import { supabase } from '../../utils/supabase.server';
 import { AnnotationIcon, PlusIcon } from '@heroicons/react/outline';
 import { PostCard } from '../../components/post-card';
 

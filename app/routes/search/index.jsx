@@ -6,7 +6,7 @@ import {
   redirect,
 } from 'remix';
 import { getPostWithTrack } from '../../utils/geniusApi.server';
-import { supabase } from '../../../server/db.server';
+import { supabase } from '../../utils/supabase.server';
 import { getUserId } from '~/utils/session.server';
 import { PostCard, PostCardSkeleton } from '../../components/post-card';
 import { useEffect, useState } from 'react';

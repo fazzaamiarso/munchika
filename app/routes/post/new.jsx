@@ -1,6 +1,6 @@
 import { useNavigate, redirect, json, useLoaderData, useFetcher } from 'remix';
 import { getUserId, requireUserId } from '~/utils/session.server';
-import { supabase } from '../../../server/db.server';
+import { supabase } from '../../utils/supabase.server';
 import { fetchFromGenius } from '../../utils/geniusApi.server';
 import { validateThought, validateLyrics } from '../../utils/formUtils';
 import { ExternalLinkIcon } from '@heroicons/react/outline';
