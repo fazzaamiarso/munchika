@@ -4,12 +4,11 @@ import { getPostWithTrack } from '../utils/geniusApi.server';
 import { PostCard } from '../components/post-card';
 
 export const loader = async () => {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('post')
-    .select('*, user (username, avatar_url)')
+    .select('*, user!post_author_id_fkey (username, avatar_url)')
     .limit(7)
     .order('created_at', { ascending: false });
-
   const trackDatas = await getPostWithTrack(data);
   return { trackDatas };
 };

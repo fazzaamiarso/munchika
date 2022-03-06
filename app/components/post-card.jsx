@@ -2,7 +2,7 @@ import { useFetcher, useNavigate } from 'remix';
 import { PostMenu } from './post-menu';
 import { useState, useRef } from 'react';
 import { Dialog } from '@headlessui/react';
-import { ExclamationIcon } from '@heroicons/react/outline';
+import { ExclamationIcon, HeartIcon } from '@heroicons/react/outline';
 
 export const PostCard = ({
   postWithUser: post,
@@ -10,7 +10,7 @@ export const PostCard = ({
   displayUser = true,
   displayTrack = true,
 }) => {
-  const deleteFetcher = useFetcher();
+  const fetcher = useFetcher();
   const navigate = useNavigate();
   const cancelRef = useRef();
   const [isOpen, setIsOpen] = useState(false);
@@ -20,8 +20,8 @@ export const PostCard = ({
   const handleToFeed = () => navigate(`/track/${post.track_id}`);
   const handleDelete = e => {
     setIsOpen(false);
-    deleteFetcher.submit(
-      { postId: e.target.value },
+    fetcher.submit(
+      { postId: e.target.value, action: 'delete' },
       { action: '/user/posts', method: 'post' },
     );
   };
@@ -72,10 +72,27 @@ export const PostCard = ({
           </div>
         )}
         <div>
-          <h4 className=" font-semibold">Thought</h4>
+          <h4 className="font-semibold">Thought</h4>
           <p className="text-justify indent-8 text-gray-700">{post.thought}</p>
         </div>
       </section>
+      <fetcher.Form
+        action="/user/posts"
+        method="post"
+        className="flex items-center gap-2"
+      >
+        <input type="text" name="postId" defaultValue={post.id} hidden />
+        <button
+          type="submit"
+          name="action"
+          value="reaction"
+          disabled={!currentUserId}
+        >
+          <HeartIcon className="h-4" />
+        </button>
+        <span className="text-gray-400">{post.reactions ?? 0}</span>
+      </fetcher.Form>
+
       <Dialog
         className="fixed inset-0 z-20 "
         open={isOpen}

@@ -6,7 +6,7 @@ import {
   redirect,
 } from 'remix';
 import { getPostWithTrack } from '../../utils/geniusApi.server';
-import { supabase } from '../../utils/supabase.server';
+import { countReaction, supabase } from '../../utils/supabase.server';
 import { getUserId } from '~/utils/session.server';
 import { PostCard, PostCardSkeleton } from '../../components/post-card';
 import { useEffect, useState } from 'react';
@@ -26,12 +26,13 @@ export const loader = async ({ request }) => {
   if (searchTerm === null) {
     const { data } = await supabase
       .from('post')
-      .select('*, user (username, avatar_url)')
+      .select('*, user!post_author_id_fkey (username, avatar_url)')
       .order('created_at', { ascending: false })
       .range(currPage * 10, (currPage + 1) * 10 - 1);
 
+    const countedPosts = await countReaction(data);
     return json({
-      data: await getPostWithTrack(data),
+      data: await getPostWithTrack(countedPosts),
       userId,
     });
   }
@@ -40,8 +41,10 @@ export const loader = async ({ request }) => {
     .select('*, user (username, avatar_url)')
     .textSearch('fts', searchTerm, { type: 'plain' });
 
+  const countedPosts = await countReaction(fullTextData);
+
   return json({
-    data: await getPostWithTrack(fullTextData),
+    data: await getPostWithTrack(countedPosts),
     userId,
   });
 };

@@ -1,7 +1,7 @@
 import { Link, useLoaderData } from 'remix';
 import { getUserId } from '../../utils/session.server';
 import { getPostWithTrack } from '../../utils/geniusApi.server';
-import { supabase } from '../../utils/supabase.server';
+import { countReaction, supabase } from '../../utils/supabase.server';
 import { AnnotationIcon, PlusIcon } from '@heroicons/react/outline';
 import { PostCard } from '../../components/post-card';
 
@@ -17,18 +17,41 @@ export const loader = async ({ request }) => {
 
   const { data: userPosts } = await supabase
     .from('post')
-    .select('*, user (username, avatar_url)')
+    .select('*, user!post_author_id_fkey (username, avatar_url)')
     .eq('author_id', userId);
 
-  const postsData = await getPostWithTrack(userPosts);
+  const countedPosts = await countReaction(userPosts);
+  const postsData = await getPostWithTrack(countedPosts);
   return { postsData };
 };
 
 export const action = async ({ request }) => {
   const userId = await getUserId(request);
   const formData = await request.formData();
+  const actionType = formData.get('action');
   const postId = formData.get('postId');
-  await supabase.from('post').delete().match({ id: postId, author_id: userId });
+
+  if (actionType === 'delete')
+    await supabase
+      .from('post')
+      .delete()
+      .match({ id: postId, author_id: userId });
+  if (actionType === 'reaction') {
+    const { data: haveLiked } = await supabase
+      .from('post_reaction')
+      .select('*')
+      .eq('sender_id', userId)
+      .maybeSingle();
+    if (haveLiked)
+      return await supabase
+        .from('post_reaction')
+        .delete()
+        .match({ sender_id: userId, post_id: postId });
+
+    await supabase
+      .from('post_reaction')
+      .insert([{ post_id: postId, sender_id: userId }]);
+  }
 
   return null;
 };

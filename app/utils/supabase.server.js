@@ -32,3 +32,14 @@ export const validateUsername = async username => {
   const isUsernameExist = userFound !== null;
   if (isUsernameExist) return 'Username already exist';
 };
+
+export const countReaction = posts => {
+  const counted = posts.map(async post => {
+    const { count } = await supabase
+      .from('post_reaction')
+      .select('*', { count: 'exact' })
+      .match({ post_id: post.id });
+    return { ...post, reactions: count };
+  });
+  return Promise.all(counted);
+};
