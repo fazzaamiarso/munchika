@@ -2,7 +2,8 @@ import { redirect } from 'remix';
 import { supabase } from '../utils/supabase.server';
 import { destroyUserSession, getAccessToken } from '../utils/session.server';
 
-export const loader = async () => {
+export const loader = async ({ request }) => {
+  console.log(request);
   return redirect('/');
 };
 
@@ -11,7 +12,3 @@ export const action = async ({ request }) => {
   await supabase.auth.api.signOut(token);
   return await destroyUserSession(request);
 };
-
-export default function Bug() {
-  return null;
-}

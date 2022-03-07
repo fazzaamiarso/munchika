@@ -24,21 +24,25 @@ export const loader = async ({ request }) => {
   if (actionType === 'clear') return redirect('/search');
 
   if (searchTerm === null) {
-    const { data } = await supabase
-      .from('post')
-      .select('*, user!post_author_id_fkey (username, avatar_url)')
-      .order('created_at', { ascending: false })
-      .range(currPage * 10, (currPage + 1) * 10 - 1);
+    try {
+      const { data } = await supabase
+        .from('post')
+        .select('*, user!post_author_id_fkey (username, avatar_url)')
+        .order('created_at', { ascending: false })
+        .range(currPage * 10, (currPage + 1) * 10 - 1);
 
-    const countedPosts = await checkReaction(data, userId);
-    return json({
-      data: await getPostWithTrack(countedPosts),
-      userId,
-    });
+      const countedPosts = await checkReaction(data, userId);
+      return json({
+        data: await getPostWithTrack(countedPosts),
+        userId,
+      });
+    } catch (err) {
+      return json({ message: err.message }, { status: 500 });
+    }
   }
   const { data: fullTextData } = await supabase
     .from('post')
-    .select('*, user (username, avatar_url)')
+    .select('*, user!post_author_id_fkey (username, avatar_url)')
     .textSearch('fts', searchTerm, { type: 'plain' });
 
   const countedPosts = await checkReaction(fullTextData, userId);
@@ -104,6 +108,7 @@ export default function SearchPost() {
   )
     return (
       <div className="space-y-4">
+        <PostCardSkeleton />
         <PostCardSkeleton />
         <PostCardSkeleton />
       </div>
