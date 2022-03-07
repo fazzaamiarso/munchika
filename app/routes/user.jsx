@@ -1,5 +1,5 @@
 import { Outlet, useLoaderData } from 'remix';
-import { supabase } from '../../server/db.server';
+import { supabase } from '../utils/supabase.server';
 import { requireUserId } from '../utils/session.server';
 
 export const loader = async ({ request }) => {

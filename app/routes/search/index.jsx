@@ -1,87 +1,68 @@
 import {
   useLoaderData,
   json,
-  Link,
   useFetcher,
   useTransition,
   redirect,
 } from 'remix';
-import {
-  fetchFromGenius,
-  removeTranslation,
-} from '../../utils/geniusApi.server';
-import { supabase } from '../../../server/db.server';
+import { getPostWithTrack } from '../../utils/geniusApi.server';
+import { checkReaction, supabase } from '../../utils/supabase.server';
 import { getUserId } from '~/utils/session.server';
-import { PostCard } from '../../components/post-card';
+import { PostCard, PostCardSkeleton } from '../../components/post-card';
 import { useEffect, useState } from 'react';
-
-const toTextSearchFormat = query => {
-  const formatted = query.trim().split(' ');
-  return formatted.join('|');
-};
+import { Listbox } from '@headlessui/react';
 
 export const loader = async ({ request }) => {
   const userId = await getUserId(request);
-  const newUrl = new URL(request.url);
-  const searchTerm = newUrl.searchParams.get('term') ?? null;
-  const currPage = newUrl.searchParams.get('currPage')
-    ? parseInt(newUrl.searchParams.get('currPage'))
+  const { searchParams } = new URL(request.url);
+  const searchTerm = searchParams.get('term') ?? null;
+  const currPage = searchParams.get('currPage')
+    ? parseInt(searchParams.get('currPage'))
     : 0;
-  const actionType = newUrl.searchParams.get('_action');
+  const actionType = searchParams.get('_action');
 
   if (actionType === 'clear') return redirect('/search');
 
   if (searchTerm === null) {
     const { data } = await supabase
       .from('post')
-      .select('*, user (username, avatar_url)')
+      .select('*, user!post_author_id_fkey (username, avatar_url)')
       .order('created_at', { ascending: false })
       .range(currPage * 10, (currPage + 1) * 10 - 1);
 
-    const tracks = data.map(async post => {
-      const response = await fetchFromGenius(`songs/${post.track_id}`);
-      const track = response.song;
-      return {
-        ...post,
-        created_at: post.created_at,
-        username: post.user.username,
-        avatar: post.user.avatar_url,
-        title: removeTranslation(track.title),
-        artist: track.primary_artist.name,
-        thumbnail: track.song_art_image_thumbnail_url,
-      };
-    });
-    const trackDatas = await Promise.all(tracks);
+    const countedPosts = await checkReaction(data, userId);
     return json({
-      data: trackDatas,
+      data: await getPostWithTrack(countedPosts),
       userId,
     });
   }
-  const ftsText = toTextSearchFormat(searchTerm) ?? null;
   const { data: fullTextData } = await supabase
     .from('post')
     .select('*, user (username, avatar_url)')
-    .textSearch('thought', ftsText);
+    .textSearch('fts', searchTerm, { type: 'plain' });
 
-  const tracks = fullTextData.map(async post => {
-    const response = await fetchFromGenius(`songs/${post.track_id}`);
-    const track = response.song;
-    return {
-      ...post,
-      created_at: post.created_at,
-      username: post.user.username,
-      avatar: post.user.avatar_url,
-      title: removeTranslation(track.title),
-      artist: track.primary_artist.name,
-      thumbnail: track.song_art_image_thumbnail_url,
-    };
-  });
-  const trackDatas = await Promise.all(tracks);
+  const countedPosts = await checkReaction(fullTextData, userId);
+
   return json({
-    data: trackDatas,
+    data: await getPostWithTrack(countedPosts),
     userId,
   });
 };
+
+const SORTER = [
+  {
+    name: 'None',
+    value: 'DEFAULT',
+  },
+  {
+    name: 'Recent',
+    value: 'CREATED_ASC',
+  },
+  {
+    name: 'Oldest',
+    value: 'CREATED_DESC',
+  },
+];
 
 export default function SearchPost() {
   const { data, userId } = useLoaderData();
@@ -90,32 +71,66 @@ export default function SearchPost() {
   const [currPage, setCurrentPage] = useState(1);
   const [postList, setPostList] = useState(data);
   const [initial, setInitial] = useState(true);
+  const [sortValue, setSortValue] = useState(SORTER[0]);
+
+  const sortedData =
+    sortValue.value === 'DEFAULT'
+      ? postList
+      : sortValue.value === 'CREATED_DESC'
+      ? [...postList].sort(
+          (a, b) => Date.parse(a.created_at) - Date.parse(b.created_at),
+        )
+      : postList;
 
   const handleLoadMore = () => {
     fetcher.load(`/search?currPage=${currPage}`);
     setInitial(false);
-
     setCurrentPage(prevPage => prevPage + 1);
   };
 
   useEffect(() => {
     if (transition.type === 'loaderSubmission') return setInitial(true);
-
     if (fetcher.type === 'done' && !initial) {
-      setPostList(prev => [...prev, ...fetcher.data.data]);
-      return;
+      return setPostList(prev => [...prev, ...fetcher.data.data]);
     }
     if (transition.type === 'idle' && initial) {
-      setPostList(data);
-      return;
+      return setPostList(data);
     }
-  }, [fetcher, transition, data]);
+  }, [fetcher, transition, data, initial]);
+
+  if (
+    transition.type === 'loaderSubmission' ||
+    transition.type === 'loaderSubmissionRedirect'
+  )
+    return (
+      <div className="space-y-4">
+        <PostCardSkeleton />
+        <PostCardSkeleton />
+      </div>
+    );
+
   return (
-    <div className="flex min-h-screen w-full flex-col items-center">
+    <div className="flex min-h-screen w-full flex-col items-center gap-4">
+      <Listbox value={sortValue} onChange={setSortValue}>
+        <div className="relative">
+          <Listbox.Button className="w-max rounded-md bg-blue-500 px-4 py-1 text-white">
+            {sortValue.value === 'DEFAULT' ? 'Sort' : sortValue.name}
+          </Listbox.Button>
+          <Listbox.Options className="absolute z-10 cursor-default bg-white shadow-md">
+            {SORTER.map((item, idx) => {
+              return (
+                <Listbox.Option key={idx} value={item}>
+                  {item.name}
+                </Listbox.Option>
+              );
+            })}
+          </Listbox.Options>
+        </div>
+      </Listbox>
       {postList.length ? (
         <>
           <ul className=" space-y-8">
-            {postList.map(post => {
+            {sortedData.map(post => {
               return (
                 <PostCard
                   key={post.id}
@@ -125,9 +140,10 @@ export default function SearchPost() {
               );
             })}
           </ul>
-          {fetcher.data?.data.length < 10 || data.length < 10 ? null : (
+          {data.length < 10 && initial ? null : fetcher.data?.data.length <
+              10 && !initial ? null : (
             <button
-              className="mt-4 rounded-full bg-blue-600 px-3 py-1 font-semibold text-white"
+              className="rounded-full px-3 py-1 text-blue-500  ring-1 ring-blue-500  "
               onClick={handleLoadMore}
             >
               {fetcher.state === 'loading' || fetcher.state === 'submitting'
@@ -139,12 +155,15 @@ export default function SearchPost() {
       ) : (
         <div className="mt-12 flex flex-col items-center gap-4">
           <p className="text-lg font-bold">Whoops... There is no post found</p>
-          <Link
-            to={'/search'}
+          <button
+            form="search"
+            type="submit"
+            name="_action"
+            value="clear"
             className="rounded-md bg-blue-500 px-4 py-2 text-white hover:opacity-90 disabled:opacity-75"
           >
             Clear
-          </Link>
+          </button>
         </div>
       )}
     </div>

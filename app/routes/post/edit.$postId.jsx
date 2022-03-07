@@ -8,7 +8,7 @@ import {
   useActionData,
 } from 'remix';
 import invariant from 'tiny-invariant';
-import { supabase } from '../../../server/db.server';
+import { supabase } from '../../utils/supabase.server';
 import { fetchFromGenius } from '../../utils/geniusApi.server';
 import { requireUserId } from '../../utils/session.server';
 import { validateThought, validateLyrics } from '../../utils/formUtils';
@@ -30,7 +30,7 @@ export const loader = async ({ params, request }) => {
     postData,
     trackData: {
       title: trackData.title,
-      thumbnail: trackData.song_art_image_url,
+      thumbnail: trackData.song_art_image_thumbnail_url,
       artist: trackData.primary_artist.name,
       url: trackData.url,
     },
@@ -74,10 +74,10 @@ export default function EditPost() {
   const transition = useTransition();
 
   const isSaving =
-    transition.state === 'loading' || transition.state === 'submitting';
+    transition.type === 'actionRedirect' || transition.state === 'submitting';
 
   return (
-    <div className="mx-auto mt-4 flex w-10/12 flex-col py-8">
+    <div className="mx-auto mt-4 flex w-10/12 max-w-2xl flex-col py-8">
       <section className="space-y-4">
         <div className="mb-8  ">
           <h1 className="text-xl font-semibold">Editing Post</h1>

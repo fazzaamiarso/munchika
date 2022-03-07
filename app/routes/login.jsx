@@ -1,19 +1,14 @@
 import { useState } from 'react';
-import {
-  json,
-  redirect,
-  useFetcher,
-  useSearchParams,
-  useTransition,
-} from 'remix';
-import { supabase } from '../../server/db.server';
+import { redirect, useFetcher, useSearchParams, useTransition } from 'remix';
 import { createUserSession, getUserId } from '../utils/session.server';
-import { validateUsername } from '../utils/supabase.server';
+import { validateUsername, supabase } from '../utils/supabase.server';
 import {
   validateEmail,
   validatePassword,
   haveErrors,
+  badRequest,
 } from '../utils/formUtils';
+import { PasswordField } from '../components/form/password-field';
 
 export const loader = async ({ request }) => {
   const userId = await getUserId(request);
@@ -28,15 +23,13 @@ export const action = async ({ request }) => {
   const authType = formData.get('authType');
   const username = formData.get('username') ?? null;
   const redirectTo = formData.get('redirectTo') ?? '/';
-
   const fields = { email, password, username };
   const fieldErrors = {
     username: await validateUsername(username),
     password: validatePassword(password),
     email: validateEmail(email),
   };
-  if (haveErrors(fieldErrors))
-    return json({ fieldErrors, fields }, { status: 400 });
+  if (haveErrors(fieldErrors)) return badRequest({ fieldErrors, fields });
 
   if (authType === 'signup') {
     const { user, error, session } = await supabase.auth.signUp({
@@ -45,7 +38,7 @@ export const action = async ({ request }) => {
     });
     if (error) {
       fieldErrors.email = error.message;
-      return json({ fields, fieldErrors }, { status: 400 });
+      return badRequest({ fields, fieldErrors });
     }
 
     await supabase.from('user').insert([
@@ -66,7 +59,7 @@ export const action = async ({ request }) => {
     if (error) {
       fieldErrors.email = error.message;
       fieldErrors.password = error.message;
-      return json({ fields, fieldErrors }, { status: 400 });
+      return badRequest({ fields, fieldErrors });
     }
     return await createUserSession(user.id, redirectTo, session.access_token);
   }
@@ -79,14 +72,14 @@ export default function Login() {
   const transition = useTransition();
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center bg-white">
-      <div className="flex w-11/12 max-w-lg flex-col items-center gap-6">
+    <div className="flex h-screen w-screen items-center justify-center ">
+      <div className="flex w-11/12 max-w-lg flex-col items-center gap-6 ">
         <h1 className="text-2xl font-bold">
           {formType === 'login' ? 'Login' : 'Signup'}
         </h1>
         <fetcher.Form
           method="post"
-          className="flex w-10/12 flex-col gap-6 rounded-md py-4 px-6 shadow-md ring-1 ring-gray-300"
+          className="flex w-10/12 flex-col gap-6 rounded-md bg-white py-4 px-6 shadow-md ring-2 ring-gray-500/10"
         >
           <input
             type="text"
@@ -149,6 +142,7 @@ export default function Login() {
               type="email"
               placeholder="email@example.com"
               required
+              autoComplete="off"
               defaultValue={
                 fetcher.data?.fields ? fetcher.data.fields.email : ''
               }
@@ -162,23 +156,8 @@ export default function Login() {
               </span>
             ) : null}
           </div>
-          <div className="flex flex-col">
-            <label htmlFor="password" className="font-semibold">
-              Password
-            </label>
-            <input
-              name="password"
-              id="password"
-              type="password"
-              placeholder="password"
-              required
-              defaultValue={
-                fetcher.data?.fields ? fetcher.data.fields.password : ''
-              }
-              className={`w-full rounded-md ${
-                fetcher.data?.fieldErrors?.password ? 'border-red-400' : ''
-              }`}
-            />
+          <div className=" flex flex-col">
+            <PasswordField fieldData={fetcher.data} />
             {fetcher.data?.fieldErrors ? (
               <span className="text-sm text-red-500">
                 {fetcher.data.fieldErrors.password}
@@ -194,7 +173,7 @@ export default function Login() {
           >
             {fetcher.state === 'submitting'
               ? 'Submitting'
-              : transition.state === 'loading'
+              : fetcher.state === 'loading'
               ? 'Logging you in'
               : 'Submit'}
           </button>

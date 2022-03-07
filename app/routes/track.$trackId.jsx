@@ -1,10 +1,11 @@
-import { useLoaderData, Link } from 'remix';
-import { supabase } from '../../server/db.server';
+import { useLoaderData, Link, useNavigate, json } from 'remix';
+import { checkReaction, supabase } from '../utils/supabase.server';
 import { fetchFromGenius } from '../utils/geniusApi.server';
 import invariant from 'tiny-invariant';
 import { getUserId } from '../utils/session.server';
 import { PlusIcon } from '@heroicons/react/solid';
 import { EmojiSadIcon } from '@heroicons/react/outline';
+import { ExternalLinkIcon, ArrowLeftIcon } from '@heroicons/react/solid';
 import { PostCard } from '../components/post-card';
 
 export const loader = async ({ params, request }) => {
@@ -20,53 +21,75 @@ export const loader = async ({ params, request }) => {
 
   const { data: trackPosts } = await supabase
     .from('post')
-    .select('*, user (username, avatar_url)')
+    .select('*, user!post_author_id_fkey (username, avatar_url)')
     .eq('track_id', params.trackId)
     .limit(5);
 
-  return {
+  const countedPosts = await checkReaction(trackPosts, userId);
+
+  return json({
     trackData: {
       title: trackData.title,
       artist: trackData.primary_artist.name,
       geniusUrl: trackData.url,
       thumbnail: trackData.song_art_image_thumbnail_url,
+      bgImage: trackData.song_art_image_url,
       release_date: trackData.release_date,
       id: trackData.id,
     },
-    trackPosts,
+    trackPosts: countedPosts,
     userId,
-  };
+  });
 };
 
 export default function TrackDetails() {
   const { trackData, trackPosts, userId } = useLoaderData();
+  const navigate = useNavigate();
 
   return (
     <section className="mx-auto ">
-      <div className="flex flex-col items-center gap-4 border-b-2 border-gray-200 p-8 ">
-        <img src={trackData.thumbnail} alt={trackData.title} className="h-40" />
-        <div className="flex flex-col items-center gap-2 leading-none">
-          <h2 className="text-center text-lg font-bold">{trackData.title}</h2>
-          <p className=" ">{trackData.artist}</p>
-          <p className="text-gray-500">
-            Release date : {trackData.release_date}
-          </p>
+      <div className="relative flex  flex-col items-center border-b-2 border-gray-200 p-8 text-white md:gap-4">
+        <button
+          className="group absolute left-1/4 z-30 hidden rounded-full p-2 ring-1 ring-gray-300 sm:block"
+          onClick={() => navigate(-1)}
+        >
+          <ArrowLeftIcon className="h-4 transition-transform group-hover:-translate-x-1" />
+        </button>
+        <div className="absolute inset-0 h-full w-full overflow-hidden  ">
+          <img src={trackData.bgImage} className="h-full w-full object-cover" />
+          <div className="absolute inset-0 h-full w-full bg-black/60"></div>
         </div>
-        <div className="flex flex-col items-center gap-2 pt-4 text-xs leading-none sm:text-sm ">
+        <div className="relative z-10 flex flex-col items-center gap-4">
+          <img
+            src={trackData.thumbnail}
+            alt={trackData.title}
+            className="h-40 ring-2 ring-black/10 drop-shadow-md"
+          />
+          <div className="relative flex flex-col items-center gap-2 leading-none ">
+            <div className="absolute inset-0 -z-10 h-full w-full bg-black/20 blur-xl " />
+            <h2 className="text-center text-lg font-bold ">
+              {trackData.title}
+            </h2>
+            <p className="text-gray-200">{trackData.artist}</p>
+            <p className="">Release date : {trackData.release_date}</p>
+          </div>
+        </div>
+        <div className="relative z-10  flex flex-col items-center gap-2 pt-4  text-xs leading-none sm:text-base md:flex-row md:gap-4">
+          <div className="absolute inset-0 -z-10 h-full w-full bg-black/20 blur-xl " />
           <a
             href={trackData.geniusUrl}
-            className=" text-blue-500 hover:underline"
             target="_blank"
             rel="noreferrer"
+            className="flex items-center gap-1 text-white underline hover:no-underline"
           >
-            Chekout the full lyrics on genius
+            Check it out on Genius <ExternalLinkIcon className="h-4" />
           </a>
-          <span className=" font-semibold text-gray-400">OR</span>
+          <span className=" font-semibold ">OR</span>
           <div className="flex items-center gap-2 ">
             <span className="  ">Have thought for this song?</span>
             <Link
               to={`/post/new?trackId=${trackData.id}`}
-              className="flex items-center space-x-1 rounded-sm bg-blue-500  px-2 py-1 text-white "
+              className="flex items-center space-x-1 rounded-sm bg-blue-500  px-2 py-1 text-white hover:opacity-90"
             >
               Add thought
             </Link>
@@ -74,7 +97,7 @@ export default function TrackDetails() {
         </div>
       </div>
       {trackPosts.length ? (
-        <main className="flex w-full flex-col items-center py-4">
+        <main className="mx-auto flex w-11/12 flex-col items-center py-4">
           <ul className="space-y-4">
             {trackPosts.map(post => {
               const modifiedPost = {

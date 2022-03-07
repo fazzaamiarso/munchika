@@ -14,6 +14,24 @@ export const fetchFromGenius = async requestPath => {
   return data;
 };
 
+export const getPostWithTrack = async posts => {
+  const tracks = posts.map(async post => {
+    const response = await fetchFromGenius(`songs/${post.track_id}`);
+    const track = response.song;
+    return {
+      ...post,
+      created_at: post.created_at,
+      username: post.user.username,
+      avatar: post.user.avatar_url,
+      title: removeTranslation(track.title),
+      artist: track.primary_artist.name,
+      thumbnail: track.song_art_image_thumbnail_url,
+    };
+  });
+  const trackDatas = await Promise.all(tracks);
+  return trackDatas;
+};
+
 export const removeTranslation = title => {
   const regex = /\(english translation\)/i;
   const replacedWord = title.replace(regex, '');

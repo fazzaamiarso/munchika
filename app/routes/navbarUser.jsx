@@ -1,6 +1,6 @@
 import { json } from 'remix';
 import { getUserId } from '../utils/session.server';
-import { supabase } from '../../server/db.server';
+import { supabase } from '../utils/supabase.server';
 
 export const loader = async ({ request }) => {
   const userId = await getUserId(request);

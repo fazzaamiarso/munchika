@@ -1,36 +1,20 @@
 import { Link, useLoaderData } from 'remix';
-import { supabase } from '../../server/db.server';
-import { fetchFromGenius, removeTranslation } from '../utils/geniusApi.server';
+import { supabase } from '../utils/supabase.server';
+import { getPostWithTrack } from '../utils/geniusApi.server';
 import { PostCard } from '../components/post-card';
 
 export const loader = async () => {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('post')
-    .select('*, user (username, avatar_url)')
+    .select('*, user!post_author_id_fkey (username, avatar_url)')
     .limit(7)
     .order('created_at', { ascending: false });
-
-  const tracks = data.map(async post => {
-    const response = await fetchFromGenius(`songs/${post.track_id}`);
-    const track = response.song;
-    return {
-      ...post,
-      created_at: post.created_at,
-      username: post.user.username,
-      avatar: post.user.avatar_url,
-      title: removeTranslation(track.title),
-      artist: track.primary_artist.name,
-      thumbnail: track.song_art_image_thumbnail_url,
-    };
-  });
-  const trackDatas = await Promise.all(tracks);
-  return {
-    data: trackDatas,
-  };
+  const trackDatas = await getPostWithTrack(data);
+  return { trackDatas };
 };
 
 export default function Index() {
-  const { data } = useLoaderData();
+  const { trackDatas } = useLoaderData();
 
   return (
     <>
@@ -54,7 +38,7 @@ export default function Index() {
       </section>
       <main className="mx-auto mt-6 flex w-11/12 max-w-lg flex-col items-center">
         <ul className=" space-y-8">
-          {data.map(post => {
+          {trackDatas.map(post => {
             return (
               <PostCard
                 key={post.id}

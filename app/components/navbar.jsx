@@ -1,4 +1,11 @@
-import { Link, useNavigate, useFetcher, useTransition, NavLink } from 'remix';
+import {
+  Link,
+  useNavigate,
+  useFetcher,
+  useTransition,
+  useLocation,
+  NavLink,
+} from 'remix';
 import { Fragment, useEffect } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { MenuIcon, XIcon } from '@heroicons/react/outline';
@@ -16,13 +23,14 @@ function classNames(...classes) {
 
 function Navbar() {
   const logout = useFetcher();
+  const location = useLocation();
   const navigate = useNavigate();
   const handleAdd = () => navigate('/post/select');
   const transition = useTransition();
 
   useEffect(() => {
-    if (transition.state === 'loading' || transition.state === 'idle')
-      logout.load('/navbarUser');
+    if (transition.state === 'idle') logout.load('/navbarUser'); //check every route change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transition]);
 
   return (
@@ -113,7 +121,7 @@ function Navbar() {
                       leaveFrom="transform opacity-100 scale-100"
                       leaveTo="transform opacity-0 scale-95"
                     >
-                      <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                      <Menu.Items className="absolute right-0 z-[100] mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                         {logout.data ? (
                           <>
                             <Menu.Item>
@@ -130,17 +138,20 @@ function Navbar() {
                         ) : null}
                         <Menu.Item>
                           {logout.data ? (
-                            <logout.Form action="/logout" method="post">
+                            <logout.Form
+                              action={`/logout?redirectTo=${location.pathname}`}
+                              method="post"
+                            >
                               <button
                                 type="submit"
-                                className="block px-4 py-2 text-sm text-gray-700"
+                                className="block w-full px-4 py-2 text-left text-sm text-gray-700"
                               >
                                 Logout
                               </button>
                             </logout.Form>
                           ) : (
                             <Link
-                              to="/login"
+                              to={`/login?redirectTo=${location.pathname}`}
                               className={classNames(
                                 'block px-4 py-2 text-sm text-gray-700',
                               )}
@@ -161,8 +172,8 @@ function Navbar() {
                 {navigation.map(item => (
                   <Disclosure.Button
                     key={item.name}
-                    as="a"
-                    href={item.href}
+                    as={Link}
+                    to={item.href}
                     className={classNames(
                       'text-gray-300 hover:bg-gray-700 hover:text-white',
                       'block rounded-md px-3 py-2 text-base font-medium',

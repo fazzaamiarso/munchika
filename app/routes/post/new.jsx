@@ -1,6 +1,6 @@
 import { useNavigate, redirect, json, useLoaderData, useFetcher } from 'remix';
 import { getUserId, requireUserId } from '~/utils/session.server';
-import { supabase } from '../../../server/db.server';
+import { supabase } from '../../utils/supabase.server';
 import { fetchFromGenius } from '../../utils/geniusApi.server';
 import { validateThought, validateLyrics } from '../../utils/formUtils';
 import { ExternalLinkIcon } from '@heroicons/react/outline';
@@ -53,12 +53,12 @@ export default function NewPost() {
 
   return (
     <>
-      <div className="mx-auto mt-4 flex w-10/12 flex-col">
-        <section className="space-y-4">
+      <div className="mx-auto mt-4 flex w-10/12 max-w-2xl flex-col">
+        <section className="mt-4 space-y-4">
           <h1 className=" mb-6 text-xl font-semibold">Add your thought</h1>
           <div className="flex max-w-lg items-center  gap-4 rounded-md bg-white ring-1 ring-gray-400">
             <img
-              src={trackData.song_art_image_url}
+              src={trackData.song_art_image_thumbnail_url}
               alt={trackData.title}
               className="h-24"
             />

@@ -40,11 +40,19 @@ export default function SelectPost() {
           {fetcher.state === 'submitting' ? 'Searching...' : 'Search'}
         </button>
       </fetcher.Form>
-      {fetcher.data ? (
+      {fetcher.state === 'submitting' ? (
+        <div className="mx-auto my-8 flex w-full flex-col divide-y divide-gray-400 rounded-md bg-white px-6 py-4 shadow-md ring-1 ring-slate-600">
+          <TrackSkeleton />
+          <TrackSkeleton />
+          <TrackSkeleton />
+          <TrackSkeleton />
+          <TrackSkeleton />
+        </div>
+      ) : fetcher.data ? (
         fetcher.data.error ? (
           <p className="font-bold">Unable to fetch data</p>
         ) : fetcher.data.length ? (
-          <ul className="mx-auto my-8 flex flex-col divide-y divide-gray-400 rounded-md bg-white px-6 py-4 shadow-md ring-1 ring-slate-600">
+          <ul className="mx-auto my-8 flex w-full flex-col divide-y divide-gray-400 rounded-md bg-white px-6 py-4 shadow-md ring-1 ring-slate-600">
             {fetcher.data.map(track => {
               return (
                 <li
@@ -53,7 +61,7 @@ export default function SelectPost() {
                 >
                   <img
                     className="h-12"
-                    src={track.result.song_art_image_url}
+                    src={track.result.song_art_image_thumbnail_url}
                     alt={track.result.title}
                   />
                   <div className="flex flex-col items-start">
@@ -83,3 +91,15 @@ export default function SelectPost() {
     </section>
   );
 }
+
+const TrackSkeleton = () => {
+  return (
+    <div className="flex w-full animate-pulse items-center gap-4 py-2 leading-none">
+      <div className="aspect-square h-12 bg-gray-300" />
+      <div className="flex w-full flex-col items-start gap-1">
+        <div className="h-4 w-7/12 bg-gray-300" />
+        <div className="h-3 w-5/12 bg-gray-300" />
+      </div>
+    </div>
+  );
+};

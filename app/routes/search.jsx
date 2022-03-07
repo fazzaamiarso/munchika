@@ -9,11 +9,28 @@ export function meta() {
   };
 }
 
+const navigation = [
+  {
+    name: 'Post',
+    to: '.',
+    resetDestination: '/search',
+  },
+  {
+    name: 'Song',
+    to: 'track',
+    resetDestination: '/search/track',
+  },
+];
+
 export default function SearchLayout() {
   const location = useLocation();
   const searchRef = useRef();
   const transition = useTransition();
 
+  useEffect(() => {
+    if (transition.type === 'loaderSubmissionRedirect')
+      searchRef.current.value = '';
+  }, [transition]);
   useEffect(() => {
     searchRef.current.focus();
   }, [location]);
@@ -22,6 +39,7 @@ export default function SearchLayout() {
     <>
       <div className="mx-auto flex w-10/12 max-w-lg flex-col items-center gap-4 py-8">
         <Form
+          id="search"
           method="get"
           action={location.pathname}
           className="flex w-full items-center gap-4"
@@ -49,42 +67,42 @@ export default function SearchLayout() {
             type="submit"
             name="_action"
             value="clear"
-            className="flex items-center gap-1 rounded-md px-4 py-2 text-blue-500 ring-1 ring-blue-500 "
+            className=" flex items-center gap-1 rounded-md px-4 py-2 text-blue-500 ring-1 ring-blue-500 "
             disabled={
               transition.state === 'submitting' ||
               transition.state === 'loading'
             }
           >
             <span className="hidden sm:inline">Clear</span>{' '}
-            <RefreshIcon className="h-5 text-blue-500" />
+            <RefreshIcon
+              className={`h-5 text-blue-500 ${
+                transition.submission?.formData.get('_action') === 'clear'
+                  ? 'animate-spin'
+                  : ''
+              }`}
+            />
           </button>
         </Form>
-        <ul className="mt-2 flex gap-4">
-          <li>
-            <Link
-              to="."
-              className={`rounded-md font-semibold leading-none ${
-                location.pathname === '/search'
-                  ? 'bg-white px-3  py-1 text-blue-500 shadow-md  ring-1 ring-gray-300'
-                  : ' text-gray-400 '
-              }`}
-            >
-              Post
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="track"
-              className={`rounded-md font-semibold leading-none ${
-                location.pathname === '/search/track'
-                  ? 'bg-white px-3  py-1 text-blue-500 shadow-md  ring-1 ring-gray-300'
-                  : ' text-gray-400 '
-              }`}
-            >
-              Song
-            </Link>
-          </li>
-        </ul>
+        <div className="flex w-full justify-between">
+          <ul className="mt-2 flex gap-4">
+            {navigation.map(item => {
+              return (
+                <li key={item.name}>
+                  <Link
+                    to={item.to}
+                    className={`rounded-md font-semibold leading-none ${
+                      location.pathname === item.resetDestination
+                        ? 'bg-white px-3  py-1 text-blue-500 shadow-md  ring-1 ring-gray-300'
+                        : ' text-gray-400 '
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </div>
       <main className="mx-auto w-5/6 max-w-xl">
         <Outlet />
