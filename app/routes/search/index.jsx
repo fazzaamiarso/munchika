@@ -106,6 +106,7 @@ export default function SearchPost() {
       <div className="space-y-4">
         <PostCardSkeleton />
         <PostCardSkeleton />
+        <PostCardSkeleton />
       </div>
     );
 

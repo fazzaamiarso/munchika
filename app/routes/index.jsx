@@ -1,15 +1,16 @@
 import { Link, useLoaderData } from 'remix';
-import { supabase } from '../utils/supabase.server';
+import { checkReaction, supabase } from '../utils/supabase.server';
 import { getPostWithTrack } from '../utils/geniusApi.server';
 import { PostCard } from '../components/post-card';
 
 export const loader = async () => {
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from('post')
     .select('*, user!post_author_id_fkey (username, avatar_url)')
     .limit(7)
     .order('created_at', { ascending: false });
-  const trackDatas = await getPostWithTrack(data);
+  const countedPosts = await checkReaction(data, null);
+  const trackDatas = await getPostWithTrack(countedPosts);
   return { trackDatas };
 };
 
