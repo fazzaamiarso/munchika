@@ -1,7 +1,7 @@
 import { Link, useLoaderData } from 'remix';
 import { getUserId } from '../../utils/session.server';
 import { getPostWithTrack } from '../../utils/geniusApi.server';
-import { countReaction, supabase } from '../../utils/supabase.server';
+import { checkReaction, supabase } from '../../utils/supabase.server';
 import { AnnotationIcon, PlusIcon } from '@heroicons/react/outline';
 import { PostCard } from '../../components/post-card';
 
@@ -20,7 +20,7 @@ export const loader = async ({ request }) => {
     .select('*, user!post_author_id_fkey (username, avatar_url)')
     .eq('author_id', userId);
 
-  const countedPosts = await countReaction(userPosts);
+  const countedPosts = await checkReaction(userPosts, userId);
   const postsData = await getPostWithTrack(countedPosts);
   return { postsData };
 };
@@ -40,7 +40,7 @@ export const action = async ({ request }) => {
     const { data: haveLiked } = await supabase
       .from('post_reaction')
       .select('*')
-      .eq('sender_id', userId)
+      .match({ sender_id: userId, post_id: postId })
       .maybeSingle();
     if (haveLiked)
       return await supabase

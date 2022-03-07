@@ -3,6 +3,7 @@ import { PostMenu } from './post-menu';
 import { useState, useRef } from 'react';
 import { Dialog } from '@headlessui/react';
 import { ExclamationIcon, HeartIcon } from '@heroicons/react/outline';
+import { HeartIcon as HeartIconSolid } from '@heroicons/react/solid';
 
 export const PostCard = ({
   postWithUser: post,
@@ -88,9 +89,14 @@ export const PostCard = ({
           value="reaction"
           disabled={!currentUserId}
         >
-          <HeartIcon className="h-4" />
+          {post.haveLiked ||
+          fetcher.submission?.formData.get('action') === 'reaction' ? (
+            <HeartIconSolid className="h-6 text-red-600" />
+          ) : (
+            <HeartIcon className="h-6" />
+          )}
         </button>
-        <span className="text-gray-400">{post.reactions ?? 0}</span>
+        <span className="text-gray-600">{post.reactions}</span>
       </fetcher.Form>
 
       <Dialog

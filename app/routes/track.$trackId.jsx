@@ -1,5 +1,5 @@
 import { useLoaderData, Link, useNavigate, json } from 'remix';
-import { countReaction, supabase } from '../utils/supabase.server';
+import { checkReaction, supabase } from '../utils/supabase.server';
 import { fetchFromGenius } from '../utils/geniusApi.server';
 import invariant from 'tiny-invariant';
 import { getUserId } from '../utils/session.server';
@@ -25,7 +25,7 @@ export const loader = async ({ params, request }) => {
     .eq('track_id', params.trackId)
     .limit(5);
 
-  const countedPosts = await countReaction(trackPosts);
+  const countedPosts = await checkReaction(trackPosts, userId);
 
   return json({
     trackData: {
