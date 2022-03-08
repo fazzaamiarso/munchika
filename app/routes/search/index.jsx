@@ -6,7 +6,7 @@ import {
   redirect,
 } from 'remix';
 import { getPostWithTrack } from '../../utils/geniusApi.server';
-import { checkReaction, supabase } from '../../utils/supabase.server';
+import { supabase } from '../../utils/supabase.server';
 import { getUserId } from '~/utils/session.server';
 import { PostCard, PostCardSkeleton } from '../../components/post-card';
 import { useEffect, useState } from 'react';
@@ -24,31 +24,24 @@ export const loader = async ({ request }) => {
   if (actionType === 'clear') return redirect('/search');
 
   if (searchTerm === null) {
-    try {
-      const { data } = await supabase
-        .from('post')
-        .select('*, user!post_author_id_fkey (username, avatar_url)')
-        .order('created_at', { ascending: false })
-        .range(currPage * 10, (currPage + 1) * 10 - 1);
+    const { data } = await supabase
+      .from('post')
+      .select('*, user!post_author_id_fkey (username, avatar_url)')
+      .order('created_at', { ascending: false })
+      .range(currPage * 10, (currPage + 1) * 10 - 1);
 
-      const countedPosts = await checkReaction(data, userId);
-      return json({
-        data: await getPostWithTrack(countedPosts),
-        userId,
-      });
-    } catch (err) {
-      return json({ message: err.message }, { status: 500 });
-    }
+    return json({
+      data: await getPostWithTrack(data),
+      userId,
+    });
   }
   const { data: fullTextData } = await supabase
     .from('post')
     .select('*, user!post_author_id_fkey (username, avatar_url)')
     .textSearch('fts', searchTerm, { type: 'plain' });
 
-  const countedPosts = await checkReaction(fullTextData, userId);
-
   return json({
-    data: await getPostWithTrack(countedPosts),
+    data: await getPostWithTrack(fullTextData),
     userId,
   });
 };
@@ -98,7 +91,7 @@ export default function SearchPost() {
       return setPostList(prev => [...prev, ...fetcher.data.data]);
     }
     if (transition.type === 'idle' && initial) {
-      return setPostList(data);
+      return setPostList(data); //reloaded the loader
     }
   }, [fetcher, transition, data, initial]);
 
@@ -148,7 +141,7 @@ export default function SearchPost() {
           {data.length < 10 && initial ? null : fetcher.data?.data.length <
               10 && !initial ? null : (
             <button
-              className="rounded-full px-3 py-1 text-blue-500  ring-1 ring-blue-500  "
+              className="self-center rounded-full  px-3  py-1 text-blue-500 ring-2 ring-blue-500 transition-colors  hover:bg-blue-500 hover:text-white disabled:opacity-75  "
               onClick={handleLoadMore}
             >
               {fetcher.state === 'loading' || fetcher.state === 'submitting'
@@ -174,3 +167,12 @@ export default function SearchPost() {
     </div>
   );
 }
+
+export const ErrorBoundary = () => {
+  return (
+    <div className="flex h-full w-screen flex-col items-center justify-center ">
+      <h1 className="text-2xl">Oooops.. something went wrong!</h1>
+      <p>We are working on right now!</p>
+    </div>
+  );
+};
