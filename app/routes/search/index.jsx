@@ -4,13 +4,18 @@ import {
   useFetcher,
   useTransition,
   redirect,
+  useSubmit,
 } from 'remix';
 import { getPostWithTrack } from '../../utils/geniusApi.server';
-import { checkReaction, supabase } from '../../utils/supabase.server';
+import { supabase } from '../../utils/supabase.server';
 import { getUserId } from '~/utils/session.server';
 import { PostCard, PostCardSkeleton } from '../../components/post-card';
 import { useEffect, useState } from 'react';
 import { Listbox } from '@headlessui/react';
+import {
+  SortAscendingIcon,
+  SortDescendingIcon,
+} from '@heroicons/react/outline';
 
 export const loader = async ({ request }) => {
   const userId = await getUserId(request);
@@ -20,51 +25,44 @@ export const loader = async ({ request }) => {
     ? parseInt(searchParams.get('currPage'))
     : 0;
   const actionType = searchParams.get('_action');
+  const sortValue = searchParams.get('sortValue');
 
   if (actionType === 'clear') return redirect('/search');
 
   if (searchTerm === null) {
-    try {
-      const { data } = await supabase
-        .from('post')
-        .select('*, user!post_author_id_fkey (username, avatar_url)')
-        .order('created_at', { ascending: false })
-        .range(currPage * 10, (currPage + 1) * 10 - 1);
+    const { data } = await supabase
+      .from('post')
+      .select('*, user!post_author_id_fkey (username, avatar_url)')
+      .order('created_at', { ascending: sortValue === 'CREATED_ASC' })
+      .range(currPage * 10, (currPage + 1) * 10 - 1);
 
-      const countedPosts = await checkReaction(data, userId);
-      return json({
-        data: await getPostWithTrack(countedPosts),
-        userId,
-      });
-    } catch (err) {
-      return json({ message: err.message }, { status: 500 });
-    }
+    return json({
+      data: await getPostWithTrack(data),
+      userId,
+    });
   }
   const { data: fullTextData } = await supabase
     .from('post')
     .select('*, user!post_author_id_fkey (username, avatar_url)')
+    .order('created_at', { ascending: sortValue === 'CREATED_ASC' })
     .textSearch('fts', searchTerm, { type: 'plain' });
 
-  const countedPosts = await checkReaction(fullTextData, userId);
-
   return json({
-    data: await getPostWithTrack(countedPosts),
+    data: await getPostWithTrack(fullTextData),
     userId,
   });
 };
 
 const SORTER = [
   {
-    name: 'None',
-    value: 'DEFAULT',
-  },
-  {
     name: 'Recent',
-    value: 'CREATED_ASC',
+    value: 'CREATED_DESC',
+    Icon: SortDescendingIcon,
   },
   {
     name: 'Oldest',
-    value: 'CREATED_DESC',
+    value: 'CREATED_ASC',
+    Icon: SortAscendingIcon,
   },
 ];
 
@@ -76,66 +74,68 @@ export default function SearchPost() {
   const [postList, setPostList] = useState(data);
   const [initial, setInitial] = useState(true);
   const [sortValue, setSortValue] = useState(SORTER[0]);
-
-  const sortedData =
-    sortValue.value === 'DEFAULT'
-      ? postList
-      : sortValue.value === 'CREATED_DESC'
-      ? [...postList].sort(
-          (a, b) => Date.parse(a.created_at) - Date.parse(b.created_at),
-        )
-      : postList;
+  const submit = useSubmit();
 
   const handleLoadMore = () => {
-    fetcher.load(`/search?currPage=${currPage}`);
+    fetcher.load(`/search?currPage=${currPage}&sortValue=${sortValue.value}`);
     setInitial(false);
     setCurrentPage(prevPage => prevPage + 1);
   };
 
+  const handleSort = selected => {
+    submit({ sortValue: selected.value }, { method: 'get' });
+    setSortValue(selected);
+  };
+
   useEffect(() => {
-    if (transition.type === 'loaderSubmission') return setInitial(true);
+    if (transition.type === 'loaderSubmission') {
+      setInitial(true);
+      setCurrentPage(1);
+      return;
+    }
     if (fetcher.type === 'done' && !initial) {
       return setPostList(prev => [...prev, ...fetcher.data.data]);
     }
     if (transition.type === 'idle' && initial) {
-      return setPostList(data);
+      return setPostList(data); //reloaded the loader
     }
   }, [fetcher, transition, data, initial]);
 
-  if (
-    transition.type === 'loaderSubmission' ||
-    transition.type === 'loaderSubmissionRedirect'
-  )
-    return (
-      <div className="space-y-4">
-        <PostCardSkeleton />
-        <PostCardSkeleton />
-        <PostCardSkeleton />
-      </div>
-    );
-
   return (
     <div className="flex min-h-screen w-full flex-col items-center gap-4">
-      <Listbox value={sortValue} onChange={setSortValue}>
-        <div className="relative">
-          <Listbox.Button className="w-max rounded-md bg-blue-500 px-4 py-1 text-white">
-            {sortValue.value === 'DEFAULT' ? 'Sort' : sortValue.name}
+      <Listbox value={sortValue} onChange={handleSort}>
+        <div className="relative w-3/12">
+          <Listbox.Button className="w-full rounded-md bg-blue-500 px-4 py-1 text-white">
+            {sortValue.name}
           </Listbox.Button>
-          <Listbox.Options className="absolute z-10 cursor-default bg-white shadow-md">
+          <Listbox.Options className="absolute z-10  w-full cursor-default rounded-md bg-white shadow-md ring-2 ring-gray-500/20">
             {SORTER.map((item, idx) => {
               return (
-                <Listbox.Option key={idx} value={item}>
-                  {item.name}
+                <Listbox.Option
+                  key={idx}
+                  value={item}
+                  className={`flex items-center justify-between p-1 hover:cursor-pointer ${
+                    item.value === sortValue.value ? 'bg-blue-100' : ''
+                  }`}
+                >
+                  {item.name} <item.Icon className="h-4" />
                 </Listbox.Option>
               );
             })}
           </Listbox.Options>
         </div>
       </Listbox>
-      {postList.length ? (
+      {transition.type === 'loaderSubmission' ||
+      transition.type === 'loaderSubmissionRedirect' ? (
+        <div className="w-full space-y-4">
+          <PostCardSkeleton />
+          <PostCardSkeleton />
+          <PostCardSkeleton />
+        </div>
+      ) : postList.length ? (
         <>
           <ul className=" space-y-8">
-            {sortedData.map(post => {
+            {postList.map(post => {
               return (
                 <PostCard
                   key={post.id}
@@ -144,11 +144,13 @@ export default function SearchPost() {
                 />
               );
             })}
+            {fetcher.state === 'loading' ? <PostCardSkeleton /> : null}
           </ul>
+
           {data.length < 10 && initial ? null : fetcher.data?.data.length <
               10 && !initial ? null : (
             <button
-              className="rounded-full px-3 py-1 text-blue-500  ring-1 ring-blue-500  "
+              className="self-center rounded-full  px-3  py-1 text-blue-500 ring-2 ring-blue-500 transition-colors  hover:bg-blue-500 hover:text-white disabled:opacity-75  "
               onClick={handleLoadMore}
             >
               {fetcher.state === 'loading' || fetcher.state === 'submitting'
@@ -174,3 +176,12 @@ export default function SearchPost() {
     </div>
   );
 }
+
+export const ErrorBoundary = () => {
+  return (
+    <div className="flex h-full w-screen flex-col items-center justify-center ">
+      <h1 className="text-2xl">Oooops.. something went wrong!</h1>
+      <p>We are working on right now!</p>
+    </div>
+  );
+};

@@ -173,7 +173,7 @@ export default function Login() {
           >
             {fetcher.state === 'submitting'
               ? 'Submitting'
-              : fetcher.state === 'loading'
+              : transition.type === 'fetchActionRedirect'
               ? 'Logging you in'
               : 'Submit'}
           </button>

@@ -1,7 +1,7 @@
 import { Link, useLoaderData } from 'remix';
 import { getUserId } from '../../utils/session.server';
 import { getPostWithTrack } from '../../utils/geniusApi.server';
-import { checkReaction, supabase } from '../../utils/supabase.server';
+import { supabase } from '../../utils/supabase.server';
 import { AnnotationIcon, PlusIcon } from '@heroicons/react/outline';
 import { PostCard } from '../../components/post-card';
 
@@ -20,8 +20,7 @@ export const loader = async ({ request }) => {
     .select('*, user!post_author_id_fkey (username, avatar_url)')
     .eq('author_id', userId);
 
-  const countedPosts = await checkReaction(userPosts, userId);
-  const postsData = await getPostWithTrack(countedPosts);
+  const postsData = await getPostWithTrack(userPosts);
   return { postsData };
 };
 
@@ -31,27 +30,33 @@ export const action = async ({ request }) => {
   const actionType = formData.get('action');
   const postId = formData.get('postId');
 
-  if (actionType === 'delete')
-    await supabase
+  if (actionType === 'delete') {
+    const { error } = await supabase
       .from('post')
       .delete()
       .match({ id: postId, author_id: userId });
-  if (actionType === 'reaction') {
-    const { data: haveLiked } = await supabase
-      .from('post_reaction')
-      .select('*')
-      .match({ sender_id: userId, post_id: postId })
-      .maybeSingle();
-    if (haveLiked)
-      return await supabase
-        .from('post_reaction')
-        .delete()
-        .match({ sender_id: userId, post_id: postId });
-
-    await supabase
-      .from('post_reaction')
-      .insert([{ post_id: postId, sender_id: userId }]);
+    console.log(error);
   }
+
+  // if (actionType === 'reaction') {
+  //   const { data: haveLiked } = await supabase
+  //     .from('post_reaction')
+  //     .select('*')
+  //     .match({ sender_id: userId, post_id: postId })
+  //     .maybeSingle();
+  //   if (haveLiked) {
+  //     await supabase
+  //       .from('post_reaction')
+  //       .delete()
+  //       .match({ sender_id: userId, post_id: postId });
+  //     return json('success');
+  //   }
+  //   await supabase
+  //     .from('post_reaction')
+  //     .insert([{ post_id: postId, sender_id: userId }]);
+
+  //   return json('success');
+  // }
 
   return null;
 };

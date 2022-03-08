@@ -2,8 +2,7 @@ import { useFetcher, useNavigate } from 'remix';
 import { PostMenu } from './post-menu';
 import { useState, useRef } from 'react';
 import { Dialog } from '@headlessui/react';
-import { ExclamationIcon, HeartIcon } from '@heroicons/react/outline';
-import { HeartIcon as HeartIconSolid } from '@heroicons/react/solid';
+import { ExclamationIcon } from '@heroicons/react/outline';
 
 export const PostCard = ({
   postWithUser: post,
@@ -77,7 +76,7 @@ export const PostCard = ({
           <p className="text-justify indent-8 text-gray-700">{post.thought}</p>
         </div>
       </section>
-      <fetcher.Form
+      {/* <fetcher.Form
         action="/user/posts"
         method="post"
         className="flex items-center gap-2"
@@ -97,7 +96,7 @@ export const PostCard = ({
           )}
         </button>
         <span className="text-gray-600">{post.reactions}</span>
-      </fetcher.Form>
+      </fetcher.Form> */}
 
       <Dialog
         className="fixed inset-0 z-20 "
