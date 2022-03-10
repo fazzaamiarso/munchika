@@ -2,6 +2,7 @@ import {
   useLoaderData,
   json,
   useFetcher,
+  useFetchers,
   useTransition,
   redirect,
   useSubmit,
@@ -10,7 +11,7 @@ import { getPostWithTrack } from '../../utils/geniusApi.server';
 import { supabase } from '../../utils/supabase.server';
 import { getUserId } from '~/utils/session.server';
 import { PostCard, PostCardSkeleton } from '../../components/post-card';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Listbox } from '@headlessui/react';
 import {
   SortAscendingIcon,
@@ -24,7 +25,7 @@ export const loader = async ({ request }) => {
   const currPage = searchParams.get('currPage')
     ? parseInt(searchParams.get('currPage'))
     : 0;
-  const actionType = searchParams.get('_action');
+  const actionType = searchParams.get('action');
   const sortValue = searchParams.get('sortValue');
 
   if (actionType === 'clear') return redirect('/search');
@@ -70,16 +71,21 @@ export default function SearchPost() {
   const { data, userId } = useLoaderData();
   const fetcher = useFetcher();
   const transition = useTransition();
-  const [currPage, setCurrentPage] = useState(1);
-  const [postList, setPostList] = useState(data);
-  const [initial, setInitial] = useState(true);
-  const [sortValue, setSortValue] = useState(SORTER[0]);
   const submit = useSubmit();
+  const fetchers = useFetchers();
+
+  const [postList, setPostList] = useState(data);
+  const [sortValue, setSortValue] = useState(SORTER[0]);
+  const [dataState, setDataState] = useState('initial'); // "initial" | "loadMore" | "mutation"
+
+  const currPage = useRef(1);
 
   const handleLoadMore = () => {
-    fetcher.load(`/search?currPage=${currPage}&sortValue=${sortValue.value}`);
-    setInitial(false);
-    setCurrentPage(prevPage => prevPage + 1);
+    fetcher.load(
+      `/search?currPage=${currPage.current}&sortValue=${sortValue.value}`,
+    );
+    setDataState('loadMore');
+    currPage.current = currPage.current + 1;
   };
 
   const handleSort = selected => {
@@ -88,18 +94,26 @@ export default function SearchPost() {
   };
 
   useEffect(() => {
-    if (transition.type === 'loaderSubmission') {
-      setInitial(true);
-      setCurrentPage(1);
+    if (fetchers.some(f => f.submission?.formData.get('action') === 'delete')) {
+      setDataState('mutation');
+      currPage.current = 1;
       return;
     }
-    if (fetcher.type === 'done' && !initial) {
+
+    if (dataState === 'loadMore') return;
+    setPostList(data);
+  }, [data, fetchers, dataState]);
+
+  useEffect(() => {
+    if (transition.type === 'loaderSubmission') {
+      setDataState('initial');
+      currPage.current = 1;
+      return;
+    }
+    if (fetcher.type === 'done' && dataState === 'loadMore') {
       return setPostList(prev => [...prev, ...fetcher.data.data]);
     }
-    if (transition.type === 'idle' && initial) {
-      return setPostList(data); //reloaded the loader
-    }
-  }, [fetcher, transition, data, initial]);
+  }, [fetcher, transition, dataState]);
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center gap-4">
@@ -147,8 +161,7 @@ export default function SearchPost() {
             {fetcher.state === 'loading' ? <PostCardSkeleton /> : null}
           </ul>
 
-          {data.length < 10 && initial ? null : fetcher.data?.data.length <
-              10 && !initial ? null : (
+          {data.length < 10 ? null : (
             <button
               className="self-center rounded-full  px-3  py-1 text-blue-500 ring-2 ring-blue-500 transition-colors  hover:bg-blue-500 hover:text-white disabled:opacity-75  "
               onClick={handleLoadMore}
@@ -165,7 +178,7 @@ export default function SearchPost() {
           <button
             form="search"
             type="submit"
-            name="_action"
+            name="action"
             value="clear"
             className="rounded-md bg-blue-500 px-4 py-2 text-white hover:opacity-90 disabled:opacity-75"
           >

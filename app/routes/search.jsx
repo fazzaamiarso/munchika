@@ -65,7 +65,7 @@ export default function SearchLayout() {
           </button>
           <button
             type="submit"
-            name="_action"
+            name="action"
             value="clear"
             className=" flex items-center gap-1 rounded-md px-4 py-2 text-blue-500 ring-1 ring-blue-500 "
             disabled={
@@ -76,7 +76,7 @@ export default function SearchLayout() {
             <span className="hidden sm:inline">Clear</span>{' '}
             <RefreshIcon
               className={`h-5 text-blue-500 ${
-                transition.submission?.formData.get('_action') === 'clear'
+                transition.submission?.formData.get('action') === 'clear'
                   ? 'animate-spin'
                   : ''
               }`}

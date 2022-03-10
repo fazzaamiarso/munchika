@@ -1,5 +1,5 @@
 import { ArrowRightIcon } from '@heroicons/react/solid';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   useLoaderData,
   Link,
@@ -13,7 +13,7 @@ export const loader = async ({ request }) => {
   const newUrl = new URL(request.url);
   const searchTerm = newUrl.searchParams.get('term');
   const currPage = newUrl.searchParams.get('currPage') ?? 1;
-  const actionType = newUrl.searchParams.get('_action');
+  const actionType = newUrl.searchParams.get('action');
 
   if (actionType === 'clear') return redirect('/search/track');
 
@@ -35,29 +35,36 @@ export default function SearchTrack() {
   const fetcher = useFetcher();
   const transition = useTransition();
   const [trackList, setTrackList] = useState(data);
-  const [currPage, setCurrPage] = useState(2);
-  const [initial, setInitial] = useState(true);
+  const currPage = useRef(2);
+  const initial = useRef(true);
   const isPending =
     transition.type === 'loaderSubmission' ||
     transition.type === 'loaderSubmissionRedirect';
 
   const handleLoadMore = () => {
-    fetcher.load(`/search/track?term=${searchTerm}&currPage=${currPage}`);
-    setInitial(false);
-    setCurrPage(prev => prev + 1);
+    fetcher.load(
+      `/search/track?term=${searchTerm}&currPage=${currPage.current}`,
+    );
+    initial.current = false;
+    currPage.current = currPage.current + 1;
   };
 
   useEffect(() => {
-    if (transition.type === 'loaderSubmission') return setInitial(true);
+    if (transition.type === 'loaderSubmission') {
+      initial.current = true;
+      currPage.current = 2;
+      return;
+    }
 
-    if (fetcher.type === 'done' && !initial) {
+    if (fetcher.type === 'done' && !initial.current) {
       setTrackList(prev => [...prev, ...fetcher.data.data]);
       return;
     }
-    if (transition.type === 'idle' && initial) {
+    if (transition.type === 'idle' && initial.current) {
       setTrackList(data);
+      currPage.current = 2;
     }
-  }, [fetcher, transition, data, initial]);
+  }, [fetcher, transition, data]);
 
   if (isPending)
     return (
@@ -130,7 +137,7 @@ export default function SearchTrack() {
           </>
         ) : null}
       </ul>
-      {fetcher.data?.data.length < 10 && !initial ? null : (
+      {fetcher.data?.data.length < 10 && !initial.current ? null : (
         <button
           className="self-center rounded-full  px-3  py-1 text-blue-500 ring-2 ring-blue-500 transition-colors  hover:bg-blue-500 hover:text-white disabled:opacity-75"
           onClick={handleLoadMore}
