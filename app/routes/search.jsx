@@ -1,6 +1,6 @@
 import { Outlet, Form, useLocation, Link, useTransition } from 'remix';
-import { useEffect, useRef } from 'react';
-import { RefreshIcon } from '@heroicons/react/outline';
+import { useEffect, useRef, useState } from 'react';
+import { ArrowCircleUpIcon, RefreshIcon } from '@heroicons/react/outline';
 
 export function meta() {
   return {
@@ -28,8 +28,7 @@ export default function SearchLayout() {
   const transition = useTransition();
 
   useEffect(() => {
-    if (transition.type === 'loaderSubmissionRedirect')
-      searchRef.current.value = '';
+    if (transition.type === 'loaderSubmissionRedirect') searchRef.current.value = '';
   }, [transition]);
   useEffect(() => {
     searchRef.current.focus();
@@ -56,29 +55,21 @@ export default function SearchLayout() {
           <button
             type="submit"
             className="rounded-md bg-blue-500 px-4 py-2 text-white hover:opacity-90 disabled:opacity-75"
-            disabled={
-              transition.state === 'submitting' ||
-              transition.state === 'loading'
-            }
+            disabled={transition.state === 'submitting' || transition.state === 'loading'}
           >
             {transition.state === 'submitting' ? 'Searching...' : 'Search'}
           </button>
           <button
             type="submit"
-            name="_action"
+            name="action"
             value="clear"
-            className=" flex items-center gap-1 rounded-md px-4 py-2 text-blue-500 ring-1 ring-blue-500 "
-            disabled={
-              transition.state === 'submitting' ||
-              transition.state === 'loading'
-            }
+            className=" flex items-center gap-1 rounded-md bg-white px-4 py-2 text-blue-500 ring-1 ring-blue-500 "
+            disabled={transition.state === 'submitting' || transition.state === 'loading'}
           >
-            <span className="hidden sm:inline">Clear</span>{' '}
+            <span className="hidden sm:inline ">Clear</span>{' '}
             <RefreshIcon
               className={`h-5 text-blue-500 ${
-                transition.submission?.formData.get('_action') === 'clear'
-                  ? 'animate-spin'
-                  : ''
+                transition.submission?.formData.get('action') === 'clear' ? 'animate-spin' : ''
               }`}
             />
           </button>
@@ -107,6 +98,43 @@ export default function SearchLayout() {
       <main className="mx-auto w-5/6 max-w-xl">
         <Outlet />
       </main>
+      <GoToTopButton />
     </>
   );
 }
+
+const GoToTopButton = () => {
+  const [showButton, setShowButton] = useState(false);
+
+  const handleToTop = () => {
+    setShowButton(false);
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 1400) {
+        setShowButton(true);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  if (!showButton) return null;
+  return (
+    <>
+      <button
+        type="button"
+        onClick={handleToTop}
+        className="fixed bottom-4 right-4 z-30 rounded-full bg-white shadow-md"
+      >
+        <ArrowCircleUpIcon className="h-12" />
+      </button>
+    </>
+  );
+};

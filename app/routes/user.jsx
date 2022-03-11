@@ -1,4 +1,4 @@
-import { Outlet, useLoaderData } from 'remix';
+import { Outlet, useLoaderData, Link } from 'remix';
 import { supabase } from '../utils/supabase.server';
 import { requireUserId } from '../utils/session.server';
 
@@ -25,8 +25,14 @@ export default function Users() {
           alt={userData.username}
           className="aspect-square h-24 rounded-full"
         />
-        <div className="">
+        <div className="flex flex-col gap-4">
           <h2 className="text-center text-lg font-bold">{userData.username}</h2>
+          <Link
+            to="/user/profile/edit"
+            className="rounded-md px-3 py-1 ring-1 ring-gray-400"
+          >
+            Edit Profile
+          </Link>
         </div>
       </section>
       <Outlet />

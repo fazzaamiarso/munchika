@@ -1,8 +1,9 @@
 import { Menu } from '@headlessui/react';
-import { Link } from 'remix';
+import { Link, useLocation } from 'remix';
 import { DotsHorizontalIcon } from '@heroicons/react/solid';
 
 export const PostMenu = ({ postId, openDialog }) => {
+  const location = useLocation();
   return (
     <>
       <Menu as="div" className="relative ml-3 py-2">
@@ -18,18 +19,19 @@ export const PostMenu = ({ postId, openDialog }) => {
               Edit post
             </Link>
           </Menu.Item>
-          <Menu.Item>
-            <button
-              className="block w-full px-4 py-2 text-left text-sm text-gray-700"
-              name="postId"
-              value={postId}
-              type="submit"
-              // onClick={e => deletePost.submit(e.currentTarget)}
-              onClick={openDialog}
-            >
-              Delete post
-            </button>
-          </Menu.Item>
+          {location.pathname === '/user/posts' ? (
+            <Menu.Item>
+              <button
+                className="block w-full px-4 py-2 text-left text-sm text-gray-700"
+                name="postId"
+                value={postId}
+                type="submit"
+                onClick={openDialog}
+              >
+                Delete post
+              </button>
+            </Menu.Item>
+          ) : null}
         </Menu.Items>
       </Menu>
     </>

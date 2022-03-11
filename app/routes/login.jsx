@@ -80,6 +80,7 @@ export default function Login() {
         <fetcher.Form
           method="post"
           className="flex w-10/12 flex-col gap-6 rounded-md bg-white py-4 px-6 shadow-md ring-2 ring-gray-500/10"
+          replace
         >
           <input
             type="text"
