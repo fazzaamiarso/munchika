@@ -1,4 +1,4 @@
-import { Outlet, Form, useLocation, Link, useTransition } from 'remix';
+import { Outlet, Form, useLocation, Link, useTransition, useMatches } from 'remix';
 import { useEffect, useRef } from 'react';
 import { RefreshIcon } from '@heroicons/react/outline';
 
@@ -28,8 +28,7 @@ export default function SearchLayout() {
   const transition = useTransition();
 
   useEffect(() => {
-    if (transition.type === 'loaderSubmissionRedirect')
-      searchRef.current.value = '';
+    if (transition.type === 'loaderSubmissionRedirect') searchRef.current.value = '';
   }, [transition]);
   useEffect(() => {
     searchRef.current.focus();
@@ -56,10 +55,7 @@ export default function SearchLayout() {
           <button
             type="submit"
             className="rounded-md bg-blue-500 px-4 py-2 text-white hover:opacity-90 disabled:opacity-75"
-            disabled={
-              transition.state === 'submitting' ||
-              transition.state === 'loading'
-            }
+            disabled={transition.state === 'submitting' || transition.state === 'loading'}
           >
             {transition.state === 'submitting' ? 'Searching...' : 'Search'}
           </button>
@@ -67,18 +63,13 @@ export default function SearchLayout() {
             type="submit"
             name="action"
             value="clear"
-            className=" flex items-center gap-1 rounded-md px-4 py-2 text-blue-500 ring-1 ring-blue-500 "
-            disabled={
-              transition.state === 'submitting' ||
-              transition.state === 'loading'
-            }
+            className=" flex items-center gap-1 rounded-md bg-white px-4 py-2 text-blue-500 ring-1 ring-blue-500 "
+            disabled={transition.state === 'submitting' || transition.state === 'loading'}
           >
-            <span className="hidden sm:inline">Clear</span>{' '}
+            <span className="hidden sm:inline ">Clear</span>{' '}
             <RefreshIcon
               className={`h-5 text-blue-500 ${
-                transition.submission?.formData.get('action') === 'clear'
-                  ? 'animate-spin'
-                  : ''
+                transition.submission?.formData.get('action') === 'clear' ? 'animate-spin' : ''
               }`}
             />
           </button>

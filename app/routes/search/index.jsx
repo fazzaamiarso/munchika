@@ -2,10 +2,10 @@ import {
   useLoaderData,
   json,
   useFetcher,
-  useFetchers,
   useTransition,
   redirect,
   useSubmit,
+  useSearchParams,
 } from 'remix';
 import { getPostWithTrack } from '../../utils/geniusApi.server';
 import { supabase } from '../../utils/supabase.server';
@@ -13,18 +13,13 @@ import { getUserId } from '~/utils/session.server';
 import { PostCard, PostCardSkeleton } from '../../components/post-card';
 import { useEffect, useState, useRef } from 'react';
 import { Listbox } from '@headlessui/react';
-import {
-  SortAscendingIcon,
-  SortDescendingIcon,
-} from '@heroicons/react/outline';
+import { SortAscendingIcon, SortDescendingIcon } from '@heroicons/react/outline';
 
 export const loader = async ({ request }) => {
   const userId = await getUserId(request);
   const { searchParams } = new URL(request.url);
   const searchTerm = searchParams.get('term') ?? null;
-  const currPage = searchParams.get('currPage')
-    ? parseInt(searchParams.get('currPage'))
-    : 0;
+  const currPage = searchParams.get('currPage') ? parseInt(searchParams.get('currPage')) : 0;
   const actionType = searchParams.get('action');
   const sortValue = searchParams.get('sortValue');
 
@@ -72,21 +67,21 @@ export default function SearchPost() {
   const fetcher = useFetcher();
   const transition = useTransition();
   const submit = useSubmit();
-  const fetchers = useFetchers();
 
   const [postList, setPostList] = useState(data);
   const [sortValue, setSortValue] = useState(SORTER[0]);
-  const [dataState, setDataState] = useState('initial'); // "initial" | "loadMore" | "mutation"
 
-  const currPage = useRef(1);
+  const boxRef = useRef(null);
+  const [shouldFetch, setShouldFetch] = useState(true);
+  const [currPage, setCurrPage] = useState(1);
+  const [initial, setInitial] = useState(true);
+  const [searchParams] = useSearchParams();
 
-  const handleLoadMore = () => {
-    fetcher.load(
-      `/search?currPage=${currPage.current}&sortValue=${sortValue.value}`,
-    );
-    setDataState('loadMore');
-    currPage.current = currPage.current + 1;
-  };
+  const searchURL = `/search?currPage=${currPage}&sortValue=${sortValue.value}&${
+    searchParams.get('term') ?? ''
+  }`;
+  const isSearching =
+    transition.type === 'loaderSubmissionRedirect' || transition.type === 'loaderSubmission';
 
   const handleSort = selected => {
     submit({ sortValue: selected.value }, { method: 'get' });
@@ -94,33 +89,44 @@ export default function SearchPost() {
   };
 
   useEffect(() => {
-    if (fetchers.some(f => f.submission?.formData.get('action') === 'delete')) {
-      setDataState('mutation');
-      currPage.current = 1;
-      return;
-    }
+    const handleScroll = () => {
+      if (!shouldFetch || fetcher.state !== 'idle' || data.length < 10) return;
+      if (shouldFetch && boxRef.current.getBoundingClientRect().top < 1000) {
+        fetcher.load(searchURL);
+        setCurrPage(prev => prev + 1);
+        setInitial(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
 
-    if (dataState === 'loadMore') return;
-    setPostList(data);
-  }, [data, fetchers, dataState]);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [shouldFetch, fetcher, data, searchURL]);
 
   useEffect(() => {
-    if (transition.type === 'loaderSubmission') {
-      setDataState('initial');
-      currPage.current = 1;
+    if (isSearching) {
+      setInitial(true);
+      setCurrPage(1);
+      setShouldFetch(true);
       return;
     }
-    if (fetcher.type === 'done' && dataState === 'loadMore') {
-      return setPostList(prev => [...prev, ...fetcher.data.data]);
+  }, [isSearching]);
+
+  useEffect(() => {
+    if (fetcher.state !== 'idle') return;
+    if (initial) return setPostList(data);
+    if (fetcher.data?.data && fetcher.data.data.length < 10) {
+      setShouldFetch(false);
+      setPostList(prev => [...prev, ...fetcher.data.data]);
+      return;
     }
-  }, [fetcher, transition, dataState]);
+  }, [fetcher, initial, data]);
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center gap-4">
       <Listbox value={sortValue} onChange={handleSort}>
         <div className="relative w-3/12">
-          <Listbox.Button className="w-full rounded-md bg-blue-500 px-4 py-1 text-white">
-            {sortValue.name}
+          <Listbox.Button className="flex w-full items-center justify-center gap-2 rounded-md bg-blue-500 px-4 py-1 text-white">
+            {sortValue.name} <sortValue.Icon className="h-4" />
           </Listbox.Button>
           <Listbox.Options className="absolute z-10  w-full cursor-default rounded-md bg-white shadow-md ring-2 ring-gray-500/20">
             {SORTER.map((item, idx) => {
@@ -139,8 +145,7 @@ export default function SearchPost() {
           </Listbox.Options>
         </div>
       </Listbox>
-      {transition.type === 'loaderSubmission' ||
-      transition.type === 'loaderSubmissionRedirect' ? (
+      {isSearching ? (
         <div className="w-full space-y-4">
           <PostCardSkeleton />
           <PostCardSkeleton />
@@ -150,27 +155,11 @@ export default function SearchPost() {
         <>
           <ul className=" space-y-8">
             {postList.map(post => {
-              return (
-                <PostCard
-                  key={post.id}
-                  postWithUser={post}
-                  currentUserId={userId}
-                />
-              );
+              return <PostCard key={post.id} postWithUser={post} currentUserId={userId} />;
             })}
+            <div ref={boxRef} />
             {fetcher.state === 'loading' ? <PostCardSkeleton /> : null}
           </ul>
-
-          {data.length < 10 ? null : (
-            <button
-              className="self-center rounded-full  px-3  py-1 text-blue-500 ring-2 ring-blue-500 transition-colors  hover:bg-blue-500 hover:text-white disabled:opacity-75  "
-              onClick={handleLoadMore}
-            >
-              {fetcher.state === 'loading' || fetcher.state === 'submitting'
-                ? 'Loading..'
-                : 'Load More'}
-            </button>
-          )}
         </>
       ) : (
         <div className="mt-12 flex flex-col items-center gap-4">
