@@ -1,6 +1,6 @@
-import { Outlet, Form, useLocation, Link, useTransition, useMatches } from 'remix';
-import { useEffect, useRef } from 'react';
-import { RefreshIcon } from '@heroicons/react/outline';
+import { Outlet, Form, useLocation, Link, useTransition } from 'remix';
+import { useEffect, useRef, useState } from 'react';
+import { ArrowCircleUpIcon, RefreshIcon } from '@heroicons/react/outline';
 
 export function meta() {
   return {
@@ -98,6 +98,43 @@ export default function SearchLayout() {
       <main className="mx-auto w-5/6 max-w-xl">
         <Outlet />
       </main>
+      <GoToTopButton />
     </>
   );
 }
+
+const GoToTopButton = () => {
+  const [showButton, setShowButton] = useState(false);
+
+  const handleToTop = () => {
+    setShowButton(false);
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 1400) {
+        setShowButton(true);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  if (!showButton) return null;
+  return (
+    <>
+      <button
+        type="button"
+        onClick={handleToTop}
+        className="fixed bottom-4 right-4 z-30 rounded-full bg-white shadow-md"
+      >
+        <ArrowCircleUpIcon className="h-12" />
+      </button>
+    </>
+  );
+};

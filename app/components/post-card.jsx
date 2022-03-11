@@ -27,7 +27,7 @@ export const PostCard = ({
   };
 
   return (
-    <li className="max-w-lg space-y-4 self-stretch rounded-md bg-white p-4 shadow-md ring-1 ring-slate-300">
+    <li className="mx-auto w-full max-w-lg space-y-4 self-stretch rounded-md bg-white p-4 shadow-md ring-1 ring-slate-300">
       <div className="flex w-full items-center gap-2 ">
         {displayUser ? (
           <>
@@ -62,13 +62,11 @@ export const PostCard = ({
           </div>
         </div>
       ) : null}
-      <section className="space-y-4 ">
+      <section className="space-y-4 break-words">
         {post.lyrics === '' ? null : (
           <div>
             <h4 className="font-semibold">Featured lyrics</h4>
-            <p className="text-justify indent-8  text-gray-700">
-              {post.lyrics}
-            </p>
+            <p className="text-justify indent-8  text-gray-700">{post.lyrics}</p>
           </div>
         )}
         <div>
@@ -110,15 +108,10 @@ export const PostCard = ({
             <div className="mx-auto w-10/12 max-w-xl space-y-8 rounded-md bg-white p-6 text-center shadow-lg ring-2 ring-gray-400/10">
               <div className="space-y-2 sm:flex sm:items-start sm:gap-4  sm:space-y-0">
                 <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                  <ExclamationIcon
-                    className="h-6 w-6 text-red-600"
-                    aria-hidden="true"
-                  />
+                  <ExclamationIcon className="h-6 w-6 text-red-600" aria-hidden="true" />
                 </div>
                 <div className="sm:text-left">
-                  <Dialog.Title className="text-lg font-semibold ">
-                    Delete post
-                  </Dialog.Title>
+                  <Dialog.Title className="text-lg font-semibold ">Delete post</Dialog.Title>
                   <Dialog.Description className="text-gray-500">
                     Are you sure you wan to delete your post on{' '}
                     <span className="font-semibold">{post.title}</span>?
@@ -151,10 +144,7 @@ export const PostCard = ({
   );
 };
 
-export const PostCardSkeleton = ({
-  displayUser = true,
-  displayTrack = true,
-}) => {
+export const PostCardSkeleton = ({ displayUser = true, displayTrack = true }) => {
   return (
     <div className="max-w-lg animate-pulse space-y-4 self-stretch rounded-md bg-white p-4 shadow-md ring-1 ring-slate-300">
       <div className="flex w-full items-center gap-2 ">

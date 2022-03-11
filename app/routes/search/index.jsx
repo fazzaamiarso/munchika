@@ -122,7 +122,7 @@ export default function SearchPost() {
   }, [fetcher, initial, data]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center gap-4">
+    <div className="mx-auto flex min-h-screen w-full flex-col items-center gap-4">
       <Listbox value={sortValue} onChange={handleSort}>
         <div className="relative w-3/12">
           <Listbox.Button className="flex w-full items-center justify-center gap-2 rounded-md bg-blue-500 px-4 py-1 text-white">
@@ -146,14 +146,14 @@ export default function SearchPost() {
         </div>
       </Listbox>
       {isSearching ? (
-        <div className="w-full space-y-4">
+        <div className="mx-auto w-full space-y-4">
           <PostCardSkeleton />
           <PostCardSkeleton />
           <PostCardSkeleton />
         </div>
       ) : postList.length ? (
         <>
-          <ul className=" space-y-8">
+          <ul className=" mx-auto flex w-full flex-col items-center space-y-8">
             {postList.map(post => {
               return <PostCard key={post.id} postWithUser={post} currentUserId={userId} />;
             })}
