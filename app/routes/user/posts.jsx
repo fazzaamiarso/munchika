@@ -31,10 +31,7 @@ export const action = async ({ request }) => {
   const postId = formData.get('postId');
 
   if (actionType === 'delete') {
-    const { error } = await supabase
-      .from('post')
-      .delete()
-      .match({ id: postId, author_id: userId });
+    const { error } = await supabase.from('post').delete().match({ id: postId, author_id: userId });
     console.log(error);
   }
 
@@ -67,15 +64,9 @@ export default function UserPost() {
   return (
     <main className="mt-6 flex min-h-screen w-full flex-col items-center">
       {postsData.length ? (
-        <ul className=" space-y-4 px-4">
+        <ul className=" w-full space-y-4 px-4">
           {postsData.map(post => {
-            return (
-              <PostCard
-                key={post.id}
-                currentUserId={post.author_id}
-                postWithUser={post}
-              />
-            );
+            return <PostCard key={post.id} currentUserId={post.author_id} postWithUser={post} />;
           })}
         </ul>
       ) : (
@@ -84,9 +75,7 @@ export default function UserPost() {
             <div className="flex flex-col items-center ">
               <AnnotationIcon className="h-12 text-gray-400" />
               <h2 className="mt-2 text-lg font-semibold">No Posts </h2>
-              <p className=" text-gray-400">
-                Get started by creating new post.
-              </p>
+              <p className=" text-gray-400">Get started by creating new post.</p>
             </div>
             <Link
               to="/post/select"

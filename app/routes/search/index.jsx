@@ -157,9 +157,9 @@ export default function SearchPost() {
             {postList.map(post => {
               return <PostCard key={post.id} postWithUser={post} currentUserId={userId} />;
             })}
-            <div ref={boxRef} />
             {fetcher.state === 'loading' ? <PostCardSkeleton /> : null}
           </ul>
+          <div ref={boxRef} />
         </>
       ) : (
         <div className="mt-12 flex flex-col items-center gap-4">
