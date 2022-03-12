@@ -146,7 +146,7 @@ export const PostCard = ({
 
 export const PostCardSkeleton = ({ displayUser = true, displayTrack = true }) => {
   return (
-    <div className="max-w-lg animate-pulse space-y-4 self-stretch rounded-md bg-white p-4 shadow-md ring-1 ring-slate-300">
+    <div className="mx-auto w-full max-w-lg animate-pulse space-y-4 self-stretch rounded-md bg-white p-4 shadow-md ring-1 ring-slate-300">
       <div className="flex w-full items-center gap-2 ">
         {displayUser ? (
           <>

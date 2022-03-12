@@ -2,8 +2,7 @@ import { redirect } from 'remix';
 import { supabase } from '../utils/supabase.server';
 import { destroyUserSession, getAccessToken } from '../utils/session.server';
 
-export const loader = async ({ request }) => {
-  console.log(request);
+export const loader = async () => {
   return redirect('/');
 };
 

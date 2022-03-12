@@ -8,10 +8,14 @@ import {
   useLocation,
   Link,
   useCatch,
+  json,
+  useLoaderData,
 } from 'remix';
 import styles from './tailwind.css';
 import { Navbar } from './components/navbar';
 import { Footer } from './components/footer';
+import { commitSession, getUserSession } from './utils/session.server';
+import { Toast, ToastWithSpinner } from './components/Toast';
 
 export function links() {
   return [{ rel: 'stylesheet', href: styles }];
@@ -25,8 +29,21 @@ export function meta() {
   };
 }
 
+export const loader = async ({ request }) => {
+  const userSession = await getUserSession(request);
+  const loginMessage = userSession.get('login') ?? null;
+  const deleteMessage = userSession.get('delete') ?? null;
+  const unauthorizedMessage = userSession.get('unauthorized') ?? null;
+
+  return json(
+    { loginMessage, unauthorizedMessage, deleteMessage },
+    { headers: { 'Set-Cookie': await commitSession(userSession) } },
+  );
+};
+
 export default function App() {
   const location = useLocation();
+  const { loginMessage, unauthorizedMessage, deleteMessage } = useLoaderData();
   return (
     <html lang="en">
       <head>
@@ -39,7 +56,16 @@ export default function App() {
         {location.pathname.includes('/login') ? null : <Navbar />}
         <Outlet />
         {location.pathname.includes('/login') ? null : <Footer />}
-
+        <Toast message={loginMessage} className=" top-16 right-8 border-green-400 " />
+        <Toast
+          message={unauthorizedMessage}
+          className="top-8 left-1/2 -translate-x-1/2 border-red-400 "
+        />
+        <Toast
+          message={deleteMessage}
+          className="top-8 left-1/2 -translate-x-1/2 border-red-400 "
+        />
+        <ToastWithSpinner message={'Deleting post'} />
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
@@ -71,9 +97,7 @@ export const CatchBoundary = () => {
   if (caught.status === 500)
     return (
       <div className="h=screen flex w-screen flex-col items-center justify-center">
-        <h1 className="text-3xl font-semibold">
-          Ooopsie there something wrong
-        </h1>
+        <h1 className="text-3xl font-semibold">Ooopsie there something wrong</h1>
         <Link to="/" className="text-blue-500 hover:underline">
           Go back home
         </Link>

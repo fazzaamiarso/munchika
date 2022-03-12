@@ -1,17 +1,24 @@
-import { useFetcher, Link } from 'remix';
-import { MusicNoteIcon } from '@heroicons/react/outline';
+import { useFetcher, Link, useNavigate } from 'remix';
+import { MusicNoteIcon, ArrowLeftIcon } from '@heroicons/react/outline';
 import { useEffect, useRef } from 'react';
 
 export default function SelectPost() {
   const fetcher = useFetcher();
   const searchRef = useRef();
+  const navigate = useNavigate();
 
   useEffect(() => {
     searchRef.current.focus();
   }, []);
 
   return (
-    <section className="mx-auto flex min-h-screen w-10/12 max-w-xl flex-col items-center ">
+    <section className="relative mx-auto flex min-h-screen w-10/12 max-w-xl flex-col items-center ">
+      <button
+        className="group absolute  top-8 left-0 z-30 hidden rounded-full p-2 ring-1 ring-gray-500 sm:block"
+        onClick={() => navigate(-1)}
+      >
+        <ArrowLeftIcon className="h-4 transition-transform group-hover:-translate-x-1" />
+      </button>
       <div className="flex flex-col items-center pt-8 pb-6 leading-none">
         <MusicNoteIcon className="mb-2 h-8 text-gray-400" />
         <h2 className="text-lg font-semibold">Pick a song</h2>
@@ -33,9 +40,7 @@ export default function SelectPost() {
         <button
           type="submit"
           className="rounded-md bg-blue-500 px-4 py-2 text-white hover:opacity-90 disabled:opacity-75"
-          disabled={
-            fetcher.state === 'submitting' || fetcher.state === 'loading'
-          }
+          disabled={fetcher.state === 'submitting' || fetcher.state === 'loading'}
         >
           {fetcher.state === 'submitting' ? 'Searching...' : 'Search'}
         </button>
@@ -65,12 +70,8 @@ export default function SelectPost() {
                     alt={track.result.title}
                   />
                   <div className="flex flex-col items-start">
-                    <h3 className="font-semibold line-clamp-2 ">
-                      {track.result.title}
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      {track.result.primary_artist.name}
-                    </p>
+                    <h3 className="font-semibold line-clamp-2 ">{track.result.title}</h3>
+                    <p className="text-sm text-gray-500">{track.result.primary_artist.name}</p>
                   </div>
                   <Link
                     prefetch="intent"

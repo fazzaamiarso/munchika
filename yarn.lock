@@ -146,6 +146,16 @@
     prop-types "^15.7.2"
     tslib "^2.3.0"
 
+"@reach/alert@^0.16.0":
+  version "0.16.0"
+  resolved "https://registry.yarnpkg.com/@reach/alert/-/alert-0.16.0.tgz#12adbced9323087a362a92771c60ff5cafe902d7"
+  integrity sha512-lwlwGcMxUBoy//W6D1DCw+2q25w5Mfpe25FJKmhYR0umLr7Ii+2TLwiE8giMuFA97KNf6/9T2elLaeaNDoyKOw==
+  dependencies:
+    "@reach/utils" "0.16.0"
+    "@reach/visually-hidden" "0.16.0"
+    prop-types "^15.7.2"
+    tslib "^2.3.0"
+
 "@reach/auto-id@0.16.0":
   version "0.16.0"
   resolved "https://registry.yarnpkg.com/@reach/auto-id/-/auto-id-0.16.0.tgz#dfabc3227844e8c04f8e6e45203a8e14a8edbaed"
@@ -230,6 +240,14 @@
   integrity sha512-PCggBet3qaQmwFNcmQ/GqHSefadAFyNCUekq9RrWoaU9hh/S4iaFgf2MBMdM47eQj5i/Bk0Mm07cP/XPFlkN+Q==
   dependencies:
     tiny-warning "^1.0.3"
+    tslib "^2.3.0"
+
+"@reach/visually-hidden@0.16.0":
+  version "0.16.0"
+  resolved "https://registry.yarnpkg.com/@reach/visually-hidden/-/visually-hidden-0.16.0.tgz#2a5e834af9e93c554065ff8cbb0907fbeb26ad02"
+  integrity sha512-IIayZ3jzJtI5KfcfRVtOMFkw2ef/1dMT8D9BUuFcU2ORZAWLNvnzj1oXNoIfABKl5wtsLjY6SGmkYQ+tMPN8TA==
+  dependencies:
+    prop-types "^15.7.2"
     tslib "^2.3.0"
 
 "@remix-run/dev@^1.2.1":
@@ -2542,6 +2560,11 @@ lodash.merge@^4.6.2:
   version "4.6.2"
   resolved "https://registry.yarnpkg.com/lodash.merge/-/lodash.merge-4.6.2.tgz#558aa53b43b661e1925a0afdfa36a9a1085fe57a"
   integrity sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==
+
+lodash.throttle@^4.1.1:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/lodash.throttle/-/lodash.throttle-4.1.1.tgz#c23e91b710242ac70c37f1e1cda9274cc39bf2f4"
+  integrity sha1-wj6RtxAkKscMN/HhzaknTMOb8vQ=
 
 lodash@^4.17.21:
   version "4.17.21"

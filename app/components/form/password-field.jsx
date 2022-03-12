@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/solid';
 
-export const PasswordField = ({ fieldData }) => {
+export const PasswordField = ({ fieldData, isBusy }) => {
   const [show, setShow] = useState(false);
   const toggleShow = () => setShow(!show);
   return (
@@ -19,7 +19,7 @@ export const PasswordField = ({ fieldData }) => {
           autoComplete="off"
           defaultValue={fieldData?.fields ? fieldData.fields.password : ''}
           className={`w-full rounded-md ${
-            fieldData?.fieldErrors?.password ? 'border-red-400' : ''
+            fieldData?.fieldErrors?.password && !isBusy ? 'border-red-400' : ''
           }`}
         />
         <button

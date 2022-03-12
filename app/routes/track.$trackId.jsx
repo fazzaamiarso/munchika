@@ -65,9 +65,7 @@ export default function TrackDetails() {
           />
           <div className="relative flex flex-col items-center gap-2 leading-none ">
             <div className="absolute inset-0 -z-10 h-full w-full bg-black/20 blur-xl " />
-            <h2 className="text-center text-lg font-bold ">
-              {trackData.title}
-            </h2>
+            <h2 className="text-center text-lg font-bold ">{trackData.title}</h2>
             <p className="text-gray-200">{trackData.artist}</p>
             <p className="">Release date : {trackData.release_date}</p>
           </div>
@@ -96,7 +94,7 @@ export default function TrackDetails() {
       </div>
       {trackPosts.length ? (
         <main className="mx-auto flex w-11/12 flex-col items-center py-4">
-          <ul className="space-y-4">
+          <ul className="w-full space-y-4 ">
             {trackPosts.map(post => {
               const modifiedPost = {
                 ...post,
@@ -138,9 +136,7 @@ export default function TrackDetails() {
 export function CatchBoundary() {
   return (
     <div className="flex h-full w-full flex-col items-center">
-      <h2 className="text-2xl font-bold">
-        Whoopsie.. that page doesn&apos;t exist
-      </h2>
+      <h2 className="text-2xl font-bold">Whoopsie.. that page doesn&apos;t exist</h2>
       <Link to="/" className="bg-blue-500 font-semibold hover:underline">
         Go back home
       </Link>

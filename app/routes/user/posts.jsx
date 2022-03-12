@@ -1,5 +1,5 @@
-import { Link, useLoaderData } from 'remix';
-import { getUserId } from '../../utils/session.server';
+import { json, Link, useLoaderData } from 'remix';
+import { commitSession, getUserId, getUserSession } from '../../utils/session.server';
 import { getPostWithTrack } from '../../utils/geniusApi.server';
 import { supabase } from '../../utils/supabase.server';
 import { AnnotationIcon, PlusIcon } from '@heroicons/react/outline';
@@ -18,6 +18,7 @@ export const loader = async ({ request }) => {
   const { data: userPosts } = await supabase
     .from('post')
     .select('*, user!post_author_id_fkey (username, avatar_url)')
+    .order('created_at', { ascending: false })
     .eq('author_id', userId);
 
   const postsData = await getPostWithTrack(userPosts);
@@ -25,38 +26,18 @@ export const loader = async ({ request }) => {
 };
 
 export const action = async ({ request }) => {
+  const userSession = await getUserSession(request);
   const userId = await getUserId(request);
   const formData = await request.formData();
   const actionType = formData.get('action');
   const postId = formData.get('postId');
 
   if (actionType === 'delete') {
-    const { error } = await supabase
-      .from('post')
-      .delete()
-      .match({ id: postId, author_id: userId });
-    console.log(error);
+    const { error } = await supabase.from('post').delete().match({ id: postId, author_id: userId });
+    if (error) userSession.flash('delete', 'Ooops.. delete failed!');
+    else userSession.flash('delete', 'Delete successful!');
+    return json(null, { headers: { 'Set-Cookie': await commitSession(userSession) } });
   }
-
-  // if (actionType === 'reaction') {
-  //   const { data: haveLiked } = await supabase
-  //     .from('post_reaction')
-  //     .select('*')
-  //     .match({ sender_id: userId, post_id: postId })
-  //     .maybeSingle();
-  //   if (haveLiked) {
-  //     await supabase
-  //       .from('post_reaction')
-  //       .delete()
-  //       .match({ sender_id: userId, post_id: postId });
-  //     return json('success');
-  //   }
-  //   await supabase
-  //     .from('post_reaction')
-  //     .insert([{ post_id: postId, sender_id: userId }]);
-
-  //   return json('success');
-  // }
 
   return null;
 };
@@ -67,15 +48,9 @@ export default function UserPost() {
   return (
     <main className="mt-6 flex min-h-screen w-full flex-col items-center">
       {postsData.length ? (
-        <ul className=" space-y-4 px-4">
+        <ul className=" w-full space-y-4 px-4">
           {postsData.map(post => {
-            return (
-              <PostCard
-                key={post.id}
-                currentUserId={post.author_id}
-                postWithUser={post}
-              />
-            );
+            return <PostCard key={post.id} currentUserId={post.author_id} postWithUser={post} />;
           })}
         </ul>
       ) : (
@@ -84,9 +59,7 @@ export default function UserPost() {
             <div className="flex flex-col items-center ">
               <AnnotationIcon className="h-12 text-gray-400" />
               <h2 className="mt-2 text-lg font-semibold">No Posts </h2>
-              <p className=" text-gray-400">
-                Get started by creating new post.
-              </p>
+              <p className=" text-gray-400">Get started by creating new post.</p>
             </div>
             <Link
               to="/post/select"

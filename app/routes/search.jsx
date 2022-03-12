@@ -1,6 +1,7 @@
 import { Outlet, Form, useLocation, Link, useTransition } from 'remix';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowCircleUpIcon, RefreshIcon } from '@heroicons/react/outline';
+import throttle from 'lodash.throttle';
 
 export function meta() {
   return {
@@ -107,11 +108,11 @@ const GoToTopButton = () => {
   const [showButton, setShowButton] = useState(false);
 
   const handleToTop = () => {
-    setShowButton(false);
     window.scrollTo({
       top: 0,
       behavior: 'smooth',
     });
+    setShowButton(false);
   };
 
   useEffect(() => {
@@ -120,9 +121,11 @@ const GoToTopButton = () => {
         setShowButton(true);
       }
     };
-    window.addEventListener('scroll', handleScroll);
+    const throttledScroll = throttle(handleScroll, 1000);
 
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', throttledScroll);
+
+    return () => window.removeEventListener('scroll', throttledScroll);
   }, []);
 
   if (!showButton) return null;
