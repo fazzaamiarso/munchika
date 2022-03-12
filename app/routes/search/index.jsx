@@ -114,10 +114,10 @@ export default function SearchPost() {
   useEffect(() => {
     if (fetcher.state !== 'idle') return;
     if (initial) return setPostList(data);
-    if (fetcher.data?.data && fetcher.data.data.length < 10) {
-      setShouldFetch(false);
+    if (fetcher.data?.data) {
       setPostList(prev => [...prev, ...fetcher.data.data]);
-      return;
+      if (fetcher.data.data.length < 10) return setShouldFetch(false);
+      else return setShouldFetch(true);
     }
   }, [fetcher, initial, data]);
 
@@ -181,9 +181,11 @@ export default function SearchPost() {
 
 export const ErrorBoundary = () => {
   return (
-    <div className="flex h-full w-screen flex-col items-center justify-center ">
-      <h1 className="text-2xl">Oooops.. something went wrong!</h1>
-      <p>We are working on right now!</p>
+    <div className="flex h-screen w-screen flex-col items-center justify-center ">
+      <div className="text-center">
+        <h1 className="text-2xl ">Oooops.. something went wrong!</h1>
+        <p>We are working on right now!</p>
+      </div>
     </div>
   );
 };

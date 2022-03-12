@@ -1,11 +1,4 @@
-import {
-  Link,
-  useNavigate,
-  useFetcher,
-  useTransition,
-  useLocation,
-  NavLink,
-} from 'remix';
+import { Link, useFetcher, useTransition, useLocation, NavLink } from 'remix';
 import { Fragment, useEffect } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { MenuIcon, XIcon } from '@heroicons/react/outline';
@@ -24,8 +17,6 @@ function classNames(...classes) {
 function Navbar() {
   const logout = useFetcher();
   const location = useLocation();
-  const navigate = useNavigate();
-  const handleAdd = () => navigate('/post/select');
   const transition = useTransition();
 
   useEffect(() => {
@@ -53,16 +44,8 @@ function Navbar() {
                 </div>
                 <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                   <div className="flex  items-center">
-                    <img
-                      className="block h-8 w-auto md:hidden"
-                      src={Logo}
-                      alt="Munchika"
-                    />
-                    <img
-                      className="hidden h-8 w-auto md:block"
-                      src={Munchika}
-                      alt="Munchika"
-                    />
+                    <img className="block h-8 w-auto md:hidden" src={Logo} alt="Munchika" />
+                    <img className="hidden h-8 w-auto md:block" src={Munchika} alt="Munchika" />
                   </div>
                   <div className="hidden sm:ml-6 sm:block">
                     <div className="flex space-x-4">
@@ -85,16 +68,13 @@ function Navbar() {
                   </div>
                 </div>
                 <div className="absolute inset-y-0 right-0 flex items-center gap-4 pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-                  <button
+                  <Link
                     className="hidden rounded-sm bg-blue-400 py-1 px-3 text-sm font-semibold text-white hover:opacity-90 sm:block"
-                    onClick={handleAdd}
-                    disabled={
-                      transition.state === 'submitting' ||
-                      transition.state === 'loading'
-                    }
+                    to={'/post/select'}
+                    disabled={transition.state === 'submitting' || transition.state === 'loading'}
                   >
                     Add Thought
-                  </button>
+                  </Link>
 
                   {/* Profile dropdown */}
                   <Menu as="div" className="relative ml-3">
@@ -127,9 +107,7 @@ function Navbar() {
                             <Menu.Item>
                               <Link
                                 to="/user/posts"
-                                className={classNames(
-                                  'block px-4 py-2 text-sm text-gray-700',
-                                )}
+                                className={classNames('block px-4 py-2 text-sm text-gray-700')}
                               >
                                 My Posts
                               </Link>
@@ -152,9 +130,7 @@ function Navbar() {
                           ) : (
                             <Link
                               to={`/login?redirectTo=${location.pathname}`}
-                              className={classNames(
-                                'block px-4 py-2 text-sm text-gray-700',
-                              )}
+                              className={classNames('block px-4 py-2 text-sm text-gray-700')}
                             >
                               Login
                             </Link>
@@ -182,12 +158,13 @@ function Navbar() {
                     {item.name}
                   </Disclosure.Button>
                 ))}
-                <button
-                  className="mx-3 my-2 mt-8 block rounded-sm bg-blue-400 py-1 px-3 text-sm font-semibold text-white "
-                  onClick={handleAdd}
+                <Disclosure.Button
+                  as={Link}
+                  className="mx-3 my-2 mt-8 block w-max rounded-sm bg-blue-400 py-1 px-3 text-sm font-semibold text-white "
+                  to={'/post/select'}
                 >
                   Add Thought
-                </button>
+                </Disclosure.Button>
               </div>
             </Disclosure.Panel>
           </>
