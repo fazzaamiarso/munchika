@@ -1,13 +1,8 @@
 import { useState } from 'react';
-import { redirect, useFetcher, useSearchParams, useTransition } from 'remix';
+import { redirect, useSearchParams, useTransition, Form, useActionData } from 'remix';
 import { createUserSession, getUserId } from '../utils/session.server';
 import { validateUsername, supabase } from '../utils/supabase.server';
-import {
-  validateEmail,
-  validatePassword,
-  haveErrors,
-  badRequest,
-} from '../utils/formUtils';
+import { validateEmail, validatePassword, haveErrors, badRequest } from '../utils/formUtils';
 import { PasswordField } from '../components/form/password-field';
 
 export const loader = async ({ request }) => {
@@ -23,6 +18,7 @@ export const action = async ({ request }) => {
   const authType = formData.get('authType');
   const username = formData.get('username') ?? null;
   const redirectTo = formData.get('redirectTo') ?? '/';
+
   const fields = { email, password, username };
   const fieldErrors = {
     username: await validateUsername(username),
@@ -68,16 +64,15 @@ export const action = async ({ request }) => {
 export default function Login() {
   const [searchParams] = useSearchParams();
   const [formType, setFormType] = useState('login');
-  const fetcher = useFetcher();
   const transition = useTransition();
+  const actionData = useActionData();
+  const isBusy = transition.state === 'submitting' || transition.state === 'loading';
 
   return (
     <div className="flex h-screen w-screen items-center justify-center ">
       <div className="flex w-11/12 max-w-lg flex-col items-center gap-6 ">
-        <h1 className="text-2xl font-bold">
-          {formType === 'login' ? 'Login' : 'Signup'}
-        </h1>
-        <fetcher.Form
+        <h1 className="text-2xl font-bold">{formType === 'login' ? 'Login' : 'Signup'}</h1>
+        <Form
           method="post"
           className="flex w-10/12 flex-col gap-6 rounded-md bg-white py-4 px-6 shadow-md ring-2 ring-gray-500/10"
           replace
@@ -119,17 +114,13 @@ export default function Login() {
                 placeholder="cool_kidz"
                 required
                 autoComplete="off"
-                defaultValue={
-                  fetcher.data?.fields ? fetcher.data.fields.username : ''
-                }
+                defaultValue={actionData?.fields ? actionData.fields.username : ''}
                 className={`w-full rounded-md ${
-                  fetcher.data?.fieldErrors?.username ? 'border-red-400' : ''
+                  actionData?.fieldErrors?.username && !isBusy ? 'border-red-400' : ''
                 }`}
               />
-              {fetcher.data?.fieldErrors ? (
-                <span className="text-sm text-red-500">
-                  {fetcher.data.fieldErrors.username}
-                </span>
+              {actionData?.fieldErrors && !isBusy ? (
+                <span className="text-sm text-red-500">{actionData.fieldErrors.username}</span>
               ) : null}
             </div>
           ) : null}
@@ -144,41 +135,33 @@ export default function Login() {
               placeholder="email@example.com"
               required
               autoComplete="off"
-              defaultValue={
-                fetcher.data?.fields ? fetcher.data.fields.email : ''
-              }
+              defaultValue={actionData?.fields ? actionData.fields.email : ''}
               className={`w-full rounded-md ${
-                fetcher.data?.fieldErrors?.email ? 'border-red-400' : ''
+                actionData?.fieldErrors?.email && !isBusy ? 'border-red-400' : ''
               }`}
             />
-            {fetcher.data?.fieldErrors ? (
-              <span className="text-sm text-red-500">
-                {fetcher.data.fieldErrors.email}
-              </span>
+            {actionData?.fieldErrors && !isBusy ? (
+              <span className="text-sm text-red-500">{actionData.fieldErrors.email}</span>
             ) : null}
           </div>
           <div className=" flex flex-col">
-            <PasswordField fieldData={fetcher.data} />
-            {fetcher.data?.fieldErrors ? (
-              <span className="text-sm text-red-500">
-                {fetcher.data.fieldErrors.password}
-              </span>
+            <PasswordField fieldData={actionData} isBusy={isBusy} />
+            {actionData?.fieldErrors && !isBusy ? (
+              <span className="text-sm text-red-500">{actionData.fieldErrors.password}</span>
             ) : null}
           </div>
           <button
             className="mt-4 rounded-sm bg-blue-500 px-4 py-1  font-semibold text-white hover:opacity-90 disabled:opacity-75"
             type="submit"
-            disabled={
-              fetcher.state === 'submitting' || transition.state === 'loading'
-            }
+            disabled={transition.state === 'submitting' || transition.state === 'loading'}
           >
-            {fetcher.state === 'submitting'
+            {transition.state === 'submitting'
               ? 'Submitting'
-              : transition.type === 'fetchActionRedirect'
+              : transition.type === 'actionRedirect'
               ? 'Logging you in'
               : 'Submit'}
           </button>
-        </fetcher.Form>
+        </Form>
       </div>
     </div>
   );

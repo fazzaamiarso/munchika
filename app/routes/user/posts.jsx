@@ -32,28 +32,8 @@ export const action = async ({ request }) => {
 
   if (actionType === 'delete') {
     const { error } = await supabase.from('post').delete().match({ id: postId, author_id: userId });
-    console.log(error);
+    error;
   }
-
-  // if (actionType === 'reaction') {
-  //   const { data: haveLiked } = await supabase
-  //     .from('post_reaction')
-  //     .select('*')
-  //     .match({ sender_id: userId, post_id: postId })
-  //     .maybeSingle();
-  //   if (haveLiked) {
-  //     await supabase
-  //       .from('post_reaction')
-  //       .delete()
-  //       .match({ sender_id: userId, post_id: postId });
-  //     return json('success');
-  //   }
-  //   await supabase
-  //     .from('post_reaction')
-  //     .insert([{ post_id: postId, sender_id: userId }]);
-
-  //   return json('success');
-  // }
 
   return null;
 };
