@@ -15,7 +15,7 @@ import styles from './tailwind.css';
 import { Navbar } from './components/navbar';
 import { Footer } from './components/footer';
 import { commitSession, getUserSession } from './utils/session.server';
-import { Toast, ToastWithSpinner } from './components/Toast';
+import { Toast, ToastWithSpinner } from './components/toast';
 
 export function links() {
   return [{ rel: 'stylesheet', href: styles }];
