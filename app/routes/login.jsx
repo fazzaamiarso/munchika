@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { redirect, useSearchParams, useTransition, Form, useActionData } from 'remix';
 import { createUserSession, getUserId } from '../utils/session.server';
 import { validateUsername, supabase } from '../utils/supabase.server';
 import { validateEmail, validatePassword, haveErrors, badRequest } from '../utils/formUtils';
 import { PasswordField } from '../components/form/password-field';
+import { useFocusOnError } from '../hooks/useFocusOnError';
 
 export const loader = async ({ request }) => {
   const userId = await getUserId(request);
@@ -67,15 +68,22 @@ export default function Login() {
   const transition = useTransition();
   const actionData = useActionData();
   const isBusy = transition.state === 'submitting' || transition.state === 'loading';
+  const formRef = useRef();
+
+  useFocusOnError(formRef, actionData?.fieldErrors);
 
   return (
     <div className="flex h-screen w-screen items-center justify-center ">
-      <div className="flex w-11/12 max-w-lg flex-col items-center gap-6 ">
-        <h1 className="text-2xl font-bold">{formType === 'login' ? 'Login' : 'Signup'}</h1>
+      <main className="flex w-11/12 max-w-lg flex-col items-center gap-6 ">
+        <h1 id="form-name" className="text-2xl font-bold">
+          {formType === 'login' ? 'Login' : 'Signup'}
+        </h1>
         <Form
+          aria-labelledby="form-name"
           method="post"
           className="flex w-10/12 flex-col gap-6 rounded-md bg-white py-4 px-6 shadow-md ring-2 ring-gray-500/10"
           replace
+          ref={formRef}
         >
           <input
             type="text"
@@ -87,6 +95,7 @@ export default function Login() {
             onChange={e => setFormType(e.target.value)}
             className="mb-4 flex items-center gap-4 self-center"
           >
+            <legend className="sr-only">Authentication Type</legend>
             <div className="flex items-center gap-2 font-semibold">
               <input
                 id="login"
@@ -118,10 +127,14 @@ export default function Login() {
                 className={`w-full rounded-md ${
                   actionData?.fieldErrors?.username && !isBusy ? 'border-red-400' : ''
                 }`}
+                aria-describedby="username-error"
+                aria-invalid={actionData?.fieldErrors?.username ? 'true' : 'false'}
               />
-              {actionData?.fieldErrors && !isBusy ? (
-                <span className="text-sm text-red-500">{actionData.fieldErrors.username}</span>
-              ) : null}
+              <span className=" text-sm text-red-500 " id="username-error">
+                {actionData?.fieldErrors?.username && !isBusy
+                  ? actionData.fieldErrors.username
+                  : ''}
+              </span>
             </div>
           ) : null}
           <div className="flex flex-col">
@@ -136,22 +149,24 @@ export default function Login() {
               required
               autoComplete="off"
               defaultValue={actionData?.fields ? actionData.fields.email : ''}
-              className={`w-full rounded-md ${
+              className={` w-full rounded-md ${
                 actionData?.fieldErrors?.email && !isBusy ? 'border-red-400' : ''
               }`}
+              aria-describedby="email-error"
+              aria-invalid={actionData?.fieldErrors?.email ? 'true' : 'false'}
             />
-            {actionData?.fieldErrors && !isBusy ? (
-              <span className="text-sm text-red-500">{actionData.fieldErrors.email}</span>
-            ) : null}
+            <span className=" text-sm text-red-500 " id="email-error">
+              {actionData?.fieldErrors?.email && !isBusy ? actionData.fieldErrors.email : ''}
+            </span>
           </div>
           <div className=" flex flex-col">
             <PasswordField fieldData={actionData} isBusy={isBusy} />
-            {actionData?.fieldErrors && !isBusy ? (
-              <span className="text-sm text-red-500">{actionData.fieldErrors.password}</span>
-            ) : null}
+            <span className=" text-sm text-red-500" id="password-error">
+              {actionData?.fieldErrors?.password && !isBusy ? actionData.fieldErrors.password : ''}
+            </span>
           </div>
           <button
-            className="mt-4 rounded-sm bg-blue-500 px-4 py-1  font-semibold text-white hover:opacity-90 disabled:opacity-75"
+            className="mt-4 rounded-sm bg-blue-600 px-4 py-1  font-semibold text-white hover:opacity-90 disabled:opacity-75"
             type="submit"
             disabled={transition.state === 'submitting' || transition.state === 'loading'}
           >
@@ -161,8 +176,15 @@ export default function Login() {
               ? 'Logging you in'
               : 'Submit'}
           </button>
+          <span aria-live="polite" className="sr-only">
+            {transition.state === 'submitting'
+              ? 'Submitting'
+              : transition.type === 'actionRedirect'
+              ? 'Logging you in'
+              : ''}
+          </span>
         </Form>
-      </div>
+      </main>
     </div>
   );
 }

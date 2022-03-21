@@ -52,8 +52,11 @@ export const PostCard = ({
       </div>
       {displayTrack ? (
         <div
+          tabIndex={0}
+          role="link"
+          aria-label={post.title}
           onClick={handleToFeed}
-          className="mb-4 flex  items-center gap-4 rounded-sm shadow-md ring-1 ring-slate-200 transition-all hover:cursor-pointer hover:ring-2 hover:ring-gray-300"
+          className="mb-4 flex items-center gap-4 rounded-sm shadow-md ring-1 ring-slate-200 transition-all hover:cursor-pointer hover:ring-2 hover:ring-gray-300"
         >
           <img src={post.thumbnail} alt={post.title} className="h-16" />
           <div className="pr-4">

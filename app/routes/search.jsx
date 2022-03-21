@@ -43,6 +43,7 @@ export default function SearchLayout() {
           method="get"
           action={location.pathname}
           className="flex w-full items-center gap-4"
+          noValidate={transition.submission?.formData.get('action') === 'clear'}
         >
           <input
             type="search"

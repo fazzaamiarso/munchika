@@ -21,8 +21,11 @@ export const PasswordField = ({ fieldData, isBusy }) => {
           className={`w-full rounded-md ${
             fieldData?.fieldErrors?.password && !isBusy ? 'border-red-400' : ''
           }`}
+          aria-describedby="password-error"
+          aria-invalid={fieldData?.fieldErrors?.password ? 'true' : 'false'}
         />
         <button
+          aria-label={show ? 'Hide password' : 'Show password'}
           type="button"
           onClick={toggleShow}
           className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:opacity-70"
