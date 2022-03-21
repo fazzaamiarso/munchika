@@ -69,7 +69,7 @@ function Navbar() {
                 </div>
                 <div className="absolute inset-y-0 right-0 flex items-center gap-4 pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
                   <Link
-                    className="hidden rounded-sm bg-blue-400 py-1 px-3 text-sm font-semibold text-white hover:opacity-90 sm:block"
+                    className="hidden rounded-sm bg-blue-600 py-1 px-3 text-sm font-semibold text-white hover:opacity-90 sm:block"
                     to={'/post/select'}
                     disabled={transition.state === 'submitting' || transition.state === 'loading'}
                   >
@@ -103,38 +103,49 @@ function Navbar() {
                     >
                       <Menu.Items className="absolute right-0 z-[100] mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                         {logout.data ? (
-                          <>
-                            <Menu.Item>
+                          <Menu.Item>
+                            {({ active }) => (
                               <Link
                                 to="/user/posts"
-                                className={classNames('block px-4 py-2 text-sm text-gray-700')}
+                                className={classNames(
+                                  active ? 'bg-gray-200' : '',
+                                  'block px-4 py-2 text-sm text-gray-700',
+                                )}
                               >
                                 My Posts
                               </Link>
-                            </Menu.Item>
-                          </>
+                            )}
+                          </Menu.Item>
                         ) : null}
                         <Menu.Item>
-                          {logout.data ? (
-                            <logout.Form
-                              action={`/logout?redirectTo=${location.pathname}`}
-                              method="post"
-                            >
-                              <button
-                                type="submit"
-                                className="block w-full px-4 py-2 text-left text-sm text-gray-700"
+                          {({ active }) => {
+                            return logout.data ? (
+                              <logout.Form
+                                action={`/logout?redirectTo=${location.pathname}`}
+                                method="post"
                               >
-                                Logout
-                              </button>
-                            </logout.Form>
-                          ) : (
-                            <Link
-                              to={`/login?redirectTo=${location.pathname}`}
-                              className={classNames('block px-4 py-2 text-sm text-gray-700')}
-                            >
-                              Login
-                            </Link>
-                          )}
+                                <button
+                                  type="submit"
+                                  className={classNames(
+                                    active ? 'bg-gray-200' : '',
+                                    'block w-full px-4 py-2 text-left text-sm text-gray-700',
+                                  )}
+                                >
+                                  Logout
+                                </button>
+                              </logout.Form>
+                            ) : (
+                              <Link
+                                to={`/login?redirectTo=${location.pathname}`}
+                                className={classNames(
+                                  active ? 'bg-gray-200' : '',
+                                  'block px-4 py-2 text-sm text-gray-700',
+                                )}
+                              >
+                                Login
+                              </Link>
+                            );
+                          }}
                         </Menu.Item>
                       </Menu.Items>
                     </Transition>
@@ -160,7 +171,7 @@ function Navbar() {
                 ))}
                 <Disclosure.Button
                   as={Link}
-                  className="mx-3 my-2 mt-8 block w-max rounded-sm bg-blue-400 py-1 px-3 text-sm font-semibold text-white "
+                  className="mx-3 my-2 mt-8 block w-max rounded-sm bg-blue-600 py-1 px-3 text-sm font-semibold text-white "
                   to={'/post/select'}
                 >
                   Add Thought

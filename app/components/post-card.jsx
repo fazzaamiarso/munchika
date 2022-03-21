@@ -38,7 +38,7 @@ export const PostCard = ({
             />
             <div className="flex w-full flex-col items-start ">
               <p>{isPostOwner ? 'You' : post.username}</p>
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-gray-600">
                 {new Date(post.created_at).toDateString()}
               </span>
             </div>
@@ -68,37 +68,15 @@ export const PostCard = ({
       <section className="space-y-4 break-words">
         {post.lyrics === '' ? null : (
           <div>
-            <h4 className="font-semibold">Featured lyrics</h4>
+            <p className="font-semibold">Featured lyrics</p>
             <p className="text-justify indent-8  text-gray-700">{post.lyrics}</p>
           </div>
         )}
         <div>
-          <h4 className="font-semibold">Thought</h4>
+          <p className="font-semibold">Thought</p>
           <p className="text-justify indent-8 text-gray-700">{post.thought}</p>
         </div>
       </section>
-      {/* <fetcher.Form
-        action="/user/posts"
-        method="post"
-        className="flex items-center gap-2"
-      >
-        <input type="text" name="postId" defaultValue={post.id} hidden />
-        <button
-          type="submit"
-          name="action"
-          value="reaction"
-          disabled={!currentUserId}
-        >
-          {post.haveLiked ||
-          fetcher.submission?.formData.get('action') === 'reaction' ? (
-            <HeartIconSolid className="h-6 text-red-600" />
-          ) : (
-            <HeartIcon className="h-6" />
-          )}
-        </button>
-        <span className="text-gray-600">{post.reactions}</span>
-      </fetcher.Form> */}
-
       <Dialog
         className="fixed inset-0 z-20 "
         open={isOpen}
