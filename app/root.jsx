@@ -53,6 +53,14 @@ export default function App() {
         <Links />
       </head>
       <body className="overflow-x-hidden">
+        {location.pathname.includes('/login') ? null : (
+          <Link
+            className="fixed left-1/2 top-0 z-30  -translate-x-1/2 -translate-y-full bg-white px-3 py-1 underline  transition-transform focus:translate-y-0"
+            to="#main"
+          >
+            Skip to content
+          </Link>
+        )}
         {location.pathname.includes('/login') ? null : <Navbar />}
         <Outlet />
         {location.pathname.includes('/login') ? null : <Footer />}

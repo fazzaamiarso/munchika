@@ -17,7 +17,7 @@ export default function Index() {
   const { trackDatas } = useLoaderData();
 
   return (
-    <main className="mx-auto my-6 flex w-11/12 max-w-lg flex-col items-center">
+    <main id="main" className="mx-auto my-6 flex w-11/12 max-w-lg flex-col items-center">
       <h1 className="text-3xl font-bold md:text-4xl">See Other&apos;s Thought</h1>
       <p className="max-w-[50ch] text-center text-gray-600">
         Find song that actually help them (maybe they can help you too) or{' '}
