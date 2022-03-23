@@ -38,6 +38,21 @@ export default function SearchTrack() {
     currPage.current = currPage.current + 1;
   };
 
+  const useFocusOnFirstLoadedContent = list => {
+    useEffect(() => {
+      if (list.length === 0 || !list) return;
+      const listLengthDivided = Math.floor(list.length / 10) - 1;
+      const contentToFocus =
+        listLengthDivided === 0
+          ? document.getElementById('link-0')
+          : document.getElementById('link-' + String(listLengthDivided * 10 + 1));
+      console.log(listLengthDivided);
+      contentToFocus?.focus();
+    }, [list]);
+  };
+
+  useFocusOnFirstLoadedContent(trackList || []);
+
   useEffect(() => {
     if (transition.type === 'loaderSubmission') {
       initial.current = true;
@@ -77,7 +92,7 @@ export default function SearchTrack() {
     <div className="flex flex-col gap-4">
       <ul className=" min-h-screen divide-y divide-gray-200 ">
         {trackList?.length ? (
-          trackList.map(track => {
+          trackList.map((track, index) => {
             return (
               <li
                 key={`${track.result.id}${Math.random() * 100}`}
@@ -99,9 +114,10 @@ export default function SearchTrack() {
                   </p>
                 </div>
                 <Link
-                  className="group ml-auto flex items-center gap-1 rounded-full px-2 py-1 text-xs text-gray-600 ring-1 ring-gray-300"
+                  className="group ml-auto flex items-center gap-1 rounded-full px-2 py-1 text-xs text-gray-600 ring-1 ring-gray-300 focus:ring-black"
                   to={`/track/${track.result.id}`}
                   prefetch="intent"
+                  id={`link-${index}`}
                   aria-labelledby={track.result.id}
                 >
                   {transition.state === 'loading' &&
