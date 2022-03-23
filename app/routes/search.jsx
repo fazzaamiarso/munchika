@@ -100,6 +100,9 @@ export default function SearchLayout() {
                   >
                     {item.name}
                   </Link>
+                  <span className="sr-only" aria-live="polite">
+                    You are at page {item.name}
+                  </span>
                 </li>
               );
             })}

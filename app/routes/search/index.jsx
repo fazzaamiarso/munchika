@@ -126,7 +126,8 @@ export default function SearchPost() {
       <Listbox value={sortValue} onChange={handleSort}>
         <div className="relative w-3/12">
           <Listbox.Button className="flex w-full items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-1 text-white">
-            {sortValue.name} <sortValue.Icon className="h-4" />
+            <span className="sr-only">Sort by</span> {sortValue.name}{' '}
+            <sortValue.Icon className="h-4" />
           </Listbox.Button>
           <Listbox.Options className="absolute z-10  w-full cursor-default rounded-md bg-white shadow-md ring-2 ring-gray-500/20">
             {SORTER.map((item, idx) => {

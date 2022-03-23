@@ -1,4 +1,4 @@
-import { useFetcher, useNavigate } from 'remix';
+import { useFetcher, Link } from 'remix';
 import { PostMenu } from './post-menu';
 import { useState, useRef } from 'react';
 import { Dialog } from '@headlessui/react';
@@ -11,13 +11,11 @@ export const PostCard = ({
   displayTrack = true,
 }) => {
   const fetcher = useFetcher();
-  const navigate = useNavigate();
   const cancelRef = useRef();
   const [isOpen, setIsOpen] = useState(false);
 
   const isPostOwner = post.author_id === currentUserId;
 
-  const handleToFeed = () => navigate(`/track/${post.track_id}`);
   const handleDelete = e => {
     setIsOpen(false);
     fetcher.submit(
@@ -27,18 +25,26 @@ export const PostCard = ({
   };
 
   return (
-    <li className="mx-auto w-full max-w-lg space-y-4 self-stretch rounded-md bg-white p-4 shadow-md ring-1 ring-slate-300">
+    <li
+      tabIndex="0"
+      className="mx-auto w-full max-w-lg space-y-4 self-stretch rounded-md bg-white p-4 shadow-md ring-1 ring-slate-300"
+      aria-label={post.title}
+      aria-describedby="post-user post-content"
+    >
       <div className="flex w-full items-center gap-2 ">
         {displayUser ? (
           <>
             <img
+              role="presentation"
               src={post.avatar}
-              alt={post.username}
               className="aspect-square h-8 rounded-full bg-gray-200"
             />
-            <div className="flex w-full flex-col items-start ">
-              <p>{isPostOwner ? 'You' : post.username}</p>
+            <div className="flex w-full flex-col items-start" id="post-user">
+              <p>
+                <span className="sr-only">created by:</span> {isPostOwner ? 'You' : post.username}
+              </p>
               <span className="text-xs text-gray-600">
+                <span className="sr-only">created_at:</span>{' '}
                 {new Date(post.created_at).toDateString()}
               </span>
             </div>
@@ -51,21 +57,27 @@ export const PostCard = ({
         ) : null}
       </div>
       {displayTrack ? (
-        <div
-          tabIndex={0}
-          role="link"
-          aria-label={post.title}
-          onClick={handleToFeed}
-          className="mb-4 flex items-center gap-4 rounded-sm shadow-md ring-1 ring-slate-200 transition-all hover:cursor-pointer hover:ring-2 hover:ring-gray-300"
-        >
-          <img src={post.thumbnail} alt={post.title} className="h-16" />
+        <div className="relative mb-4 flex items-center gap-4 rounded-sm shadow-md ring-1 ring-slate-200 transition-all focus-within:ring-2 focus-within:ring-gray-300 hover:cursor-pointer hover:ring-2 hover:ring-gray-300">
+          <img
+            src={post.thumbnail}
+            role="presentation"
+            height="64px"
+            width="64px"
+            className="h-16"
+          />
           <div className="pr-4">
-            <p className="text-sm font-semibold">{post.title}</p>
+            <Link
+              to={`/track/${post.track_id}`}
+              aria-label={`Go to ${post.title} by ${post.artist} feed`}
+              className="block text-sm font-semibold after:absolute after:inset-0 "
+            >
+              {post.title}
+            </Link>
             <p className="text-xs">{post.artist}</p>
           </div>
         </div>
       ) : null}
-      <section className="space-y-4 break-words">
+      <div className="space-y-4 break-words" id="post-content">
         {post.lyrics === '' ? null : (
           <div>
             <p className="font-semibold">Featured lyrics</p>
@@ -73,10 +85,12 @@ export const PostCard = ({
           </div>
         )}
         <div>
-          <p className="font-semibold">Thought</p>
+          <p className="font-semibold">
+            Thought <span className="sr-only">on this song:</span>
+          </p>
           <p className="text-justify indent-8 text-gray-700">{post.thought}</p>
         </div>
-      </section>
+      </div>
       <Dialog
         className="fixed inset-0 z-20 "
         open={isOpen}
@@ -127,7 +141,10 @@ export const PostCard = ({
 
 export const PostCardSkeleton = ({ displayUser = true, displayTrack = true }) => {
   return (
-    <div className="mx-auto w-full max-w-lg animate-pulse space-y-4 self-stretch rounded-md bg-white p-4 shadow-md ring-1 ring-slate-300">
+    <div
+      aria-hidden="true"
+      className="mx-auto w-full max-w-lg animate-pulse space-y-4 self-stretch rounded-md bg-white p-4 shadow-md ring-1 ring-slate-300"
+    >
       <div className="flex w-full items-center gap-2 ">
         {displayUser ? (
           <>
