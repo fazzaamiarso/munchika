@@ -10,21 +10,7 @@ import {
 } from 'remix';
 import { getUserId, requireUserId } from '~/utils/session.server';
 import { supabase, validateUsername } from '~/utils/supabase.server';
-import { badRequest, haveErrors } from '~/utils/formUtils';
-
-const generateRandomString = () => {
-  const ALPHABET = 'abcdefghijklmnovqrstuvwxyz';
-  const NUMBER = '1234567890';
-  let generated = [];
-  for (let i = 0; i < 8; i++) {
-    if (Math.random() > 0.5) {
-      generated.push(ALPHABET[Math.floor(Math.random() * 26)]);
-      continue;
-    }
-    generated.push(NUMBER[Math.floor(Math.random() * 10)]);
-  }
-  return generated.join('');
-};
+import { badRequest, haveErrors, generateRandomString } from '~/utils/formUtils';
 
 export const loader = async ({ request }) => {
   const userId = await requireUserId(request);
@@ -57,13 +43,9 @@ export const action = async ({ request }) => {
   const fieldErrors = {
     username: await validateUsername(username),
   };
-  if (haveErrors(fieldErrors) && isUsernameChanged)
-    return badRequest({ fieldErrors, fields });
+  if (haveErrors(fieldErrors) && isUsernameChanged) return badRequest({ fieldErrors, fields });
 
-  await supabase
-    .from('user')
-    .update({ avatar_url: newAvatar, username })
-    .match({ id: userId });
+  await supabase.from('user').update({ avatar_url: newAvatar, username }).match({ id: userId });
 
   return redirect('/user/posts');
 };
@@ -74,8 +56,7 @@ export default function EditProfile() {
   const fetcher = useFetcher();
   const transition = useTransition();
   const navigate = useNavigate();
-  const isRandomizing =
-    fetcher.state === 'loading' || fetcher.state === 'submitting';
+  const isRandomizing = fetcher.state === 'loading' || fetcher.state === 'submitting';
   return (
     <main className="mt-8 h-screen">
       <section className="mx-auto flex w-10/12 max-w-md flex-col items-center">
@@ -97,46 +78,42 @@ export default function EditProfile() {
             >
               {isRandomizing ? 'Randomizing' : 'Randomize avatar'}
             </button>
+            <span className="sr-only" aria-live="polite">
+              {isRandomizing ? 'Randomizing' : 'Randomize avatar'}
+            </span>
           </fetcher.Form>
         </div>
-        <section className="w-full py-8">
-          <Form method="post" id="edit">
+        <Form method="post" id="edit">
+          <input
+            type="text"
+            hidden
+            name="avatar"
+            className="w-full py-8"
+            key={fetcher.data?.avatar_url ?? userData.avatar_url}
+            defaultValue={fetcher.data?.avatar_url ?? userData.avatar_url}
+            aria-label="Edit profile"
+          />
+          <input type="text" hidden name="old_username" defaultValue={userData.username} />
+          <div className="flex w-full flex-col items-start">
+            <label htmlFor="username" className=" mb-2 text-sm font-semibold">
+              Username
+            </label>
             <input
+              name="username"
+              id="username"
               type="text"
-              hidden
-              name="avatar"
-              key={fetcher.data?.avatar_url ?? userData.avatar_url}
-              defaultValue={fetcher.data?.avatar_url ?? userData.avatar_url}
-            />
-            <input
-              type="text"
-              hidden
-              name="old_username"
+              required
+              autoComplete="off"
               defaultValue={userData.username}
+              className={`w-full rounded-md ${
+                actionData?.fieldErrors?.username ? 'border-red-400' : ''
+              }`}
             />
-            <div className="flex w-full flex-col items-start">
-              <label htmlFor="username" className=" mb-2 text-sm font-semibold">
-                Username
-              </label>
-              <input
-                name="username"
-                id="username"
-                type="text"
-                required
-                autoComplete="off"
-                defaultValue={userData.username}
-                className={`w-full rounded-md ${
-                  actionData?.fieldErrors?.username ? 'border-red-400' : ''
-                }`}
-              />
-              {actionData?.fieldErrors?.username ? (
-                <span className="text-sm text-red-500">
-                  {actionData.fieldErrors.username}
-                </span>
-              ) : null}
-            </div>
-          </Form>
-        </section>
+            {actionData?.fieldErrors?.username ? (
+              <span className="text-sm text-red-500">{actionData.fieldErrors.username}</span>
+            ) : null}
+          </div>
+        </Form>
         <div className="flex gap-4 self-end">
           <button
             type="button"
@@ -150,10 +127,9 @@ export default function EditProfile() {
           <button
             form="edit"
             type="submit"
-            className=" rounded-sm bg-blue-500 px-4 py-1  font-semibold text-white hover:opacity-90 disabled:opacity-75"
+            className=" rounded-sm bg-blue-600 px-4 py-1  font-semibold text-white hover:opacity-90 disabled:opacity-75"
           >
-            {transition.type === 'actionSubmission' ||
-            transition.type === 'actionRedirect'
+            {transition.type === 'actionSubmission' || transition.type === 'actionRedirect'
               ? 'Saving..'
               : 'Save'}
           </button>

@@ -46,7 +46,6 @@ export default function SearchTrack() {
         listLengthDivided === 0
           ? document.getElementById('link-0')
           : document.getElementById('link-' + String(listLengthDivided * 10 + 1));
-      console.log(listLengthDivided);
       contentToFocus?.focus();
     }, [list]);
   };

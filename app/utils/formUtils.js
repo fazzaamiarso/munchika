@@ -25,3 +25,17 @@ export const haveErrors = fieldErrors => {
 export const badRequest = data => {
   return json(data, { status: 400 });
 };
+
+export const generateRandomString = () => {
+  const ALPHABET = 'abcdefghijklmnovqrstuvwxyz';
+  const NUMBER = '1234567890';
+  let generated = [];
+  for (let i = 0; i < 8; i++) {
+    if (Math.random() > 0.5) {
+      generated.push(ALPHABET[Math.floor(Math.random() * 26)]);
+      continue;
+    }
+    generated.push(NUMBER[Math.floor(Math.random() * 10)]);
+  }
+  return generated.join('');
+};

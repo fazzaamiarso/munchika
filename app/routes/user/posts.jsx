@@ -46,7 +46,7 @@ export default function UserPost() {
   const { postsData } = useLoaderData();
 
   return (
-    <main className="mt-6 flex min-h-screen w-full flex-col items-center">
+    <div className="mt-6 flex min-h-screen w-full flex-col items-center">
       {postsData.length ? (
         <ul className=" w-full space-y-4 px-4">
           {postsData.map(post => {
@@ -65,11 +65,12 @@ export default function UserPost() {
               to="/post/select"
               className="flex items-center space-x-1 rounded-sm bg-blue-500 px-4 py-2 font-semibold text-white"
             >
-              <PlusIcon className="h-4" /> <span>New Post</span>
+              <PlusIcon className="h-4" /> <span className="sr-only">Add a</span>{' '}
+              <span>New Post</span>
             </Link>
           </div>
         </div>
       )}
-    </main>
+    </div>
   );
 }

@@ -26,7 +26,7 @@ export const PostMenu = ({ postId, openDialog }) => {
             <Menu.Item>
               {({ active }) => (
                 <button
-                  className={`block px-4 py-2 text-sm ${active ? 'bg-gray-200' : ''}`}
+                  className={`block w-full px-4 py-2 text-sm ${active ? 'bg-gray-200' : ''}`}
                   name="postId"
                   value={postId}
                   type="submit"

@@ -18,7 +18,10 @@ export const loader = async ({ request }) => {
 export default function Users() {
   const { userData } = useLoaderData();
   return (
-    <>
+    <main>
+      <span className="sr-only" aria-live="polite">
+        You are at profile page
+      </span>
       <section className="flex flex-col items-center gap-4 border-b-2 border-slate-200 py-4">
         <img
           src={userData.avatar_url}
@@ -26,16 +29,15 @@ export default function Users() {
           className="aspect-square h-24 rounded-full"
         />
         <div className="flex flex-col gap-4">
-          <h2 className="text-center text-lg font-bold">{userData.username}</h2>
-          <Link
-            to="/user/profile/edit"
-            className="rounded-md px-3 py-1 ring-1 ring-gray-400"
-          >
-            Edit Profile
+          <h1 className="text-center text-lg font-bold">
+            {userData.username} <span className="sr-only">profile</span>
+          </h1>
+          <Link to="/user/profile/edit" className="rounded-md px-3 py-1 ring-1 ring-gray-400">
+            Edit <span className="sr-only">your user</span> Profile
           </Link>
         </div>
       </section>
       <Outlet />
-    </>
+    </main>
   );
 }
