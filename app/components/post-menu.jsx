@@ -11,7 +11,7 @@ export const PostMenu = ({ postId, openDialog }) => {
           <span className="sr-only">Open post menu</span>
           <DotsHorizontalIcon className="h-4" aria-hidden="true" />
         </Menu.Button>
-        <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+        <Menu.Items className="absolute  right-0 z-40 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
           <Menu.Item>
             {({ active }) => (
               <Link
@@ -26,7 +26,9 @@ export const PostMenu = ({ postId, openDialog }) => {
             <Menu.Item>
               {({ active }) => (
                 <button
-                  className={`block w-full px-4 py-2 text-sm ${active ? 'bg-gray-200' : ''}`}
+                  className={`block w-full px-4 py-2 text-left text-sm ${
+                    active ? 'bg-gray-200' : ''
+                  }`}
                   name="postId"
                   value={postId}
                   type="submit"

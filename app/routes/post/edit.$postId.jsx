@@ -13,6 +13,8 @@ import { fetchFromGenius } from '../../utils/geniusApi.server';
 import { requireUserId } from '../../utils/session.server';
 import { validateThought, validateLyrics } from '../../utils/formUtils';
 import { ExternalLinkIcon } from '@heroicons/react/outline';
+import { useRef } from 'react';
+import { useFocusOnError } from '~/hooks/useFocusOnError';
 
 export const loader = async ({ params, request }) => {
   invariant(params.postId, 'Expected params.postId');
@@ -72,25 +74,25 @@ export default function EditPost() {
   const actionData = useActionData();
   const navigate = useNavigate();
   const transition = useTransition();
+  const formRef = useRef();
 
-  const isSaving =
-    transition.type === 'actionRedirect' || transition.state === 'submitting';
+  const isSaving = transition.type === 'actionRedirect' || transition.state === 'submitting';
+
+  useFocusOnError(formRef, actionData?.fieldErrors);
 
   return (
-    <div className="mx-auto mt-4 flex w-10/12 max-w-2xl flex-col py-8">
-      <section className="space-y-4">
+    <main className="mx-auto mt-4 flex w-10/12 max-w-2xl flex-col py-8">
+      <section className="space-y-4" aria-labelledby="heading">
         <div className="mb-8  ">
-          <h1 className="text-xl font-semibold">Editing Post</h1>
-          <p className="text-gray-400">
+          <h1 className="text-xl font-semibold" id="heading">
+            Editing Post
+          </h1>
+          <p className="text-gray-600">
             Last edited at : {new Date(postData.updated_at).toDateString()}
           </p>
         </div>
         <div className="flex max-w-lg items-center  gap-4 rounded-md bg-white ring-1 ring-gray-400">
-          <img
-            src={trackData.thumbnail}
-            alt={trackData.title}
-            className="h-24"
-          />
+          <img src={trackData.thumbnail} alt={trackData.title} className="h-24" />
           <div className="px-3 leading-5">
             <h2 className="font-semibold">{trackData.title}</h2>
             <p className="text-sm">{trackData.artist}</p>
@@ -102,19 +104,16 @@ export default function EditPost() {
             href={trackData.url}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-1 text-blue-500 hover:underline"
+            className="flex items-center gap-1 text-blue-600 hover:underline"
           >
             Check it out on Genius <ExternalLinkIcon className="h-4" />
           </a>
         </p>
       </section>
-      <Form method="post" className="mt-4 flex  flex-col gap-6 py-4">
+      <Form method="post" className="mt-4 flex  flex-col gap-6 py-4" ref={formRef}>
         <div className="flex flex-col gap-2">
           <label htmlFor="lyrics" className="font-semibold">
-            Lyrics{' '}
-            <span className="font-normal text-slate-400">
-              ( You can leave it empty )
-            </span>
+            Lyrics <span className="font-normal text-slate-600">(You can leave it empty)</span>
           </label>
           <textarea
             name="lyrics"
@@ -122,16 +121,16 @@ export default function EditPost() {
             defaultValue={postData.lyrics}
             rows={5}
             autoFocus
-            className={`resize-none rounded-md  ${
+            className={`resize-y rounded-md  ${
               actionData?.fieldErrors?.lyrics ? 'border-red-400' : ''
             }`}
             placeholder="What are the lyrics you want to feature?"
+            aria-describedby="lyrics-error"
+            aria-invalid={actionData?.fieldErrors?.lyrics ? 'true' : 'false'}
           />
-          {actionData?.fieldErrors?.lyrics ? (
-            <p className="text-sm text-red-500">
-              {actionData.fieldErrors.lyrics}
-            </p>
-          ) : null}
+          <p className="text-sm text-red-600" id="lyrics-error">
+            {actionData?.fieldErrors?.lyrics ? actionData.fieldErrors.lyrics : ''}
+          </p>
         </div>
         <div className="flex flex-col gap-2">
           <label htmlFor="thought" className="font-semibold">
@@ -143,15 +142,15 @@ export default function EditPost() {
             defaultValue={postData.thought}
             rows={5}
             placeholder="Share your thoughts to the world about how this song had helped you .."
-            className={`resize-none rounded-md  ${
+            className={`resize-y rounded-md  ${
               actionData?.fieldErrors?.thought ? 'border-red-400' : ''
             }`}
+            aria-describedby="thought-error"
+            aria-invalid={actionData?.fieldErrors?.thought ? 'true' : 'false'}
           />
-          {actionData?.fieldErrors?.thought ? (
-            <p className="text-sm text-red-500">
-              {actionData.fieldErrors.thought}
-            </p>
-          ) : null}
+          <p className="text-sm text-red-600" id="thought-error">
+            {actionData?.fieldErrors?.thought ? actionData.fieldErrors.thought : ''}
+          </p>
         </div>
         <div className="flex gap-2 self-end">
           <button
@@ -165,12 +164,15 @@ export default function EditPost() {
           <button
             type="submit"
             disabled={isSaving}
-            className="rounded-sm bg-blue-500 py-1 px-4 font-semibold text-white"
+            className="rounded-sm bg-blue-600 py-1 px-4 font-semibold text-white"
           >
             {isSaving ? 'Saving...' : 'Save'}
           </button>
+          <span className="sr-only" aria-live="polite">
+            {isSaving ? 'Saving...' : 'Save'}
+          </span>
         </div>
       </Form>
-    </div>
+    </main>
   );
 }

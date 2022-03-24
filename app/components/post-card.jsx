@@ -69,7 +69,7 @@ export const PostCard = ({
             <Link
               to={`/track/${post.track_id}`}
               aria-label={`Go to ${post.title} by ${post.artist} feed`}
-              className="block text-sm font-semibold after:absolute after:inset-0 "
+              className="block text-sm font-semibold after:absolute after:inset-0 after:z-10"
             >
               {post.title}
             </Link>
@@ -107,7 +107,7 @@ export const PostCard = ({
                 </div>
                 <div className="sm:text-left">
                   <Dialog.Title className="text-lg font-semibold ">Delete post</Dialog.Title>
-                  <Dialog.Description className="text-gray-500">
+                  <Dialog.Description className="text-gray-600">
                     Are you sure you wan to delete your post on{' '}
                     <span className="font-semibold">{post.title}</span>?
                   </Dialog.Description>
