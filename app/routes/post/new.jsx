@@ -108,7 +108,7 @@ export default function NewPost() {
               id="lyrics"
               rows={7}
               autoFocus
-              className={`resize-none rounded-md  ${
+              className={`resize-y rounded-md  ${
                 fetcher.data?.fieldErrors?.lyrics ? 'border-red-400' : ''
               }`}
               placeholder="What are the lyrics you want to feature?"
@@ -128,7 +128,7 @@ export default function NewPost() {
               id="thought"
               rows={7}
               placeholder="Share your thoughts to the world about how this song had helped you .."
-              className={`resize-none rounded-md  ${
+              className={`resize-y rounded-md  ${
                 fetcher.data?.fieldErrors?.thought ? 'border-red-400' : ''
               }`}
               aria-invalid={fetcher.data?.fieldErrors?.thought ? 'true' : 'false'}

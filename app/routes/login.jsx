@@ -76,7 +76,7 @@ export default function Login() {
     <div className="flex h-screen w-screen items-center justify-center ">
       <main className="flex w-11/12 max-w-lg flex-col items-center gap-6 ">
         <h1 id="form-name" className="text-2xl font-bold">
-          {formType === 'login' ? 'Login' : 'Signup'}
+          {formType === 'login' ? 'Login to your account' : 'Create an account'}
         </h1>
         <Form
           aria-labelledby="form-name"
