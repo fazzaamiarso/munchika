@@ -6,7 +6,7 @@ import { validateEmail, validatePassword, haveErrors, badRequest } from '~/utils
 import { PasswordField } from '~/components/form/password-field';
 import { useFocusOnError } from '~/hooks/useFocusOnError';
 import { ErrorMessage } from '~/components/form/error-message';
-
+import { InputField } from '~/components/form/input-field';
 export const loader = async ({ request }) => {
   const userId = await getUserId(request);
   if (userId) throw redirect('/');
@@ -77,21 +77,12 @@ export default function Login() {
           defaultValue={searchParams.get('redirectTo') ?? undefined}
         />
         <div className="flex flex-col gap-2">
-          <label htmlFor="email" className=" font-semibold ">
-            Email address
-          </label>
-          <input
+          <InputField
             name="email"
-            id="email"
+            label="Email"
             type="email"
-            required
-            autoComplete="off"
-            defaultValue={actionData?.fields ? actionData.fields.email : ''}
-            className={` w-full rounded-md ${
-              actionData?.fieldErrors?.email && !isBusy ? 'border-red-400' : ''
-            }`}
-            aria-errormessage="email-error"
-            aria-invalid={actionData?.fieldErrors?.email ? 'true' : 'false'}
+            fieldData={actionData?.fields?.email}
+            fieldError={actionData?.fieldErrors?.email}
           />
           <ErrorMessage id="email-error">
             {actionData?.fieldErrors?.email && !isBusy ? actionData.fieldErrors.email : ''}
@@ -106,7 +97,7 @@ export default function Login() {
         <button
           className="mt-4 rounded-sm bg-blue-600 px-4 py-1  font-semibold text-white hover:opacity-90 disabled:opacity-75"
           type="submit"
-          disabled={transition.state === 'submitting' || transition.state === 'loading'}
+          disabled={isBusy}
         >
           {transition.state === 'submitting'
             ? 'Submitting'

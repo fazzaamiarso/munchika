@@ -6,6 +6,7 @@ import { createUserSession } from '~/utils/session.server';
 import { validateUsername, supabase } from '~/utils/supabase.server';
 import { validateEmail, validatePassword, haveErrors, badRequest } from '~/utils/formUtils';
 import { ErrorMessage } from '~/components/form/error-message';
+import { InputField } from '~/components/form/input-field';
 
 export const action = async ({ request }) => {
   const formData = await request.formData();
@@ -80,49 +81,25 @@ export default function Register() {
           defaultValue={searchParams.get('redirectTo') ?? undefined}
         />
         <div className="flex flex-col gap-2">
-          <div className="self-start">
-            <label htmlFor="username" className=" font-semibold ">
-              Username
-            </label>
-            <p id="username-hint" className="text-sm font-normal leading-none text-gray-600">
-              Must contain 4+ characters and only lowercase letter
-            </p>
-          </div>
-          <input
+          <InputField
             name="username"
-            id="username"
-            type="text"
-            required
-            autoComplete="off"
+            label="Username"
             placeholder="e.g. cool_kidz"
-            defaultValue={actionData?.fields ? actionData.fields.username : ''}
-            className={`w-full rounded-md ${
-              actionData?.fieldErrors?.username && !isBusy ? 'border-red-400' : ''
-            }`}
-            aria-describedby="username-hint"
-            aria-errormessage="username-error"
-            aria-invalid={actionData?.fieldErrors?.username ? 'true' : 'false'}
+            fieldData={actionData?.fields?.username}
+            fieldError={actionData?.fieldErrors?.username}
+            hint="Must contain 4+ characters and only lowercase letter"
           />
           <ErrorMessage id="username-error">
             {actionData?.fieldErrors?.username && !isBusy ? actionData.fieldErrors.username : ''}
           </ErrorMessage>
         </div>
         <div className="flex flex-col gap-2">
-          <label htmlFor="email" className=" font-semibold ">
-            Email address
-          </label>
-          <input
+          <InputField
             name="email"
-            id="email"
+            label="Email"
             type="email"
-            required
-            autoComplete="off"
-            defaultValue={actionData?.fields ? actionData.fields.email : ''}
-            className={` w-full rounded-md ${
-              actionData?.fieldErrors?.email && !isBusy ? 'border-red-400' : ''
-            }`}
-            aria-errormessage="email-error"
-            aria-invalid={actionData?.fieldErrors?.email ? 'true' : 'false'}
+            fieldData={actionData?.fields?.email}
+            fieldError={actionData?.fieldErrors?.email}
           />
           <ErrorMessage id="email-error">
             {actionData?.fieldErrors?.email && !isBusy ? actionData.fieldErrors.email : ''}
