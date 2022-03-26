@@ -17,11 +17,10 @@ export const validateUsername = async username => {
   if (username.length < 4) return 'Username must be atleast 4 characters long';
   if (allNumberRegex.test(username)) return 'Username must be alphanumerical';
 
-  if (uppercaseRegex.test(username))
-    return 'Username cannot contain uppercase letter';
+  if (uppercaseRegex.test(username)) return 'Username cannot contain uppercase letter';
 
   if (whiteSpaceRegex.test(username))
-    return 'Username cannot have special characters except underscore ( _ )';
+    return 'Username cannot have special characters except underscore (_)';
 
   const { data: userFound } = await supabase
     .from('user')
@@ -40,9 +39,7 @@ export const checkReaction = (posts, currentUserId = null) => {
       .select('*', { count: 'exact' })
       .match({ post_id: post.id });
 
-    const haveLiked = data.some(
-      reaction => reaction.sender_id === currentUserId,
-    );
+    const haveLiked = data.some(reaction => reaction.sender_id === currentUserId);
 
     return { ...post, reactions: count, haveLiked };
   });
