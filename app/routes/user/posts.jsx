@@ -1,9 +1,9 @@
 import { json, Link, useLoaderData } from 'remix';
-import { commitSession, getUserId, getUserSession } from '../../utils/session.server';
-import { getPostWithTrack } from '../../utils/geniusApi.server';
-import { supabase } from '../../utils/supabase.server';
+import { commitSession, getUserId, getUserSession } from '~/utils/session.server';
+import { getPostWithTrack } from '~/utils/geniusApi.server';
+import { supabase } from '~/utils/supabase.server';
 import { AnnotationIcon, PlusIcon } from '@heroicons/react/outline';
-import { PostCard } from '../../components/post-card';
+import { PostCard } from '~/components/post-card';
 
 export function meta() {
   return {

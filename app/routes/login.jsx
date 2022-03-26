@@ -7,6 +7,7 @@ import { PasswordField } from '~/components/form/password-field';
 import { useFocusOnError } from '~/hooks/useFocusOnError';
 import { ErrorMessage } from '~/components/form/error-message';
 import { InputField } from '~/components/form/input-field';
+import { useFocusToHeading } from '~/hooks/useFocusToHeading';
 export const loader = async ({ request }) => {
   const userId = await getUserId(request);
   if (userId) throw redirect('/');
@@ -46,11 +47,12 @@ export default function Login() {
   const formRef = useRef();
 
   useFocusOnError(formRef, actionData?.fieldErrors);
+  useFocusToHeading();
 
   return (
     <main id="main" className="mx-auto flex w-11/12 max-w-lg flex-col items-center gap-6 py-12 ">
       <div className="self-start">
-        <h1 id="form-name" className="text-2xl font-bold">
+        <h1 id="form-name" className="text-2xl font-bold" tabIndex="-1">
           Login
         </h1>
         <p>

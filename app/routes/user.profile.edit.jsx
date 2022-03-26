@@ -11,7 +11,11 @@ import {
 import { getUserId, requireUserId } from '~/utils/session.server';
 import { supabase, validateUsername } from '~/utils/supabase.server';
 import { badRequest, haveErrors, generateRandomString } from '~/utils/formUtils';
-
+import { useFocusToHeading } from '~/hooks/useFocusToHeading';
+import { ErrorMessage } from '~/components/form/error-message';
+import { InputField } from '~/components/form/input-field';
+import { useFocusOnError } from '~/hooks/useFocusOnError';
+import { useRef } from 'react';
 export const loader = async ({ request }) => {
   const userId = await requireUserId(request);
   const { searchParams } = new URL(request.url);
@@ -57,10 +61,16 @@ export default function EditProfile() {
   const transition = useTransition();
   const navigate = useNavigate();
   const isRandomizing = fetcher.state === 'loading' || fetcher.state === 'submitting';
+  const formRef = useRef();
+
+  useFocusOnError(formRef, actionData?.fieldErrors);
+  useFocusToHeading();
   return (
     <main className="mt-8 h-screen">
-      <section className="mx-auto flex w-10/12 max-w-md flex-col items-center">
-        <h1 className="mb-8 text-xl font-semibold ">Edit Profile</h1>
+      <section className="mx-auto flex w-10/12 max-w-sm flex-col items-center gap-6">
+        <h1 className="mb-8 text-xl font-semibold" tabIndex="-1">
+          Edit Profile
+        </h1>
         <div className="flex flex-col items-center gap-4">
           <img
             className="aspect-square h-20 rounded-full ring-1 ring-black"
@@ -83,7 +93,7 @@ export default function EditProfile() {
             </span>
           </fetcher.Form>
         </div>
-        <Form method="post" id="edit">
+        <Form method="post" id="edit" className="w-full" ref={formRef}>
           <input
             type="text"
             hidden
@@ -94,24 +104,18 @@ export default function EditProfile() {
             aria-label="Edit profile"
           />
           <input type="text" hidden name="old_username" defaultValue={userData.username} />
-          <div className="flex w-full flex-col items-start">
-            <label htmlFor="username" className=" mb-2 text-sm font-semibold">
-              Username
-            </label>
-            <input
+          <div className="flex w-full flex-col items-start gap-2">
+            <InputField
               name="username"
-              id="username"
-              type="text"
-              required
-              autoComplete="off"
-              defaultValue={userData.username}
-              className={`w-full rounded-md ${
-                actionData?.fieldErrors?.username ? 'border-red-400' : ''
-              }`}
+              label="Username"
+              placeholder="e.g. cool_kidz"
+              fieldData={actionData?.fields?.username ?? userData.username}
+              fieldError={actionData?.fieldErrors?.username}
+              hint="Must contain 4+ characters and only lowercase letter"
             />
-            {actionData?.fieldErrors?.username ? (
-              <span className="text-sm text-red-500">{actionData.fieldErrors.username}</span>
-            ) : null}
+            <ErrorMessage id="username-error">
+              {actionData?.fieldErrors?.username ? actionData.fieldErrors.username : ''}
+            </ErrorMessage>
           </div>
         </Form>
         <div className="flex gap-4 self-end">

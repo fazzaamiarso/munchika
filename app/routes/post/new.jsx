@@ -1,11 +1,12 @@
 import { useNavigate, redirect, json, useLoaderData, useFetcher } from 'remix';
 import { getUserId, requireUserId } from '~/utils/session.server';
-import { supabase } from '../../utils/supabase.server';
-import { fetchFromGenius } from '../../utils/geniusApi.server';
-import { validateThought, validateLyrics } from '../../utils/formUtils';
+import { supabase } from '~/utils/supabase.server';
+import { fetchFromGenius } from '~/utils/geniusApi.server';
+import { validateThought, validateLyrics } from '~/utils/formUtils';
 import { ExternalLinkIcon } from '@heroicons/react/outline';
 import { useRef } from 'react';
 import { useFocusOnError } from '~/hooks/useFocusOnError';
+import { ErrorMessage } from '~/components/form/error-message';
 
 export const loader = async ({ request }) => {
   const newUrl = new URL(request.url);
@@ -99,44 +100,54 @@ export default function NewPost() {
           ref={formRef}
         >
           <input type="text" hidden name="trackId" defaultValue={trackData.id} />
-          <div className="flex flex-col  gap-2  ">
-            <label htmlFor="lyrics" className="font-semibold">
-              Lyrics <span className="font-normal text-slate-600">(You can leave it empty)</span>
-            </label>
+          <div className="flex flex-col  gap-3">
+            <div className="self-start">
+              <label htmlFor="lyrics" className="font-semibold">
+                Lyrics <span className="font-normal text-slate-600">(optional)</span>
+              </label>
+              <p id="lyrics-hint" className="text-sm font-normal leading-none text-gray-600">
+                Share the lyrics you want to feature in 10 characters or more
+              </p>
+            </div>
             <textarea
               name="lyrics"
               id="lyrics"
-              rows={7}
+              rows={5}
               autoFocus
               className={`resize-y rounded-md  ${
                 fetcher.data?.fieldErrors?.lyrics ? 'border-red-400' : ''
               }`}
-              placeholder="What are the lyrics you want to feature?"
               aria-invalid={fetcher.data?.fieldErrors?.lyrics ? 'true' : 'false'}
-              aria-describedby="lyrics-error"
+              aria-errormessage="lyrics-error"
+              aria-describedby="lyrics-hint"
             />
-            <p className="text-sm text-red-600" id="lyrics-error">
+            <ErrorMessage id="lyrics-error">
               {fetcher.data?.fieldErrors?.lyrics ? fetcher.data.fieldErrors.lyrics : ''}
-            </p>
+            </ErrorMessage>
           </div>
-          <div className="flex flex-col gap-2 ">
-            <label htmlFor="thought" className="font-semibold">
-              Thought
-            </label>
+          <div className="flex flex-col gap-3 ">
+            <div className="self-start">
+              <label htmlFor="thought" className="font-semibold">
+                Thought
+              </label>
+              <p id="thought-hint" className="text-sm font-normal leading-none text-gray-600">
+                Write your thoughts on how this song had helped you in 20 characters or more
+              </p>
+            </div>
             <textarea
               name="thought"
               id="thought"
-              rows={7}
-              placeholder="Share your thoughts to the world about how this song had helped you .."
+              rows={5}
               className={`resize-y rounded-md  ${
                 fetcher.data?.fieldErrors?.thought ? 'border-red-400' : ''
               }`}
               aria-invalid={fetcher.data?.fieldErrors?.thought ? 'true' : 'false'}
-              aria-describedby="thought-error"
+              aria-errormessage="thought-error"
+              aria-describedby="thought-hint"
             />
-            <p className="text-sm text-red-600" id="thought-error">
+            <ErrorMessage id="thought-error">
               {fetcher.data?.fieldErrors?.thought ? fetcher.data.fieldErrors.thought : ''}
-            </p>
+            </ErrorMessage>
           </div>
           <div className="mt-4 flex gap-2 self-end">
             <button

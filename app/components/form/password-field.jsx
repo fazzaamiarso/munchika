@@ -23,7 +23,7 @@ export const PasswordField = ({ fieldData, isBusy, autoComplete }) => {
           autoComplete={autoComplete}
           defaultValue={fieldData?.fields ? fieldData.fields.password : ''}
           className={`w-full rounded-md ${
-            fieldData?.fieldErrors?.password && !isBusy ? 'border-red-400' : ''
+            fieldData?.fieldErrors?.password && !isBusy ? 'border-red-600' : ''
           }`}
           aria-describedby="pass-hint "
           aria-errormessage="password-error"

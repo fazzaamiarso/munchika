@@ -8,13 +8,14 @@ import {
   useActionData,
 } from 'remix';
 import invariant from 'tiny-invariant';
-import { supabase } from '../../utils/supabase.server';
-import { fetchFromGenius } from '../../utils/geniusApi.server';
-import { requireUserId } from '../../utils/session.server';
-import { validateThought, validateLyrics } from '../../utils/formUtils';
+import { supabase } from '~/utils/supabase.server';
+import { fetchFromGenius } from '~/utils/geniusApi.server';
+import { requireUserId } from '~/utils/session.server';
+import { validateThought, validateLyrics } from '~/utils/formUtils';
 import { ExternalLinkIcon } from '@heroicons/react/outline';
 import { useRef } from 'react';
 import { useFocusOnError } from '~/hooks/useFocusOnError';
+import { ErrorMessage } from '~/components/form/error-message';
 
 export const loader = async ({ params, request }) => {
   invariant(params.postId, 'Expected params.postId');
@@ -111,10 +112,15 @@ export default function EditPost() {
         </p>
       </section>
       <Form method="post" className="mt-4 flex  flex-col gap-6 py-4" ref={formRef}>
-        <div className="flex flex-col gap-2">
-          <label htmlFor="lyrics" className="font-semibold">
-            Lyrics <span className="font-normal text-slate-600">(You can leave it empty)</span>
-          </label>
+        <div className="flex flex-col gap-3">
+          <div className="self-start">
+            <label htmlFor="lyrics" className="font-semibold">
+              Lyrics <span className="font-normal text-slate-600">(optional)</span>
+            </label>
+            <p id="lyrics-hint" className="text-sm font-normal leading-none text-gray-600">
+              Share the lyrics you want to feature in 10 characters or more
+            </p>
+          </div>
           <textarea
             name="lyrics"
             id="lyrics"
@@ -124,33 +130,38 @@ export default function EditPost() {
             className={`resize-y rounded-md  ${
               actionData?.fieldErrors?.lyrics ? 'border-red-400' : ''
             }`}
-            placeholder="What are the lyrics you want to feature?"
-            aria-describedby="lyrics-error"
+            aria-errormessage="lyrics-error"
             aria-invalid={actionData?.fieldErrors?.lyrics ? 'true' : 'false'}
+            aria-describedby="lyrics-hint"
           />
-          <p className="text-sm text-red-600" id="lyrics-error">
+          <ErrorMessage id="lyrics-error">
             {actionData?.fieldErrors?.lyrics ? actionData.fieldErrors.lyrics : ''}
-          </p>
+          </ErrorMessage>
         </div>
-        <div className="flex flex-col gap-2">
-          <label htmlFor="thought" className="font-semibold">
-            Thought
-          </label>
+        <div className="flex flex-col gap-3">
+          <div className="self-start">
+            <label htmlFor="thought" className="font-semibold">
+              Thought
+            </label>
+            <p id="thought-hint" className="text-sm font-normal leading-none text-gray-600">
+              Write your thoughts on how this song had helped you in 20 characters or more
+            </p>
+          </div>
           <textarea
             name="thought"
             id="thought"
             defaultValue={postData.thought}
             rows={5}
-            placeholder="Share your thoughts to the world about how this song had helped you .."
             className={`resize-y rounded-md  ${
               actionData?.fieldErrors?.thought ? 'border-red-400' : ''
             }`}
-            aria-describedby="thought-error"
+            aria-errormessage="thought-error"
             aria-invalid={actionData?.fieldErrors?.thought ? 'true' : 'false'}
+            aria-describedby="thought-hint"
           />
-          <p className="text-sm text-red-600" id="thought-error">
+          <ErrorMessage id="thought-error">
             {actionData?.fieldErrors?.thought ? actionData.fieldErrors.thought : ''}
-          </p>
+          </ErrorMessage>
         </div>
         <div className="flex gap-2 self-end">
           <button

@@ -1,12 +1,13 @@
 import { useLoaderData, Link, useNavigate, json } from 'remix';
-import { supabase } from '../utils/supabase.server';
-import { fetchFromGenius } from '../utils/geniusApi.server';
+import { supabase } from '~/utils/supabase.server';
+import { fetchFromGenius } from '~/utils/geniusApi.server';
 import invariant from 'tiny-invariant';
-import { getUserId } from '../utils/session.server';
+import { getUserId } from '~/utils/session.server';
 import { PlusIcon } from '@heroicons/react/solid';
 import { EmojiSadIcon } from '@heroicons/react/outline';
 import { ExternalLinkIcon, ArrowLeftIcon } from '@heroicons/react/solid';
-import { PostCard } from '../components/post-card';
+import { PostCard } from '~/components/post-card';
+import { useFocusToHeading } from '~/hooks/useFocusToHeading';
 
 export const loader = async ({ params, request }) => {
   invariant(params.trackId, 'Expected params.trackId');
@@ -44,6 +45,8 @@ export default function TrackDetails() {
   const { trackData, trackPosts, userId } = useLoaderData();
   const navigate = useNavigate();
 
+  useFocusToHeading();
+
   return (
     <main id="main" className="mx-auto ">
       <div className="relative flex  flex-col items-center border-b-2 border-gray-200 p-8 text-white md:gap-4">
@@ -66,7 +69,9 @@ export default function TrackDetails() {
           />
           <div className="relative flex flex-col items-center gap-2 leading-none ">
             <div className="absolute inset-0 -z-10 h-full w-full bg-black/20 blur-xl " />
-            <h1 className="text-center text-lg font-bold ">{trackData.title}</h1>
+            <h1 tabIndex="-1" className="text-center text-lg font-bold ">
+              {trackData.title}
+            </h1>
             <p className="text-gray-200">{trackData.artist}</p>
             <p className="">Release date : {trackData.release_date}</p>
           </div>
