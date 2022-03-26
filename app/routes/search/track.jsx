@@ -1,12 +1,6 @@
 import { ArrowRightIcon } from '@heroicons/react/solid';
 import { useEffect, useState, useRef } from 'react';
-import {
-  useLoaderData,
-  Link,
-  useFetcher,
-  useTransition,
-  redirect,
-} from 'remix';
+import { useLoaderData, Link, useFetcher, useTransition, redirect } from 'remix';
 import { fetchFromGenius } from '../../utils/geniusApi.server';
 
 export const loader = async ({ request }) => {
@@ -18,9 +12,7 @@ export const loader = async ({ request }) => {
   if (actionType === 'clear') return redirect('/search/track');
 
   if (searchTerm === null) return {};
-  const response = await fetchFromGenius(
-    `search?q=${searchTerm}&per_page=10&page=${currPage}`,
-  );
+  const response = await fetchFromGenius(`search?q=${searchTerm}&per_page=10&page=${currPage}`);
 
   const data = response.hits;
   return {
@@ -38,16 +30,27 @@ export default function SearchTrack() {
   const currPage = useRef(2);
   const initial = useRef(true);
   const isPending =
-    transition.type === 'loaderSubmission' ||
-    transition.type === 'loaderSubmissionRedirect';
+    transition.type === 'loaderSubmission' || transition.type === 'loaderSubmissionRedirect';
 
   const handleLoadMore = () => {
-    fetcher.load(
-      `/search/track?term=${searchTerm}&currPage=${currPage.current}`,
-    );
+    fetcher.load(`/search/track?term=${searchTerm}&currPage=${currPage.current}`);
     initial.current = false;
     currPage.current = currPage.current + 1;
   };
+
+  const useFocusOnFirstLoadedContent = list => {
+    useEffect(() => {
+      if (list.length === 0 || !list) return;
+      const listLengthDivided = Math.floor(list.length / 10) - 1;
+      const contentToFocus =
+        listLengthDivided === 0
+          ? document.getElementById('link-0')
+          : document.getElementById('link-' + String(listLengthDivided * 10 + 1));
+      contentToFocus?.focus();
+    }, [list]);
+  };
+
+  useFocusOnFirstLoadedContent(trackList || []);
 
   useEffect(() => {
     if (transition.type === 'loaderSubmission') {
@@ -88,44 +91,52 @@ export default function SearchTrack() {
     <div className="flex flex-col gap-4">
       <ul className=" min-h-screen divide-y divide-gray-200 ">
         {trackList?.length ? (
-          trackList.map(track => {
+          trackList.map((track, index) => {
             return (
               <li
                 key={`${track.result.id}${Math.random() * 100}`}
                 className="flex w-full items-center gap-4 py-2 leading-none"
               >
                 <img
+                  height="48px"
+                  width="48px"
                   className="h-12"
                   src={track.result.song_art_image_thumbnail_url}
-                  alt={track.result.title}
+                  alt=""
                 />
                 <div className="flex flex-col items-start">
-                  <h3 className="text-semibold sm:text-md text-sm line-clamp-2">
+                  <p className="sm:text-md text-sm font-semibold line-clamp-2">
                     {track.result.title}
-                  </h3>
-                  <p className="text-xs text-gray-400 sm:text-sm">
+                  </p>
+                  <p className="text-xs text-gray-600 sm:text-sm">
                     {track.result.primary_artist.name}
                   </p>
                 </div>
                 <Link
-                  className="group ml-auto flex items-center gap-1 rounded-full px-2 py-1 text-xs text-gray-600 ring-1 ring-gray-300"
+                  className="group ml-auto flex items-center gap-1 rounded-full px-2 py-1 text-xs text-gray-600 ring-1 ring-gray-300 focus:ring-black"
                   to={`/track/${track.result.id}`}
                   prefetch="intent"
+                  id={`link-${index}`}
+                  aria-labelledby={track.result.id}
                 >
                   {transition.state === 'loading' &&
                   transition.location.pathname === `/track/${track.result.id}`
                     ? 'Loading..'
                     : 'Details'}
                   <ArrowRightIcon className="h-3 transition-transform group-hover:translate-x-1" />
+                  <span className="sr-only" id={track.result.id} aria-live="polite">
+                    {transition.state === 'loading' &&
+                    transition.location.pathname === `/track/${track.result.id}`
+                      ? 'Loading'
+                      : `Go to ${track.result.title} feed`}
+                  </span>
                 </Link>
               </li>
             );
           })
         ) : (
           <div className="mt-12 flex flex-col items-center">
-            <p className="text-lg font-bold">
-              Whoops... No matching song found
-            </p>
+            <p className="text-lg font-bold">Whoops... No matching song found</p>
             <p className="">Try another song</p>
           </div>
         )}
@@ -139,7 +150,7 @@ export default function SearchTrack() {
       </ul>
       {fetcher.data?.data.length < 10 && !initial.current ? null : (
         <button
-          className="self-center rounded-full  px-3  py-1 text-blue-500 ring-2 ring-blue-500 transition-colors  hover:bg-blue-500 hover:text-white disabled:opacity-75"
+          className="self-center rounded-full bg-white  px-3  py-1 text-blue-600 ring-2 ring-blue-600 transition-colors  hover:bg-blue-600 hover:text-white disabled:opacity-75"
           onClick={handleLoadMore}
         >
           {fetcher.state === 'loading' || fetcher.state === 'submitting'

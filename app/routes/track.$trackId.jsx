@@ -1,12 +1,13 @@
 import { useLoaderData, Link, useNavigate, json } from 'remix';
-import { supabase } from '../utils/supabase.server';
-import { fetchFromGenius } from '../utils/geniusApi.server';
+import { supabase } from '~/utils/supabase.server';
+import { fetchFromGenius } from '~/utils/geniusApi.server';
 import invariant from 'tiny-invariant';
-import { getUserId } from '../utils/session.server';
+import { getUserId } from '~/utils/session.server';
 import { PlusIcon } from '@heroicons/react/solid';
 import { EmojiSadIcon } from '@heroicons/react/outline';
 import { ExternalLinkIcon, ArrowLeftIcon } from '@heroicons/react/solid';
-import { PostCard } from '../components/post-card';
+import { PostCard } from '~/components/post-card';
+import { useFocusToHeading } from '~/hooks/useFocusToHeading';
 
 export const loader = async ({ params, request }) => {
   invariant(params.trackId, 'Expected params.trackId');
@@ -44,28 +45,33 @@ export default function TrackDetails() {
   const { trackData, trackPosts, userId } = useLoaderData();
   const navigate = useNavigate();
 
+  useFocusToHeading();
+
   return (
-    <section className="mx-auto ">
+    <main id="main" className="mx-auto ">
       <div className="relative flex  flex-col items-center border-b-2 border-gray-200 p-8 text-white md:gap-4">
         <button
           className="group absolute left-1/4 z-30 hidden rounded-full p-2 ring-1 ring-gray-300 sm:block"
           onClick={() => navigate(-1)}
+          aria-label="Go back to previous page"
         >
           <ArrowLeftIcon className="h-4 transition-transform group-hover:-translate-x-1" />
         </button>
         <div className="absolute inset-0 h-full w-full overflow-hidden  ">
-          <img src={trackData.bgImage} className="h-full w-full object-cover" />
+          <img src={trackData.bgImage} className="h-full w-full object-cover" role="presentation" />
           <div className="absolute inset-0 h-full w-full bg-black/60"></div>
         </div>
         <div className="relative z-10 flex flex-col items-center gap-4">
           <img
             src={trackData.thumbnail}
-            alt={trackData.title}
+            alt={`${trackData.title} track cover`}
             className="h-40 ring-2 ring-black/10 drop-shadow-md"
           />
           <div className="relative flex flex-col items-center gap-2 leading-none ">
             <div className="absolute inset-0 -z-10 h-full w-full bg-black/20 blur-xl " />
-            <h2 className="text-center text-lg font-bold ">{trackData.title}</h2>
+            <h1 tabIndex="-1" className="text-center text-lg font-bold ">
+              {trackData.title}
+            </h1>
             <p className="text-gray-200">{trackData.artist}</p>
             <p className="">Release date : {trackData.release_date}</p>
           </div>
@@ -85,7 +91,7 @@ export default function TrackDetails() {
             <span className="  ">Have thought for this song?</span>
             <Link
               to={`/post/new?trackId=${trackData.id}`}
-              className="flex items-center space-x-1 rounded-sm bg-blue-500  px-2 py-1 text-white hover:opacity-90"
+              className="flex items-center space-x-1 rounded-sm bg-blue-600  px-2 py-1 text-white hover:opacity-90"
             >
               Add thought
             </Link>
@@ -93,7 +99,7 @@ export default function TrackDetails() {
         </div>
       </div>
       {trackPosts.length ? (
-        <main className="mx-auto flex w-11/12 flex-col items-center py-4">
+        <div className="mx-auto flex w-11/12 flex-col items-center py-4">
           <ul className="w-full space-y-4 ">
             {trackPosts.map(post => {
               const modifiedPost = {
@@ -111,25 +117,29 @@ export default function TrackDetails() {
               );
             })}
           </ul>
-        </main>
+        </div>
       ) : (
         <div className="my-12 flex w-full items-center justify-center">
           <div className="flex w-max flex-col items-center space-y-6">
             <div className="flex flex-col items-center ">
               <EmojiSadIcon className="h-12 text-gray-400" />
               <h2 className="mt-2 text-lg font-semibold">No Posts </h2>
-              <p className=" text-gray-400">Be the first one to post.</p>
+              <p className=" text-gray-600">Be the first one to post.</p>
             </div>
             <Link
               to={`/post/new?trackId=${trackData.id}`}
-              className="flex items-center space-x-1 rounded-sm bg-blue-500 px-4 py-2 font-semibold text-white"
+              className="flex items-center space-x-1 rounded-sm bg-blue-600 px-4 py-2 font-semibold text-white"
             >
-              <PlusIcon className="h-4" /> <span>New Post</span>
+              <PlusIcon className="h-4" />{' '}
+              <span>
+                {' '}
+                <span className="sr-only">Create</span> New Post
+              </span>
             </Link>
           </div>
         </div>
       )}
-    </section>
+    </main>
   );
 }
 

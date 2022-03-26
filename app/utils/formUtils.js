@@ -8,13 +8,11 @@ export const validateLyrics = lyrics => {
     return 'Less than 10 characters. The lyrics should be more than 10 characters or empty';
 };
 export const validatePassword = password => {
-  if (password.length < 6)
-    return 'Password should be at least 6 characters long';
-  if (!/\d/i.test(password)) return 'Password should contain at least a number';
+  if (password.length < 6) return 'Password should be at least 6 characters long';
+  if (!/\d/i.test(password)) return 'Password should contain at least 1 number';
 };
 export const validateEmail = email => {
-  const regexp =
-    /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+  const regexp = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
   if (!regexp.test(email)) return 'Invalid email address';
 };
 
@@ -24,4 +22,18 @@ export const haveErrors = fieldErrors => {
 
 export const badRequest = data => {
   return json(data, { status: 400 });
+};
+
+export const generateRandomString = () => {
+  const ALPHABET = 'abcdefghijklmnovqrstuvwxyz';
+  const NUMBER = '1234567890';
+  let generated = [];
+  for (let i = 0; i < 8; i++) {
+    if (Math.random() > 0.5) {
+      generated.push(ALPHABET[Math.floor(Math.random() * 26)]);
+      continue;
+    }
+    generated.push(NUMBER[Math.floor(Math.random() * 10)]);
+  }
+  return generated.join('');
 };

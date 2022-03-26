@@ -5,7 +5,6 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useLocation,
   Link,
   useCatch,
   json,
@@ -42,7 +41,6 @@ export const loader = async ({ request }) => {
 };
 
 export default function App() {
-  const location = useLocation();
   const { loginMessage, unauthorizedMessage, deleteMessage } = useLoaderData();
   return (
     <html lang="en">
@@ -53,9 +51,15 @@ export default function App() {
         <Links />
       </head>
       <body className="overflow-x-hidden">
-        {location.pathname.includes('/login') ? null : <Navbar />}
+        <Link
+          className="fixed left-1/2 top-0 z-30  -translate-x-1/2 -translate-y-full bg-white px-3 py-1 underline  transition-transform focus:translate-y-0"
+          to="#main"
+        >
+          Skip to content
+        </Link>
+        <Navbar />
         <Outlet />
-        {location.pathname.includes('/login') ? null : <Footer />}
+        <Footer />
         <Toast message={loginMessage} className=" top-16 right-8 border-green-400 " />
         <Toast
           message={unauthorizedMessage}

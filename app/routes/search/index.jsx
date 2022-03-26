@@ -11,7 +11,7 @@ import { getPostWithTrack } from '../../utils/geniusApi.server';
 import { supabase } from '../../utils/supabase.server';
 import { getUserId } from '~/utils/session.server';
 import { PostCard, PostCardSkeleton } from '../../components/post-card';
-import { useEffect, useState, useRef } from 'react';
+import { Fragment, useEffect, useState, useRef } from 'react';
 import { Listbox } from '@headlessui/react';
 import { SortAscendingIcon, SortDescendingIcon } from '@heroicons/react/outline';
 
@@ -125,20 +125,23 @@ export default function SearchPost() {
     <div className="mx-auto flex min-h-screen w-full flex-col items-center gap-4">
       <Listbox value={sortValue} onChange={handleSort}>
         <div className="relative w-3/12">
-          <Listbox.Button className="flex w-full items-center justify-center gap-2 rounded-md bg-blue-500 px-4 py-1 text-white">
-            {sortValue.name} <sortValue.Icon className="h-4" />
+          <Listbox.Button className="flex w-full items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-1 text-white">
+            <span className="sr-only">Sort by</span> {sortValue.name}{' '}
+            <sortValue.Icon className="h-4" />
           </Listbox.Button>
           <Listbox.Options className="absolute z-10  w-full cursor-default rounded-md bg-white shadow-md ring-2 ring-gray-500/20">
             {SORTER.map((item, idx) => {
               return (
-                <Listbox.Option
-                  key={idx}
-                  value={item}
-                  className={`flex items-center justify-between p-1 hover:cursor-pointer ${
-                    item.value === sortValue.value ? 'bg-blue-100' : ''
-                  }`}
-                >
-                  {item.name} <item.Icon className="h-4" />
+                <Listbox.Option key={idx} value={item} as={Fragment}>
+                  {({ selected, active }) => (
+                    <li
+                      className={`flex items-center justify-between p-1  ring-1 hover:cursor-pointer  ${
+                        selected ? ' font-semibold' : ''
+                      } ${active ? 'bg-blue-100' : ''}`}
+                    >
+                      {item.name} <item.Icon className="h-4" />
+                    </li>
+                  )}
                 </Listbox.Option>
               );
             })}
@@ -146,7 +149,7 @@ export default function SearchPost() {
         </div>
       </Listbox>
       {isSearching ? (
-        <div className="mx-auto w-full space-y-4">
+        <div aria-hidden="true" className="mx-auto w-full space-y-4">
           <PostCardSkeleton />
           <PostCardSkeleton />
           <PostCardSkeleton />

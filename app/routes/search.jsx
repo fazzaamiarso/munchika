@@ -36,13 +36,16 @@ export default function SearchLayout() {
   }, [location]);
 
   return (
-    <>
-      <div className="mx-auto flex w-10/12 max-w-lg flex-col items-center gap-4 py-8">
+    <main id="main" className="mx-auto w-10/12 max-w-lg">
+      <h1 className="py-4 text-lg font-bold">Browse</h1>
+      <div className="mx-auto flex  flex-col items-center gap-4 pb-8">
         <Form
           id="search"
           method="get"
           action={location.pathname}
           className="flex w-full items-center gap-4"
+          role="search"
+          aria-label="search"
         >
           <input
             type="search"
@@ -51,11 +54,11 @@ export default function SearchLayout() {
             className="w-full rounded-md ring-gray-400 placeholder:text-gray-400"
             ref={searchRef}
             required
-            placeholder="Try search a word"
+            placeholder="Try searching something"
           />
           <button
             type="submit"
-            className="rounded-md bg-blue-500 px-4 py-2 text-white hover:opacity-90 disabled:opacity-75"
+            className="rounded-md bg-blue-600 px-4 py-2 text-white hover:opacity-90 disabled:opacity-75"
             disabled={transition.state === 'submitting' || transition.state === 'loading'}
           >
             {transition.state === 'submitting' ? 'Searching...' : 'Search'}
@@ -64,9 +67,15 @@ export default function SearchLayout() {
             type="submit"
             name="action"
             value="clear"
-            className=" flex items-center gap-1 rounded-md bg-white px-4 py-2 text-blue-500 ring-1 ring-blue-500 "
-            disabled={transition.state === 'submitting' || transition.state === 'loading'}
+            className=" flex items-center gap-1 rounded-md bg-white px-4 py-2 text-blue-600 ring-1 ring-blue-500 "
+            formNoValidate
+            aria-labelledby="clear-msg"
           >
+            <span id="clear-msg" className="sr-only">
+              {transition.submission?.formData.get('action') === 'clear'
+                ? 'Clearing search results'
+                : 'clear Search results'}
+            </span>
             <span className="hidden sm:inline ">Clear</span>{' '}
             <RefreshIcon
               className={`h-5 text-blue-500 ${
@@ -84,23 +93,25 @@ export default function SearchLayout() {
                     to={item.to}
                     className={`rounded-md font-semibold leading-none ${
                       location.pathname === item.resetDestination
-                        ? 'bg-white px-3  py-1 text-blue-500 shadow-md  ring-1 ring-gray-300'
-                        : ' text-gray-400 '
+                        ? 'bg-white px-3  py-1 text-blue-600 shadow-md  ring-1 ring-gray-300'
+                        : ' text-gray-500 '
                     }`}
+                    aria-label={`Browse ${item.name} page`}
                   >
                     {item.name}
                   </Link>
+                  <span className="sr-only" aria-live="polite">
+                    You are at page {item.name}
+                  </span>
                 </li>
               );
             })}
           </ul>
         </div>
       </div>
-      <main className="mx-auto w-5/6 max-w-xl">
-        <Outlet />
-      </main>
+      <Outlet />
       <GoToTopButton />
-    </>
+    </main>
   );
 }
 
@@ -119,6 +130,8 @@ const GoToTopButton = () => {
     const handleScroll = () => {
       if (window.scrollY > 1400) {
         setShowButton(true);
+      } else {
+        setShowButton(false);
       }
     };
     const throttledScroll = throttle(handleScroll, 1000);
@@ -135,6 +148,7 @@ const GoToTopButton = () => {
         type="button"
         onClick={handleToTop}
         className="fixed bottom-4 right-4 z-30 rounded-full bg-white shadow-md"
+        aria-label="Go to top of page"
       >
         <ArrowCircleUpIcon className="h-12" />
       </button>
