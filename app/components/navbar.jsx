@@ -43,9 +43,21 @@ function Navbar() {
                   </Disclosure.Button>
                 </div>
                 <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-                  <div className="flex  items-center">
-                    <img className="block h-8 w-auto md:hidden" src={Logo} alt="Munchika" />
-                    <img className="hidden h-8 w-auto md:block" src={Munchika} alt="Munchika" />
+                  <div className="flex items-center">
+                    <img
+                      width="32px"
+                      height="32px"
+                      className="block h-8 w-auto md:hidden"
+                      src={Logo}
+                      alt="Munchika"
+                    />
+                    <img
+                      width="32px"
+                      height="32px"
+                      className="hidden h-8 w-auto md:block"
+                      src={Munchika}
+                      alt="Munchika"
+                    />
                   </div>
                   <div className="hidden sm:ml-6 sm:block">
                     <div className="flex space-x-4">
