@@ -29,7 +29,7 @@ export const PostCard = ({
       tabIndex="0"
       className="mx-auto w-full max-w-lg space-y-4 self-stretch rounded-md bg-white p-4 shadow-md ring-1 ring-slate-300"
       aria-label={post.title}
-      aria-describedby="post-user post-content"
+      aria-describedby={`post-user${post.id} post-content${post.id}`}
     >
       <div className="flex w-full items-center gap-2 ">
         {displayUser ? (
@@ -39,7 +39,7 @@ export const PostCard = ({
               src={post.avatar}
               className="aspect-square h-8 rounded-full bg-gray-200"
             />
-            <div className="flex w-full flex-col items-start" id="post-user">
+            <div className="flex w-full flex-col items-start" id={`post-user${post.id}`}>
               <p>
                 <span className="sr-only">created by:</span> {isPostOwner ? 'You' : post.username}
               </p>
@@ -77,7 +77,7 @@ export const PostCard = ({
           </div>
         </div>
       ) : null}
-      <div className="space-y-4 break-words" id="post-content">
+      <div className="space-y-4 break-words" id={`post-content${post.id}`}>
         {post.lyrics === '' ? null : (
           <div>
             <p className="font-semibold">Featured lyrics</p>
