@@ -15,7 +15,7 @@ import { Navbar } from './components/navbar';
 import { Footer } from './components/footer';
 import { commitSession, getUserSession } from './utils/session.server';
 import { Toast, ToastWithSpinner } from './components/toast';
-
+import ogImage from '../public/MunchikaOpenGraph.svg';
 export function links() {
   return [{ rel: 'stylesheet', href: styles }];
 }
@@ -25,6 +25,11 @@ export function meta() {
     title: 'Munchika',
     description:
       "See other's thought and find song that can help you or help others by sharing your thought",
+    'og:title': 'Munchika',
+    'og:description':
+      'Leveraging the power of music and community to find and share musics that truly help and relatable to people.',
+    'og:url': 'https://munchika.netlify.app',
+    'og:image': ogImage,
   };
 }
 
