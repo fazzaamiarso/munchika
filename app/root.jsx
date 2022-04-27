@@ -15,7 +15,6 @@ import { Navbar } from './components/navbar';
 import { Footer } from './components/footer';
 import { commitSession, getUserSession } from './utils/session.server';
 import { Toast, ToastWithSpinner } from './components/toast';
-import ogImage from '../public/MunchikaOpenGraph.svg';
 export function links() {
   return [{ rel: 'stylesheet', href: styles }];
 }
@@ -29,7 +28,8 @@ export function meta() {
     'og:description':
       'Leveraging the power of music and community to find and share musics that truly help and relatable to people.',
     'og:url': 'https://munchika.netlify.app',
-    'og:image': ogImage,
+    'og:image':
+      'https://res.cloudinary.com/dkiqn0gqg/image/upload/v1651091135/Munchika_Open_Graph_oysjcb.png',
   };
 }
 
