@@ -37,11 +37,15 @@ export const loader = async ({ request }) => {
       userId,
     });
   }
-  const { data: fullTextData } = await supabase
+  const { data: fullTextData, error } = await supabase
     .from('post')
     .select('*, user!post_author_id_fkey (username, avatar_url)')
     .order('created_at', { ascending: sortValue === 'CREATED_ASC' })
     .textSearch('fts', searchTerm, { type: 'plain' });
+
+  if (error) {
+    throw json({ message: "Couldn't find what you're looking for!" }, 500);
+  }
 
   return json({
     data: await getPostWithTrack(fullTextData),
@@ -182,12 +186,26 @@ export default function SearchPost() {
   );
 }
 
+export const CatchBoundary = () => {
+  const caught = useCatch();
+  if (caught.status === 500) {
+    return (
+      <div className="flex h-screen w-screen flex-col items-center justify-center ">
+        <div className="text-center">
+          <h1 className="text-2xl ">{caught.message}</h1>
+          <p>We are working on it right now!</p>
+        </div>
+      </div>
+    );
+  }
+};
 export const ErrorBoundary = () => {
   return (
     <div className="flex h-screen w-screen flex-col items-center justify-center ">
       <div className="text-center">
         <h1 className="text-2xl ">Oooops.. something went wrong!</h1>
-        <p>We are working on right now!</p>
+        <p>We are working on it right now!</p>
+        <p>Please try to clear or reload the page</p>
       </div>
     </div>
   );

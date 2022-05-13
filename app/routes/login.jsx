@@ -31,6 +31,7 @@ export const action = async ({ request }) => {
     email,
     password,
   });
+
   if (error) {
     fieldErrors.email = error.message;
     fieldErrors.password = error.message;
