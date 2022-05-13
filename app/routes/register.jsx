@@ -28,6 +28,7 @@ export const action = async ({ request }) => {
     email,
     password,
   });
+
   if (error) {
     fieldErrors.email = error.message;
     return badRequest({ fields, fieldErrors });

@@ -1,14 +1,18 @@
-import { Link, useLoaderData } from 'remix';
+import { json, Link, useLoaderData } from 'remix';
 import { supabase } from '../utils/supabase.server';
 import { getPostWithTrack } from '../utils/geniusApi.server';
 import { PostCard } from '../components/post-card';
 
 export const loader = async () => {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('post')
     .select('*, user!post_author_id_fkey (username, avatar_url)')
     .limit(7)
     .order('created_at', { ascending: false });
+  if (error) {
+    console.log(error);
+    throw json({ message: 'Failed to get data' }, 500);
+  }
   const trackDatas = await getPostWithTrack(data);
   return { trackDatas };
 };
