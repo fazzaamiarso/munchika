@@ -2,7 +2,7 @@
 
 Leveraging the power of music and community to find and share musics that truly help and relatable to people.
 
-Build Blog: [https://fazzaamiarso.hashnode.dev/introducing-munchika-fullstack-remix-app](https://fazzaamiarso.hashnode.dev/introducing-munchika-fullstack-remix-app)
+Build Blog: [https://fazzaamiarso.hashnode.dev/introducing-munchika-fullstack-remix-app](https://fazzaamiarso.hashnode.dev/introducing-munchika-fullstack-remix-app).  
 Improving Munchika's Accessibility Blog: [https://fazzaamiarso.hashnode.dev/fix-accessibility-munchika](https://fazzaamiarso.hashnode.dev/fix-accessibility-munchika)
 
 ## Name Origin
