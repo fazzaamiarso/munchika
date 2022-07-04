@@ -1,12 +1,5 @@
-import {
-  json,
-  Form,
-  useLoaderData,
-  useNavigate,
-  redirect,
-  useTransition,
-  useActionData,
-} from 'remix';
+import { json, redirect } from "@remix-run/node";
+import { Form, useActionData, useLoaderData, useNavigate, useTransition } from "@remix-run/react";
 import invariant from 'tiny-invariant';
 import { supabase } from '~/utils/supabase.server';
 import { fetchFromGenius } from '~/utils/geniusApi.server';

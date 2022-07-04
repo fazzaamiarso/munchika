@@ -1,4 +1,4 @@
-import { json } from 'remix';
+import { json } from "@remix-run/node";
 export const validateThought = thought => {
   if (thought.length < 20)
     return 'Less than 20 characters. Your thought should be more descriptive so people can understand better';

@@ -1,4 +1,4 @@
-import { Outlet, useLoaderData, Link } from 'remix';
+import { Link, Outlet, useLoaderData } from "@remix-run/react";
 import { supabase } from '../utils/supabase.server';
 import { requireUserId } from '../utils/session.server';
 

@@ -1,5 +1,6 @@
 import { useRef } from 'react';
-import { redirect, useSearchParams, useTransition, Form, useActionData, Link } from 'remix';
+import { redirect } from "@remix-run/node";
+import { Form, Link, useActionData, useSearchParams, useTransition } from "@remix-run/react";
 import { createUserSession, getUserId } from '~/utils/session.server';
 import { supabase } from '~/utils/supabase.server';
 import { validateEmail, validatePassword, haveErrors, badRequest } from '~/utils/formUtils';

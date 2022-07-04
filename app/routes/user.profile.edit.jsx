@@ -1,13 +1,5 @@
-import {
-  json,
-  redirect,
-  useFetcher,
-  useLoaderData,
-  Form,
-  useActionData,
-  useTransition,
-  useNavigate,
-} from 'remix';
+import { json, redirect } from "@remix-run/node";
+import { Form, useActionData, useFetcher, useLoaderData, useNavigate, useTransition } from "@remix-run/react";
 import { getUserId, requireUserId } from '~/utils/session.server';
 import { supabase, validateUsername } from '~/utils/supabase.server';
 import { badRequest, haveErrors, generateRandomString } from '~/utils/formUtils';

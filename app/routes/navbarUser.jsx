@@ -1,4 +1,4 @@
-import { json } from 'remix';
+import { json } from "@remix-run/node";
 import { getUserId } from '../utils/session.server';
 import { supabase } from '../utils/supabase.server';
 

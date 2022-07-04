@@ -1,4 +1,4 @@
-import { useFetcher, Link, useNavigate } from 'remix';
+import { Link, useFetcher, useNavigate } from "@remix-run/react";
 import { MusicNoteIcon, ArrowLeftIcon } from '@heroicons/react/outline';
 import { useEffect, useRef } from 'react';
 

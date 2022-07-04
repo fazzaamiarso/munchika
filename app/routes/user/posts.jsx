@@ -1,4 +1,5 @@
-import { json, Link, useLoaderData } from 'remix';
+import { json } from "@remix-run/node";
+import { Link, useLoaderData } from "@remix-run/react";
 import { commitSession, getUserId, getUserSession } from '~/utils/session.server';
 import { getPostWithTrack } from '~/utils/geniusApi.server';
 import { supabase } from '~/utils/supabase.server';
