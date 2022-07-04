@@ -1,6 +1,6 @@
 import Alert from '@reach/alert';
 import { useState, useRef, useEffect } from 'react';
-import { useFetchers } from 'remix';
+import { useFetchers } from "@remix-run/react";
 import { RefreshIcon } from '@heroicons/react/outline';
 
 export const Toast = ({ message, className }) => {

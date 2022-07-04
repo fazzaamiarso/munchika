@@ -1,6 +1,7 @@
 import { ArrowRightIcon } from '@heroicons/react/solid';
 import { useEffect, useState, useRef } from 'react';
-import { useLoaderData, Link, useFetcher, useTransition, redirect } from 'remix';
+import { redirect } from "@remix-run/node";
+import { Link, useFetcher, useLoaderData, useTransition } from "@remix-run/react";
 import { fetchFromGenius } from '../../utils/geniusApi.server';
 
 export const loader = async ({ request }) => {

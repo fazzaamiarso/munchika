@@ -1,4 +1,5 @@
-import { useLoaderData, Link, useNavigate, json } from 'remix';
+import { json } from "@remix-run/node";
+import { Link, useLoaderData, useNavigate } from "@remix-run/react";
 import { supabase } from '~/utils/supabase.server';
 import { fetchFromGenius } from '~/utils/geniusApi.server';
 import invariant from 'tiny-invariant';

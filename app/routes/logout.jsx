@@ -1,4 +1,4 @@
-import { redirect } from 'remix';
+import { redirect } from "@remix-run/node";
 import { supabase } from '../utils/supabase.server';
 import { destroyUserSession, getAccessToken } from '../utils/session.server';
 

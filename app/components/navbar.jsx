@@ -1,4 +1,4 @@
-import { Link, useFetcher, useTransition, useLocation, NavLink } from 'remix';
+import { Link, NavLink, useFetcher, useLocation, useTransition } from "@remix-run/react";
 import { Fragment, useEffect } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { MenuIcon, XIcon } from '@heroicons/react/outline';

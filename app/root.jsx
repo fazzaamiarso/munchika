@@ -1,15 +1,17 @@
+import { json } from "@remix-run/node";
+
 import {
+  Link,
   Links,
   LiveReload,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
-  Link,
   useCatch,
-  json,
   useLoaderData,
-} from 'remix';
+} from "@remix-run/react";
+
 import styles from './tailwind.css';
 import { Navbar } from './components/navbar';
 import { Footer } from './components/footer';

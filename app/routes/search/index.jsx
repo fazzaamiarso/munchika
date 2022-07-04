@@ -1,12 +1,5 @@
-import {
-  useLoaderData,
-  json,
-  useFetcher,
-  useTransition,
-  redirect,
-  useSubmit,
-  useSearchParams,
-} from 'remix';
+import { json, redirect } from "@remix-run/node";
+import { useFetcher, useLoaderData, useSearchParams, useSubmit, useTransition } from "@remix-run/react";
 import { getPostWithTrack } from '../../utils/geniusApi.server';
 import { supabase } from '../../utils/supabase.server';
 import { getUserId } from '~/utils/session.server';

@@ -1,4 +1,5 @@
-import { useNavigate, redirect, json, useLoaderData, useFetcher } from 'remix';
+import { json, redirect } from "@remix-run/node";
+import { useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
 import { getUserId, requireUserId } from '~/utils/session.server';
 import { supabase } from '~/utils/supabase.server';
 import { fetchFromGenius } from '~/utils/geniusApi.server';

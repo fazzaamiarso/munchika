@@ -1,4 +1,4 @@
-import { Outlet, Form, useLocation, Link, useTransition } from 'remix';
+import { Form, Link, Outlet, useLocation, useTransition } from "@remix-run/react";
 import { useEffect, useRef, useState } from 'react';
 import { ArrowCircleUpIcon, RefreshIcon } from '@heroicons/react/outline';
 import throttle from 'lodash.throttle';

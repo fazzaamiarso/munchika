@@ -1,4 +1,4 @@
-import { useFetcher, Link } from 'remix';
+import { Link, useFetcher } from "@remix-run/react";
 import { PostMenu } from './post-menu';
 import { useState, useRef } from 'react';
 import { Dialog } from '@headlessui/react';
