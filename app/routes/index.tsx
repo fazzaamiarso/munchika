@@ -1,12 +1,17 @@
-import { json } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import { json } from '@remix-run/node';
+import { Link, useLoaderData } from '@remix-run/react';
 import { supabase } from '../utils/supabase.server';
-import { getPostWithTrack } from '../utils/geniusApi.server';
+import { getPostWithTrack, Post } from '../utils/geniusApi.server';
 import { PostCard } from '../components/post-card';
+import { LoaderFunction } from '@remix-run/node';
 
-export const loader = async () => {
+type LoaderData = {
+  trackDatas: Post[];
+};
+
+export const loader: LoaderFunction = async () => {
   const { data, error } = await supabase
-    .from('post')
+    .from<LoaderData['trackDatas'][number]>('post')
     .select('*, user!post_author_id_fkey (username, avatar_url)')
     .limit(7)
     .order('created_at', { ascending: false });
@@ -19,7 +24,7 @@ export const loader = async () => {
 };
 
 export default function Index() {
-  const { trackDatas } = useLoaderData();
+  const { trackDatas } = useLoaderData<LoaderData>();
 
   return (
     <main id="main" className="mx-auto my-6 flex w-11/12 max-w-lg flex-col items-center">

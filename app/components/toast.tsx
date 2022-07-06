@@ -1,11 +1,15 @@
 import Alert from '@reach/alert';
 import { useState, useRef, useEffect } from 'react';
-import { useFetchers } from "@remix-run/react";
+import { useFetchers } from '@remix-run/react';
 import { RefreshIcon } from '@heroicons/react/outline';
 
-export const Toast = ({ message, className }) => {
+type ToastProps = {
+  message: string;
+  className?: string;
+};
+export const Toast = ({ message, className = '' }: ToastProps) => {
   const [show, setShow] = useState(false);
-  const timerRef = useRef(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (message !== null) setShow(true);
@@ -16,7 +20,7 @@ export const Toast = ({ message, className }) => {
     timerRef.current = setTimeout(() => {
       setShow(false);
     }, 3000);
-    return () => clearTimeout(timerRef);
+    return () => clearTimeout(timerRef.current!);
   }, [show]);
 
   return (
@@ -32,7 +36,7 @@ export const Toast = ({ message, className }) => {
   );
 };
 
-export const ToastWithSpinner = ({ message, className = '' }) => {
+export const ToastWithSpinner = ({ message, className = '' }: ToastProps) => {
   const fetchers = useFetchers();
   let deletingFetchers = 0;
 

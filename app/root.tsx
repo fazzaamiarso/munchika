@@ -1,4 +1,4 @@
-import { json } from "@remix-run/node";
+import { ErrorBoundaryComponent, json } from '@remix-run/node';
 
 import {
   Link,
@@ -10,19 +10,22 @@ import {
   ScrollRestoration,
   useCatch,
   useLoaderData,
-} from "@remix-run/react";
+} from '@remix-run/react';
 
 import styles from './tailwind.css';
 import { Navbar } from './components/navbar';
 import { Footer } from './components/footer';
 import { commitSession, getUserSession } from './utils/session.server';
 import { Toast, ToastWithSpinner } from './components/toast';
+import { LoaderFunction } from '@remix-run/node';
+import { MetaFunction } from '@remix-run/node';
+import { MetaDescriptor } from '@remix-run/node';
 
 export function links() {
   return [{ rel: 'stylesheet', href: styles }];
 }
 
-const openGraphTwitter = {
+const openGraphTwitter: MetaDescriptor = {
   'twitter:card': 'summary_large_image',
   'twitter:domain': 'munchika.netlify.app',
   'twitter:url': 'https://munchika.netlify.app/',
@@ -33,7 +36,7 @@ const openGraphTwitter = {
     'https://res.cloudinary.com/dkiqn0gqg/image/upload/v1651091135/Munchika_Open_Graph_oysjcb.png',
 };
 
-export function meta() {
+export const meta: MetaFunction = () => {
   return {
     title: 'Munchika',
     description:
@@ -47,22 +50,27 @@ export function meta() {
       'https://res.cloudinary.com/dkiqn0gqg/image/upload/v1651091135/Munchika_Open_Graph_oysjcb.png',
     ...openGraphTwitter,
   };
-}
+};
 
-export const loader = async ({ request }) => {
+type LoaderReturn = {
+  loginMessage: string;
+  unauthorizedMessage: string;
+  deleteMessage: string;
+};
+export const loader: LoaderFunction = async ({ request }) => {
   const userSession = await getUserSession(request);
   const loginMessage = userSession.get('login') ?? null;
   const deleteMessage = userSession.get('delete') ?? null;
   const unauthorizedMessage = userSession.get('unauthorized') ?? null;
 
-  return json(
+  return json<LoaderReturn>(
     { loginMessage, unauthorizedMessage, deleteMessage },
     { headers: { 'Set-Cookie': await commitSession(userSession) } },
   );
 };
 
 export default function App() {
-  const { loginMessage, unauthorizedMessage, deleteMessage } = useLoaderData();
+  const { loginMessage, unauthorizedMessage, deleteMessage } = useLoaderData<LoaderReturn>();
   return (
     <html lang="en">
       <head>
@@ -90,7 +98,7 @@ export default function App() {
           message={deleteMessage}
           className="top-8 left-1/2 -translate-x-1/2 border-red-400 "
         />
-        <ToastWithSpinner message={'Deleting post'} />
+        <ToastWithSpinner message="Deleting post" />
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
@@ -99,7 +107,7 @@ export default function App() {
   );
 }
 
-export const ErrorBoundary = ({ error }) => {
+export const ErrorBoundary: ErrorBoundaryComponent = ({ error }) => {
   return (
     <html>
       <head>
