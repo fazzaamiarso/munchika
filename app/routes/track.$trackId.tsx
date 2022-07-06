@@ -1,5 +1,5 @@
-import { json } from "@remix-run/node";
-import { Link, useLoaderData, useNavigate } from "@remix-run/react";
+import { json, LoaderFunction } from '@remix-run/node';
+import { Link, useLoaderData, useNavigate } from '@remix-run/react';
 import { supabase } from '~/utils/supabase.server';
 import { fetchFromGenius } from '~/utils/geniusApi.server';
 import invariant from 'tiny-invariant';
@@ -9,8 +9,22 @@ import { EmojiSadIcon } from '@heroicons/react/outline';
 import { ExternalLinkIcon, ArrowLeftIcon } from '@heroicons/react/solid';
 import { PostCard } from '~/components/post-card';
 import { useFocusToHeading } from '~/hooks/useFocusToHeading';
+import { Post } from '~/types/database';
 
-export const loader = async ({ params, request }) => {
+type LoaderData = {
+  trackData: {
+    title: string;
+    artist: string;
+    geniusUrl: string;
+    thumbnail: string;
+    bgImage: string;
+    release_date: string;
+    id: number;
+  };
+  posts: Post[];
+  userId: string | null;
+};
+export const loader: LoaderFunction = async ({ params, request }) => {
   invariant(params.trackId, 'Expected params.trackId');
   const userId = await getUserId(request);
 
@@ -21,13 +35,12 @@ export const loader = async ({ params, request }) => {
     });
   const trackData = track.song;
 
-  const { data: trackPosts } = await supabase
-    .from('post')
+  const { data: posts } = await supabase
+    .from<Post>('post')
     .select('*, user!post_author_id_fkey (username, avatar_url)')
     .eq('track_id', params.trackId)
     .limit(5);
-
-  return json({
+  return json<LoaderData>({
     trackData: {
       title: trackData.title,
       artist: trackData.primary_artist.name,
@@ -37,13 +50,13 @@ export const loader = async ({ params, request }) => {
       release_date: trackData.release_date,
       id: trackData.id,
     },
-    trackPosts: trackPosts,
+    posts: posts ?? [],
     userId,
   });
 };
 
 export default function TrackDetails() {
-  const { trackData, trackPosts, userId } = useLoaderData();
+  const { trackData, posts, userId } = useLoaderData<LoaderData>();
   const navigate = useNavigate();
 
   useFocusToHeading();
@@ -70,7 +83,7 @@ export default function TrackDetails() {
           />
           <div className="relative flex flex-col items-center gap-2 leading-none ">
             <div className="absolute inset-0 -z-10 h-full w-full bg-black/20 blur-xl " />
-            <h1 tabIndex="-1" className="text-center text-lg font-bold ">
+            <h1 tabIndex={-1} className="text-center text-lg font-bold ">
               {trackData.title}
             </h1>
             <p className="text-gray-200">{trackData.artist}</p>
@@ -99,10 +112,10 @@ export default function TrackDetails() {
           </div>
         </div>
       </div>
-      {trackPosts.length ? (
+      {posts.length ? (
         <div className="mx-auto flex w-11/12 flex-col items-center py-4">
           <ul className="w-full space-y-4 ">
-            {trackPosts.map(post => {
+            {posts.map(post => {
               const modifiedPost = {
                 ...post,
                 avatar: post.user.avatar_url,

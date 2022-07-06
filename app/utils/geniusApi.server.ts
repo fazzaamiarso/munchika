@@ -2,18 +2,14 @@ import { Post } from '~/types/database';
 
 export const BASE_URL = `https://api.genius.com/`;
 
-interface GeniusTrackData {
+export interface GeniusTrackData {
   title: string;
   primary_artist: { name: string };
   song_art_image_thumbnail_url: string;
-}
-
-interface PostWithTrack extends Post {
-  username: string;
-  avatar: string;
-  title: string;
-  artist: string;
-  thumbnail: string;
+  url: string;
+  song_art_image_url: string;
+  release_date: string;
+  id: number;
 }
 
 export const searchGenius = async ({
