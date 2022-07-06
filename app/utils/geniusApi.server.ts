@@ -2,12 +2,10 @@ import { Post } from '~/types/database';
 
 export const BASE_URL = `https://api.genius.com/`;
 
-interface GeniusResponse {
-  song: {
-    title: string;
-    primary_artist: { name: string };
-    song_art_image_thumbnail_url: string;
-  };
+interface GeniusTrackData {
+  title: string;
+  primary_artist: { name: string };
+  song_art_image_thumbnail_url: string;
 }
 
 interface PostWithTrack extends Post {
@@ -18,8 +16,16 @@ interface PostWithTrack extends Post {
   thumbnail: string;
 }
 
-export const fetchFromGenius = async (requestPath: string) => {
-  const url = `${BASE_URL}${requestPath}`;
+export const searchGenius = async ({
+  searchQuery,
+  currentPage = 1,
+  perPage = 10,
+}: {
+  searchQuery: string;
+  currentPage?: number;
+  perPage?: number;
+}): Promise<{ hits: GeniusTrackData[] }> => {
+  const url = `${BASE_URL}search?q=${searchQuery}&per_page=${perPage}&page=${currentPage}`;
   const encodedURL = encodeURI(url); //replace character with escape sequence of UTF-8 encoding
 
   const response = await fetch(encodedURL, {
@@ -28,7 +34,21 @@ export const fetchFromGenius = async (requestPath: string) => {
     },
   });
   const jsonData = await response.json();
-  const data = jsonData.response as GeniusResponse;
+  const data = jsonData.response;
+  return data;
+};
+
+export const fetchFromGenius = async (requestPath: string): Promise<{ song: GeniusTrackData }> => {
+  const url = `${BASE_URL}${requestPath}`;
+  const encodedURL = encodeURI(url);
+
+  const response = await fetch(encodedURL, {
+    headers: {
+      Authorization: `Bearer ${process.env.GENIUS_ACCESS_TOKEN}`,
+    },
+  });
+  const jsonData = await response.json();
+  const data = jsonData.response;
   return data;
 };
 

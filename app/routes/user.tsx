@@ -1,22 +1,25 @@
-import { Link, Outlet, useLoaderData } from "@remix-run/react";
+import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { supabase } from '../utils/supabase.server';
 import { requireUserId } from '../utils/session.server';
+import { LoaderFunction } from '@remix-run/node';
+import { User } from '~/types/database';
 
-export const loader = async ({ request }) => {
+export const loader: LoaderFunction = async ({ request }) => {
   const userId = await requireUserId(request);
 
   const { data: userData } = await supabase
-    .from('user')
+    .from<User>('user')
     .select('*')
     .eq('id', userId)
     .limit(1)
     .single();
+  if (!userData) throw Error('User should exist if can access protected page!');
 
   return { userData };
 };
 
 export default function Users() {
-  const { userData } = useLoaderData();
+  const { userData } = useLoaderData<{ userData: User }>();
   return (
     <main>
       <span className="sr-only" aria-live="polite">

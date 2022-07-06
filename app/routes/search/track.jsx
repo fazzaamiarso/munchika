@@ -1,8 +1,8 @@
 import { ArrowRightIcon } from '@heroicons/react/solid';
 import { useEffect, useState, useRef } from 'react';
-import { redirect } from "@remix-run/node";
-import { Link, useFetcher, useLoaderData, useTransition } from "@remix-run/react";
-import { fetchFromGenius } from '../../utils/geniusApi.server';
+import { redirect } from '@remix-run/node';
+import { Link, useFetcher, useLoaderData, useTransition } from '@remix-run/react';
+import { searchGenius } from '../../utils/geniusApi.server';
 
 export const loader = async ({ request }) => {
   const newUrl = new URL(request.url);
@@ -13,7 +13,11 @@ export const loader = async ({ request }) => {
   if (actionType === 'clear') return redirect('/search/track');
 
   if (searchTerm === null) return {};
-  const response = await fetchFromGenius(`search?q=${searchTerm}&per_page=10&page=${currPage}`);
+  const response = await searchGenius({
+    perPage: 10,
+    currentPage: Number(currPage),
+    searchQuery: searchTerm,
+  });
 
   const data = response.hits;
   return {

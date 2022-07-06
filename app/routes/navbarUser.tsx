@@ -1,13 +1,14 @@
-import { json } from "@remix-run/node";
+import { json, LoaderFunction } from '@remix-run/node';
+import { User } from '~/types/database';
 import { getUserId } from '../utils/session.server';
 import { supabase } from '../utils/supabase.server';
 
-export const loader = async ({ request }) => {
+export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
   if (!userId) return null;
 
   const { data: userProfile } = await supabase
-    .from('user')
+    .from<User>('user')
     .select('*')
     .eq('id', userId)
     .limit(1)
@@ -15,7 +16,3 @@ export const loader = async ({ request }) => {
 
   return json(userProfile);
 };
-
-export default function Bug() {
-  return null;
-}
