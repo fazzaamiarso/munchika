@@ -1,3 +1,5 @@
+import { Post } from '~/types/database';
+
 export const BASE_URL = `https://api.genius.com/`;
 
 interface GeniusResponse {
@@ -6,23 +8,6 @@ interface GeniusResponse {
     primary_artist: { name: string };
     song_art_image_thumbnail_url: string;
   };
-}
-
-interface BaseEntity {
-  id: string;
-  created_at: Date;
-}
-
-interface User extends BaseEntity {
-  username: string;
-  avatar_url: string;
-}
-export interface Post extends BaseEntity {
-  thought: string;
-  lyrics: string;
-  author_id: string;
-  track_id: number;
-  user: User;
 }
 
 interface PostWithTrack extends Post {

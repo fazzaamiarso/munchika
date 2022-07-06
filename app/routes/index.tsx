@@ -1,9 +1,10 @@
 import { json } from '@remix-run/node';
 import { Link, useLoaderData } from '@remix-run/react';
 import { supabase } from '../utils/supabase.server';
-import { getPostWithTrack, Post } from '../utils/geniusApi.server';
+import { getPostWithTrack } from '../utils/geniusApi.server';
 import { PostCard } from '../components/post-card';
 import { LoaderFunction } from '@remix-run/node';
+import { Post } from '~/types/database';
 
 type LoaderData = {
   trackDatas: Post[];
