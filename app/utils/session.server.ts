@@ -1,4 +1,4 @@
-import { createCookieSessionStorage, redirect } from "@remix-run/node";
+import { createCookieSessionStorage, redirect } from '@remix-run/node';
 
 const sessionSecret = process.env.SESSION_SECRET;
 if (!sessionSecret) {
@@ -15,20 +15,23 @@ export const { getSession, commitSession, destroySession } = createCookieSession
     sameSite: 'lax',
   },
 });
-export const getUserSession = request => {
-  return getSession(request.headers.get('Cookie'), {});
+export const getUserSession = (request: Request) => {
+  return getSession(request.headers.get('Cookie'));
 };
 
-export const getUserId = async request => {
+export const getUserId = async (request: Request) => {
   const session = await getUserSession(request);
   const userId = session.get('userId');
-  if (!userId) return null;
+  if (!userId || typeof userId !== 'string') return null;
   return userId;
 };
-export const requireUserId = async (request, redirectTo = new URL(request.url).pathname) => {
+export const requireUserId = async (
+  request: Request,
+  redirectTo = new URL(request.url).pathname,
+) => {
   const session = await getUserSession(request);
   const userId = session.get('userId');
-  if (!userId) {
+  if (!userId || typeof userId !== 'string') {
     const searchParams = new URLSearchParams([['redirectTo', redirectTo]]);
     session.flash('unauthorized', 'Please Log in to continue!');
     throw redirect(`/login?${searchParams}`, {
@@ -38,7 +41,7 @@ export const requireUserId = async (request, redirectTo = new URL(request.url).p
   return userId;
 };
 
-export const createUserSession = async (userId, redirectTo = '/', jwtToken) => {
+export const createUserSession = async (userId: string, redirectTo: string, jwtToken: string) => {
   const session = await getSession();
   session.set('userId', userId);
   session.set('access_token', jwtToken);
@@ -51,17 +54,22 @@ export const createUserSession = async (userId, redirectTo = '/', jwtToken) => {
   });
 };
 
-export const destroyUserSession = async request => {
+export const destroyUserSession = async (request: Request) => {
   const session = await getUserSession(request);
-  const redirectTo = new URL(request.url);
-  return redirect(redirectTo.pathname, {
+  const redirectTo = new URL(request.url).pathname;
+  return redirect(redirectTo, {
     headers: {
       'Set-Cookie': await destroySession(session),
     },
   });
 };
 
-export const getAccessToken = async request => {
+export const getAccessToken = async (request: Request) => {
   const session = await getUserSession(request);
-  return session.get('access_token');
+  const accessToken = session.get('access_token');
+  if (!accessToken || typeof accessToken !== 'string')
+    throw Error(
+      'Access Token should be set when login, please set it when user session is created!',
+    );
+  return accessToken;
 };
