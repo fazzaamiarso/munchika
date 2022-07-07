@@ -55,8 +55,6 @@ export const getPostWithTrack = async (posts: Post[]) => {
     return {
       ...post,
       created_at: post.created_at,
-      username: post.user.username,
-      avatar: post.user.avatar_url,
       title: removeTranslation(track.title),
       artist: track.primary_artist.name,
       thumbnail: track.song_art_image_thumbnail_url,

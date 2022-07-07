@@ -5,7 +5,7 @@ import { Dialog } from '@headlessui/react';
 import { ExclamationIcon } from '@heroicons/react/outline';
 import { PostWithUser } from '~/types/database';
 
-type PostWithTrack = PostWithUser & {
+export type PostWithTrack = PostWithUser & {
   thumbnail: string;
   artist: string;
   title: string;
@@ -29,7 +29,7 @@ type PostCardProps = Post1 | Post2;
 export const PostCard = ({
   postWithUser: post,
   currentUserId,
-  displayUser,
+  displayUser = true,
   displayTrack,
 }: PostCardProps) => {
   const fetcher = useFetcher();
@@ -61,12 +61,13 @@ export const PostCard = ({
           <>
             <img
               role="presentation"
-              src={post.avatar_url}
+              src={post.user.avatar_url}
               className="aspect-square h-8 rounded-full bg-gray-200"
             />
             <div className="flex w-full flex-col items-start" id={`post-user${post.id}`}>
               <p>
-                <span className="sr-only">created by:</span> {isPostOwner ? 'You' : post.username}
+                <span className="sr-only">created by:</span>{' '}
+                {isPostOwner ? 'You' : post.user.username}
               </p>
               <span className="text-xs text-gray-600">
                 <span className="sr-only">created_at:</span>{' '}
