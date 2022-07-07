@@ -1,14 +1,16 @@
-import { Link, useFetcher, useNavigate } from "@remix-run/react";
+import { Link, useFetcher, useNavigate } from '@remix-run/react';
 import { MusicNoteIcon, ArrowLeftIcon } from '@heroicons/react/outline';
 import { useEffect, useRef } from 'react';
+import { GeniusTrackData } from '~/utils/geniusApi.server';
+import { FIXME_ANY } from '~/types/global';
 
 export default function SelectPost() {
-  const fetcher = useFetcher();
-  const searchRef = useRef();
+  const fetcher = useFetcher<Array<{ result: GeniusTrackData }>>();
+  const searchRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    searchRef.current.focus();
+    searchRef.current?.focus();
   }, []);
 
   return (
@@ -52,8 +54,8 @@ export default function SelectPost() {
         <span className="sr-only" aria-live="polite">
           {fetcher.state === 'submitting' || fetcher.state === 'loading'
             ? 'Searching...'
-            : fetcher?.data?.length >= 0
-            ? `${fetcher.data.length} songs found`
+            : fetcher.data && fetcher.data?.length >= 0
+            ? `${fetcher.data?.length} songs found`
             : ''}
         </span>
       </fetcher.Form>
@@ -69,7 +71,7 @@ export default function SelectPost() {
           <TrackSkeleton />
         </div>
       ) : fetcher.data ? (
-        fetcher.data.error ? (
+        ((fetcher.data as FIXME_ANY).error as FIXME_ANY) ? (
           <p className="font-bold">Unable to fetch data</p>
         ) : fetcher.data.length ? (
           <ul className="mx-auto my-8 flex w-full flex-col divide-y divide-gray-400 rounded-md bg-white px-6 py-4 shadow-md ring-1 ring-slate-600">
@@ -89,12 +91,12 @@ export default function SelectPost() {
                     to={`/post/new?trackId=${track.result.id}`}
                     className="ml-auto rounded-full bg-white px-2 py-1 text-sm text-gray-600 ring-1 ring-gray-300 hover:ring-2"
                     type="submit"
-                    aria-labelledby={track.result.id}
+                    aria-labelledby={String(track.result.id)}
                   >
                     Select
                   </Link>
                   <span
-                    id={track.result.id}
+                    id={String(track.result.id)}
                     className="sr-only"
                   >{`Select ${track.result.title} by ${track.result.primary_artist.name}`}</span>
                 </li>

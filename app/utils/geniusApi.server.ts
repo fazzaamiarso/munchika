@@ -20,7 +20,7 @@ export const searchGenius = async ({
   searchQuery: string;
   currentPage?: number;
   perPage?: number;
-}): Promise<{ hits: GeniusTrackData[] }> => {
+}): Promise<{ hits: Array<{ result: GeniusTrackData }> }> => {
   const url = `${BASE_URL}search?q=${searchQuery}&per_page=${perPage}&page=${currentPage}`;
   const encodedURL = encodeURI(url); //replace character with escape sequence of UTF-8 encoding
 

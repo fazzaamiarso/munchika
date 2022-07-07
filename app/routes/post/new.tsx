@@ -1,17 +1,18 @@
-import { json, redirect } from "@remix-run/node";
-import { useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
+import { ActionFunction, json, LoaderFunction, redirect } from '@remix-run/node';
+import { useFetcher, useLoaderData, useNavigate } from '@remix-run/react';
 import { getUserId, requireUserId } from '~/utils/session.server';
 import { supabase } from '~/utils/supabase.server';
-import { fetchFromGenius } from '~/utils/geniusApi.server';
+import { fetchFromGenius, GeniusTrackData } from '~/utils/geniusApi.server';
 import { validateThought, validateLyrics } from '~/utils/formUtils';
 import { ExternalLinkIcon } from '@heroicons/react/outline';
 import { useRef } from 'react';
 import { useFocusOnError } from '~/hooks/useFocusOnError';
 import { ErrorMessage } from '~/components/form/error-message';
+import invariant from 'tiny-invariant';
 
-export const loader = async ({ request }) => {
+export const loader: LoaderFunction = async ({ request }) => {
   const newUrl = new URL(request.url);
-  await requireUserId(request, newUrl);
+  await requireUserId(request, newUrl.pathname);
   const trackId = newUrl.searchParams.get('trackId');
 
   const track = await fetchFromGenius(`songs/${trackId}`);
@@ -19,12 +20,29 @@ export const loader = async ({ request }) => {
   return json(track.song);
 };
 
-export const action = async ({ request }) => {
+type ActionData = {
+  fields: {
+    track_id: string;
+    lyrics: string;
+    thought: string;
+  };
+  fieldErrors: {
+    track_id: string;
+    lyrics: string;
+    thought: string;
+  };
+};
+
+export const action: ActionFunction = async ({ request }) => {
   const userId = await getUserId(request);
   const formData = await request.formData();
   const track_id = formData.get('trackId');
   const lyrics = formData.get('lyrics');
   const thought = formData.get('thought');
+
+  invariant(typeof track_id === 'string', 'track_id must be a string!');
+  invariant(typeof lyrics === 'string', 'lyrics must be a string!');
+  invariant(typeof thought === 'string', 'thought must be a string!');
 
   const fields = {
     track_id,
@@ -44,7 +62,7 @@ export const action = async ({ request }) => {
       author_id: userId,
       lyrics,
       thought,
-      track_id,
+      track_id: Number(track_id),
     },
   ]);
   return redirect('/user/posts');
@@ -52,12 +70,12 @@ export const action = async ({ request }) => {
 
 export default function NewPost() {
   const navigate = useNavigate();
-  const trackData = useLoaderData();
-  const fetcher = useFetcher();
-  const formRef = useRef();
+  const trackData = useLoaderData<GeniusTrackData>();
+  const fetcher = useFetcher<ActionData>();
+  const formRef = useRef<HTMLFormElement>(null);
   const isBusy = fetcher.state === 'submitting' || fetcher.state === 'loading';
 
-  useFocusOnError(formRef, fetcher.data?.fieldErrors);
+  useFocusOnError(formRef, fetcher.data?.fieldErrors ?? {});
 
   return (
     <>

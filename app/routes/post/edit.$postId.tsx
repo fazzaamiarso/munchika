@@ -1,18 +1,23 @@
-import { json, redirect } from "@remix-run/node";
-import { Form, useActionData, useLoaderData, useNavigate, useTransition } from "@remix-run/react";
+import { ActionFunction, json, LoaderFunction, redirect } from '@remix-run/node';
+import { Form, useActionData, useLoaderData, useNavigate, useTransition } from '@remix-run/react';
 import invariant from 'tiny-invariant';
 import { supabase } from '~/utils/supabase.server';
-import { fetchFromGenius } from '~/utils/geniusApi.server';
+import { fetchFromGenius, GeniusTrackData } from '~/utils/geniusApi.server';
 import { requireUserId } from '~/utils/session.server';
 import { validateThought, validateLyrics } from '~/utils/formUtils';
 import { ExternalLinkIcon } from '@heroicons/react/outline';
 import { useRef } from 'react';
 import { useFocusOnError } from '~/hooks/useFocusOnError';
 import { ErrorMessage } from '~/components/form/error-message';
+import { Post } from '~/types/database';
 
-export const loader = async ({ params, request }) => {
+type LoaderData = {
+  postData: Post;
+  trackData: GeniusTrackData;
+};
+export const loader: LoaderFunction = async ({ params, request }) => {
   invariant(params.postId, 'Expected params.postId');
-  const userId = await requireUserId(request, new URL(request.url));
+  const userId = await requireUserId(request, new URL(request.url).pathname);
 
   const { data: postData } = await supabase
     .from('post')
@@ -24,21 +29,30 @@ export const loader = async ({ params, request }) => {
 
   return json({
     postData,
-    trackData: {
-      title: trackData.title,
-      thumbnail: trackData.song_art_image_thumbnail_url,
-      artist: trackData.primary_artist.name,
-      url: trackData.url,
-    },
+    trackData,
   });
 };
 
-export const action = async ({ params, request }) => {
+type ActionData = {
+  fields: {
+    lyrics: string;
+    thought: string;
+  };
+  fieldErrors: {
+    lyrics: string;
+    thought: string;
+  };
+};
+
+export const action: ActionFunction = async ({ params, request }) => {
   invariant(params.postId, 'Expected params.postId');
   const formData = await request.formData();
   const lyrics = formData.get('lyrics');
   const thought = formData.get('thought');
-  const postId = parseInt(params.postId);
+  const postId = Number(params.postId);
+
+  invariant(typeof lyrics === 'string', 'lyrics must be a string!');
+  invariant(typeof thought === 'string', 'thought must be a string!');
 
   const fields = {
     lyrics,
@@ -64,15 +78,15 @@ export const action = async ({ params, request }) => {
 };
 
 export default function EditPost() {
-  const { postData, trackData } = useLoaderData();
-  const actionData = useActionData();
+  const { postData, trackData } = useLoaderData<LoaderData>();
+  const actionData = useActionData<ActionData>();
   const navigate = useNavigate();
   const transition = useTransition();
-  const formRef = useRef();
+  const formRef = useRef<HTMLFormElement>(null);
 
   const isSaving = transition.type === 'actionRedirect' || transition.state === 'submitting';
 
-  useFocusOnError(formRef, actionData?.fieldErrors);
+  useFocusOnError(formRef, actionData?.fieldErrors ?? {});
 
   return (
     <main className="mx-auto mt-4 flex w-10/12 max-w-2xl flex-col py-8">
@@ -86,10 +100,14 @@ export default function EditPost() {
           </p>
         </div>
         <div className="flex max-w-lg items-center  gap-4 rounded-md bg-white ring-1 ring-gray-400">
-          <img src={trackData.thumbnail} alt={trackData.title} className="h-24" />
+          <img
+            src={trackData.song_art_image_thumbnail_url}
+            alt={trackData.title}
+            className="h-24"
+          />
           <div className="px-3 leading-5">
             <h2 className="font-semibold">{trackData.title}</h2>
-            <p className="text-sm">{trackData.artist}</p>
+            <p className="text-sm">{trackData.primary_artist.name}</p>
           </div>
         </div>
         <p className="flex items-center gap-1 text-sm">
