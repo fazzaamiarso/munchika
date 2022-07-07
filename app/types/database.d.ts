@@ -14,3 +14,5 @@ export interface Post extends BaseEntity {
   track_id: number;
   user: User;
 }
+
+export type PostWithUser = Post & User;

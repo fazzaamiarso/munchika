@@ -40,6 +40,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
     .select('*, user!post_author_id_fkey (username, avatar_url)')
     .eq('track_id', params.trackId)
     .limit(5);
+  console.log(posts);
   return json<LoaderData>({
     trackData: {
       title: trackData.title,
@@ -118,17 +119,10 @@ export default function TrackDetails() {
             {posts.map(post => {
               const modifiedPost = {
                 ...post,
-                avatar: post.user.avatar_url,
+                avatar_url: post.user.avatar_url,
                 username: post.user.username,
               };
-              return (
-                <PostCard
-                  key={post.id}
-                  currentUserId={userId}
-                  postWithUser={modifiedPost}
-                  displayTrack={false}
-                />
-              );
+              return <PostCard key={post.id} currentUserId={userId} postWithUser={modifiedPost} />;
             })}
           </ul>
         </div>

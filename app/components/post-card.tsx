@@ -1,22 +1,47 @@
-import { Link, useFetcher } from "@remix-run/react";
+import { Link, useFetcher } from '@remix-run/react';
 import { PostMenu } from './post-menu';
-import { useState, useRef } from 'react';
+import { useState, useRef, MouseEvent } from 'react';
 import { Dialog } from '@headlessui/react';
 import { ExclamationIcon } from '@heroicons/react/outline';
+import { PostWithUser } from '~/types/database';
+
+type PostWithTrack = PostWithUser & {
+  thumbnail: string;
+  artist: string;
+  title: string;
+};
+
+type Post1 = {
+  currentUserId: string | null;
+  postWithUser: PostWithTrack;
+  displayUser?: boolean;
+  displayTrack: true;
+};
+type Post2 = {
+  currentUserId: string | null;
+  postWithUser: PostWithUser;
+  displayUser?: boolean;
+  displayTrack?: never;
+};
+
+type PostCardProps = Post1 | Post2;
 
 export const PostCard = ({
   postWithUser: post,
   currentUserId,
-  displayUser = true,
-  displayTrack = true,
-}) => {
+  displayUser,
+  displayTrack,
+}: PostCardProps) => {
   const fetcher = useFetcher();
-  const cancelRef = useRef();
+  const cancelRef = useRef<HTMLButtonElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
   const isPostOwner = post.author_id === currentUserId;
 
-  const handleDelete = e => {
+  const handleDelete = (e: MouseEvent<HTMLButtonElement>) => {
+    if (!(e.target instanceof HTMLButtonElement)) return;
+    e.preventDefault();
+    e.stopPropagation();
     setIsOpen(false);
     fetcher.submit(
       { postId: e.target.value, action: 'delete' },
@@ -26,9 +51,9 @@ export const PostCard = ({
 
   return (
     <li
-      tabIndex="0"
+      tabIndex={0}
       className="mx-auto w-full max-w-lg space-y-4 self-stretch rounded-md bg-white p-4 shadow-md ring-1 ring-slate-300"
-      aria-label={post.title}
+      aria-label={displayTrack ? post.title : 'Thought on a song'}
       aria-describedby={`post-user${post.id} post-content${post.id}`}
     >
       <div className="flex w-full items-center gap-2 ">
@@ -36,7 +61,7 @@ export const PostCard = ({
           <>
             <img
               role="presentation"
-              src={post.avatar}
+              src={post.avatar_url}
               className="aspect-square h-8 rounded-full bg-gray-200"
             />
             <div className="flex w-full flex-col items-start" id={`post-user${post.id}`}>
@@ -109,7 +134,7 @@ export const PostCard = ({
                   <Dialog.Title className="text-lg font-semibold ">Delete post</Dialog.Title>
                   <Dialog.Description className="text-gray-600">
                     Are you sure you wan to delete your post on{' '}
-                    <span className="font-semibold">{post.title}</span>?
+                    <span className="font-semibold">{displayTrack && post.title}</span>?
                   </Dialog.Description>
                 </div>
               </div>
