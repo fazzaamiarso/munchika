@@ -1,4 +1,14 @@
-import { useTransition } from "@remix-run/react";
+import { useTransition } from '@remix-run/react';
+import { ComponentPropsWithoutRef } from 'react';
+
+type OwnInputProps = {
+  label: string;
+  fieldData: string | number | undefined;
+  fieldError: string | undefined;
+  hint?: string;
+};
+
+type InputFieldProps = OwnInputProps & Omit<ComponentPropsWithoutRef<'input'>, keyof OwnInputProps>;
 
 export const InputField = ({
   name,
@@ -9,7 +19,7 @@ export const InputField = ({
   hint = '',
   fieldData,
   fieldError,
-}) => {
+}: InputFieldProps) => {
   const transition = useTransition();
   const isBusy = transition.state === 'submitting' || transition.state === 'loading';
 

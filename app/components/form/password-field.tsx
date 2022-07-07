@@ -1,7 +1,14 @@
-import { useState } from 'react';
+import { ComponentPropsWithoutRef, useState } from 'react';
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/solid';
 
-export const PasswordField = ({ fieldData, isBusy, autoComplete }) => {
+type OwnInputProps = {
+  fieldData: string | undefined;
+  isBusy: boolean;
+};
+type PasswordFieldProps = OwnInputProps &
+  Omit<ComponentPropsWithoutRef<'input'>, keyof OwnInputProps>;
+
+export const PasswordField = ({ fieldData, isBusy, autoComplete }: PasswordFieldProps) => {
   const [show, setShow] = useState(false);
   const toggleShow = () => setShow(!show);
   return (
@@ -21,13 +28,11 @@ export const PasswordField = ({ fieldData, isBusy, autoComplete }) => {
           type={show ? 'text' : 'password'}
           required
           autoComplete={autoComplete}
-          defaultValue={fieldData?.fields ? fieldData.fields.password : ''}
-          className={`w-full rounded-md ${
-            fieldData?.fieldErrors?.password && !isBusy ? 'border-red-600' : ''
-          }`}
+          defaultValue={fieldData ?? ''}
+          className={`w-full rounded-md ${fieldData && !isBusy ? 'border-red-600' : ''}`}
           aria-describedby="pass-hint "
           aria-errormessage="password-error"
-          aria-invalid={fieldData?.fieldErrors?.password ? 'true' : 'false'}
+          aria-invalid={fieldData ? 'true' : 'false'}
         />
         <button
           aria-labelledby="eye-label"

@@ -1,75 +1,100 @@
 import { useRef } from 'react';
-import { redirect } from "@remix-run/node";
-import { Form, Link, useActionData, useSearchParams, useTransition } from "@remix-run/react";
-import { createUserSession, getUserId } from '~/utils/session.server';
-import { supabase } from '~/utils/supabase.server';
-import { validateEmail, validatePassword, haveErrors, badRequest } from '~/utils/formUtils';
+import { Form, Link, useActionData, useSearchParams, useTransition } from '@remix-run/react';
 import { PasswordField } from '~/components/form/password-field';
 import { useFocusOnError } from '~/hooks/useFocusOnError';
+import { createUserSession } from '~/utils/session.server';
+import { validateUsername, supabase } from '~/utils/supabase.server';
+import { validateEmail, validatePassword, haveErrors, badRequest } from '~/utils/formUtils';
 import { ErrorMessage } from '~/components/form/error-message';
 import { InputField } from '~/components/form/input-field';
 import { useFocusToHeading } from '~/hooks/useFocusToHeading';
-export const loader = async ({ request }) => {
-  const userId = await getUserId(request);
-  if (userId) throw redirect('/');
-  return null;
-};
+import { ActionFunction } from '@remix-run/node';
+import invariant from 'tiny-invariant';
 
-export const action = async ({ request }) => {
+
+type ActionData = {
+  fieldErrors: {
+    email: string;
+    password: string;
+    username: string;
+  };
+  fields: {
+    email: string;
+    password: string;
+    username: string;
+  };
+};
+export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const email = formData.get('email');
   const password = formData.get('password');
+  const username = formData.get('username');
   const redirectTo = formData.get('redirectTo') ?? '/';
 
-  const fields = { email, password };
+  invariant(typeof email === 'string', 'Email must be a string!');
+  invariant(typeof password === 'string', 'Password must be a string!');
+  invariant(typeof username === 'string', 'Username must be a string!');
+  invariant(typeof redirectTo === 'string', 'RedirectTo must be a string!');
+
+  const fields = { email, password, username };
   const fieldErrors = {
+    username: await validateUsername(username),
     password: validatePassword(password),
     email: validateEmail(email),
   };
   if (haveErrors(fieldErrors)) return badRequest({ fieldErrors, fields });
 
-  const { user, error, session } = await supabase.auth.signIn({
+  const { user, error, session } = await supabase.auth.signUp({
     email,
     password,
   });
 
   if (error) {
     fieldErrors.email = error.message;
-    fieldErrors.password = error.message;
     return badRequest({ fields, fieldErrors });
   }
+  invariant(session?.access_token, 'Logged in user should have session token');
+  invariant(user?.id, 'Logged in user should have an Id');
+
+  await supabase.from('user').insert([
+    {
+      username,
+      id: user.id,
+      avatar_url: `https://avatars.dicebear.com/api/micah/${username}.svg`,
+    },
+  ]); //  user profile
+
   return await createUserSession(user.id, redirectTo, session.access_token);
 };
 
-export default function Login() {
+export default function Register() {
   const [searchParams] = useSearchParams();
   const transition = useTransition();
-  const actionData = useActionData();
+  const actionData = useActionData<ActionData>();
   const isBusy = transition.state === 'submitting' || transition.state === 'loading';
-  const formRef = useRef();
+  const formRef = useRef<HTMLFormElement>(null);
 
-  useFocusOnError(formRef, actionData?.fieldErrors);
+  useFocusOnError(formRef, actionData?.fieldErrors ?? {});
   useFocusToHeading();
-
   return (
     <main id="main" className="mx-auto flex w-11/12 max-w-lg flex-col items-center gap-6 py-12 ">
       <div className="self-start">
-        <h1 id="form-name" className="text-2xl font-bold" tabIndex="-1">
-          Login
+        <h1 id="form-name" tabIndex={-1} className="text-2xl font-bold">
+          Register
         </h1>
         <p>
-          Don&apos;t have an account?{' '}
+          Already have an account?{' '}
           <Link
             className="text-blue-600 underline hover:no-underline"
-            to={`/register?redirectTo=${searchParams.get('redirectTo') ?? ''}`}
+            to={`/login?redirectTo=${searchParams.get('redirectTo') ?? ''}`}
           >
-            Register
+            Login
           </Link>
         </p>
       </div>
       <Form
-        aria-labelledby="form-name"
         method="post"
+        aria-labelledby="form-name"
         className="flex w-full flex-col gap-4 rounded-md bg-white py-4 px-6 shadow-md ring-2 ring-gray-500/10"
         replace
         ref={formRef}
@@ -82,6 +107,19 @@ export default function Login() {
         />
         <div className="flex flex-col gap-2">
           <InputField
+            name="username"
+            label="Username"
+            placeholder="e.g. cool_kidz"
+            fieldData={actionData?.fields?.username}
+            fieldError={actionData?.fieldErrors?.username}
+            hint="Must contain 4+ characters and only lowercase letter"
+          />
+          <ErrorMessage id="username-error">
+            {actionData?.fieldErrors?.username && !isBusy ? actionData.fieldErrors.username : ''}
+          </ErrorMessage>
+        </div>
+        <div className="flex flex-col gap-2">
+          <InputField
             name="email"
             label="Email"
             type="email"
@@ -92,8 +130,12 @@ export default function Login() {
             {actionData?.fieldErrors?.email && !isBusy ? actionData.fieldErrors.email : ''}
           </ErrorMessage>
         </div>
-        <div className=" flex flex-col gap-2">
-          <PasswordField fieldData={actionData} isBusy={isBusy} autoComplete="current-password" />
+        <div className="flex flex-col gap-2">
+          <PasswordField
+            fieldData={actionData?.fields.password}
+            isBusy={isBusy}
+            autoComplete="new-password"
+          />
           <ErrorMessage id="password-error">
             {actionData?.fieldErrors?.password && !isBusy ? actionData.fieldErrors.password : ''}
           </ErrorMessage>
@@ -101,17 +143,17 @@ export default function Login() {
         <button
           className="mt-4 rounded-sm bg-blue-600 px-4 py-1  font-semibold text-white hover:opacity-90 disabled:opacity-75"
           type="submit"
-          disabled={isBusy}
+          disabled={transition.state === 'submitting' || transition.state === 'loading'}
         >
           {transition.state === 'submitting'
-            ? 'Submitting'
+            ? 'Registering'
             : transition.type === 'actionRedirect'
             ? 'Logging you in'
-            : 'Log in'}
+            : 'Register'}
         </button>
         <span aria-live="polite" className="sr-only">
           {transition.state === 'submitting'
-            ? 'Submitting'
+            ? 'Registering'
             : transition.type === 'actionRedirect'
             ? 'Logging you in'
             : ''}

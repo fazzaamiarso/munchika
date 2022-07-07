@@ -18,11 +18,11 @@ export const validateEmail = (email: string) => {
   if (!regexp.test(email)) return 'Invalid email address';
 };
 
-export const haveErrors = (fieldErrors: FIXME_ANY) => {
+export const haveErrors = <T extends Record<string, unknown>>(fieldErrors: T) => {
   return Object.values(fieldErrors).some(Boolean);
 };
 
-export const badRequest = (data: FIXME_ANY) => {
+export const badRequest = <T extends unknown>(data: T) => {
   return json(data, { status: 400 });
 };
 

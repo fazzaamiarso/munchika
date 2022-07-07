@@ -20,7 +20,6 @@ export const validateUsername = async (username: string) => {
   const uppercaseRegex = /[A-Z]/;
   const whiteSpaceRegex = /\s/;
   const allNumberRegex = /^\d+$/;
-  if (!username) return null;
   if (username.length < 4) return 'Username must be atleast 4 characters long';
   if (allNumberRegex.test(username)) return 'Username must be alphanumerical';
 

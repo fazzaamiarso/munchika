@@ -1,6 +1,8 @@
 import { ExclamationIcon } from '@heroicons/react/solid';
+import { ReactNode } from 'react';
 
-export const ErrorMessage = ({ id, children }) => {
+type Props = { id: string; children: ReactNode };
+export const ErrorMessage = ({ id, children }: Props) => {
   return (
     <p
       aria-live="polite"
