@@ -1,18 +1,16 @@
-import { Link, NavLink, useFetcher, useLocation, useTransition } from "@remix-run/react";
+import { Link, NavLink, useFetcher, useLocation, useTransition } from '@remix-run/react';
 import { Fragment, useEffect } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { MenuIcon, XIcon } from '@heroicons/react/outline';
 import { UserCircleIcon } from '@heroicons/react/solid';
 import Logo from '../images/MunchikaRed.svg';
 import Munchika from '../images/LogoMunchika.svg';
+import { mergeClassNames } from '~/utils/mergeClassNames';
 
 const navigation = [
   { name: 'Home', href: '/' },
   { name: 'Browse', href: '/search' },
 ];
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ');
-}
 
 function Navbar() {
   const logout = useFetcher();
@@ -67,7 +65,7 @@ function Navbar() {
                           key={item.name}
                           to={item.href}
                           className={({ isActive }) =>
-                            classNames(
+                            mergeClassNames(
                               isActive ? 'bg-gray-900 text-white' : '',
                               'rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white',
                             )
@@ -83,7 +81,6 @@ function Navbar() {
                   <Link
                     className="hidden rounded-sm bg-blue-600 py-1 px-3 text-sm font-semibold text-white hover:opacity-90 sm:block"
                     to={'/post/select'}
-                    disabled={transition.state === 'submitting' || transition.state === 'loading'}
                   >
                     Add Thought
                   </Link>
@@ -119,7 +116,7 @@ function Navbar() {
                             {({ active }) => (
                               <Link
                                 to="/user/posts"
-                                className={classNames(
+                                className={mergeClassNames(
                                   active ? 'bg-gray-200' : '',
                                   'block px-4 py-2 text-sm text-gray-700',
                                 )}
@@ -138,7 +135,7 @@ function Navbar() {
                               >
                                 <button
                                   type="submit"
-                                  className={classNames(
+                                  className={mergeClassNames(
                                     active ? 'bg-gray-200' : '',
                                     'block w-full px-4 py-2 text-left text-sm text-gray-700',
                                   )}
@@ -149,7 +146,7 @@ function Navbar() {
                             ) : (
                               <Link
                                 to={`/login?redirectTo=${location.pathname}`}
-                                className={classNames(
+                                className={mergeClassNames(
                                   active ? 'bg-gray-200' : '',
                                   'block px-4 py-2 text-sm text-gray-700',
                                 )}
@@ -173,7 +170,7 @@ function Navbar() {
                     key={item.name}
                     as={Link}
                     to={item.href}
-                    className={classNames(
+                    className={mergeClassNames(
                       'text-gray-300 hover:bg-gray-700 hover:text-white',
                       'block rounded-md px-3 py-2 text-base font-medium',
                     )}

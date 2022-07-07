@@ -1,8 +1,10 @@
 import { Menu } from '@headlessui/react';
-import { Link, useLocation } from "@remix-run/react";
+import { Link, useLocation } from '@remix-run/react';
 import { DotsHorizontalIcon } from '@heroicons/react/solid';
 
-export const PostMenu = ({ postId, openDialog }) => {
+type Props = { postId: string; openDialog: () => void };
+
+export const PostMenu = ({ postId, openDialog }: Props) => {
   const location = useLocation();
   return (
     <>
