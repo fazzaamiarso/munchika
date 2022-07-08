@@ -28,6 +28,7 @@
     "@types/lodash.throttle": "^4.1.7",
     "@types/react": "^18.0.15",
     "@types/react-dom": "^18.0.6",
+    "@typescript-eslint/parser": "^5.30.5",
     "autoprefixer": "^10.4.2",
     "concurrently": "^7.0.0",
     "cross-env": "^7.0.3",
@@ -56,10 +57,10 @@
     "build:css": "tailwindcss -i ./styles/tailwind.css -o ./app/tailwind.css --minify",
     "dev:css": "tailwindcss -i ./styles/tailwind.css -o ./app/tailwind.css --watch",
     "prepare": "husky install && chmod ug+x .husky/*",
-    "lint": "eslint app/**/*.jsx --fix "
+    "lint": "eslint app/**/*.tsx"
   },
   "lint-staged": {
-    "app/**/*.jsx": [
+    "app/**/*.tsx": [
       "yarn lint",
       "prettier --write"
     ]
