@@ -1,5 +1,12 @@
-import { json, redirect } from "@remix-run/node";
-import { Form, useActionData, useFetcher, useLoaderData, useNavigate, useTransition } from "@remix-run/react";
+import { ActionFunction, json, LoaderFunction, redirect } from '@remix-run/node';
+import {
+  Form,
+  useActionData,
+  useFetcher,
+  useLoaderData,
+  useNavigate,
+  useTransition,
+} from '@remix-run/react';
 import { getUserId, requireUserId } from '~/utils/session.server';
 import { supabase, validateUsername } from '~/utils/supabase.server';
 import { badRequest, haveErrors, generateRandomString } from '~/utils/formUtils';
@@ -8,12 +15,20 @@ import { ErrorMessage } from '~/components/form/error-message';
 import { InputField } from '~/components/form/input-field';
 import { useFocusOnError } from '~/hooks/useFocusOnError';
 import { useRef } from 'react';
-export const loader = async ({ request }) => {
+import invariant from 'tiny-invariant';
+import { User } from '~/types/database';
+
+type ProfileEditActions = 'randomize';
+type LoaderData = { userData: User };
+type FetcherData = {
+  avatar_url: string;
+};
+export const loader: LoaderFunction = async ({ request }) => {
   const userId = await requireUserId(request);
   const { searchParams } = new URL(request.url);
-  const action = searchParams.get('action');
+  const actionType = searchParams.get('action') as ProfileEditActions | undefined;
 
-  if (action === 'randomize') {
+  if (actionType === 'randomize') {
     const newAvatar = `https://avatars.dicebear.com/api/micah/${generateRandomString()}.svg`;
     return json({ avatar_url: newAvatar });
   }
@@ -24,16 +39,24 @@ export const loader = async ({ request }) => {
     .match({ id: userId })
     .maybeSingle();
 
-  return json(userData);
+  return json<LoaderData>({ userData });
 };
 
-export const action = async ({ request }) => {
+type ActionData = {
+  fields: { username: string };
+  fieldErrors: { username: string };
+};
+export const action: ActionFunction = async ({ request }) => {
   const userId = await getUserId(request);
   const formData = await request.formData();
   const newAvatar = formData.get('avatar');
   const username = formData.get('username');
   const oldUsername = formData.get('old_username');
   const isUsernameChanged = username !== oldUsername;
+
+  invariant(typeof username === 'string', 'username must be a string!');
+  invariant(typeof oldUsername === 'string', 'oldUsername must be a string!');
+  invariant(typeof newAvatar === 'string', 'newAvatar must be a string!');
 
   const fields = { username };
   const fieldErrors = {
@@ -47,27 +70,27 @@ export const action = async ({ request }) => {
 };
 
 export default function EditProfile() {
-  const userData = useLoaderData();
-  const actionData = useActionData();
-  const fetcher = useFetcher();
+  const loaderData = useLoaderData<LoaderData>();
+  const actionData = useActionData<ActionData>();
+  const fetcher = useFetcher<FetcherData>();
   const transition = useTransition();
   const navigate = useNavigate();
   const isRandomizing = fetcher.state === 'loading' || fetcher.state === 'submitting';
-  const formRef = useRef();
+  const formRef = useRef<HTMLFormElement>(null);
 
-  useFocusOnError(formRef, actionData?.fieldErrors);
+  useFocusOnError(formRef, actionData?.fieldErrors ?? {});
   useFocusToHeading();
   return (
     <main className="mt-8 h-screen">
       <section className="mx-auto flex w-10/12 max-w-sm flex-col items-center gap-6">
-        <h1 className="mb-8 text-xl font-semibold" tabIndex="-1">
+        <h1 className="mb-8 text-xl font-semibold" tabIndex={-1}>
           Edit Profile
         </h1>
         <div className="flex flex-col items-center gap-4">
           <img
             className="aspect-square h-20 rounded-full ring-1 ring-black"
-            src={fetcher.data?.avatar_url ?? userData.avatar_url}
-            alt={userData.username}
+            src={fetcher.data?.avatar_url ?? loaderData.userData?.avatar_url}
+            alt={loaderData.userData?.username}
           />
 
           <fetcher.Form method="get">
@@ -91,17 +114,22 @@ export default function EditProfile() {
             hidden
             name="avatar"
             className="w-full py-8"
-            key={fetcher.data?.avatar_url ?? userData.avatar_url}
-            defaultValue={fetcher.data?.avatar_url ?? userData.avatar_url}
+            key={fetcher.data?.avatar_url ?? loaderData.userData?.avatar_url}
+            defaultValue={fetcher.data?.avatar_url ?? loaderData.userData?.avatar_url}
             aria-label="Edit profile"
           />
-          <input type="text" hidden name="old_username" defaultValue={userData.username} />
+          <input
+            type="text"
+            hidden
+            name="old_username"
+            defaultValue={loaderData.userData?.username}
+          />
           <div className="flex w-full flex-col items-start gap-2">
             <InputField
               name="username"
               label="Username"
               placeholder="e.g. cool_kidz"
-              fieldData={actionData?.fields?.username ?? userData.username}
+              fieldData={actionData?.fields?.username ?? loaderData.userData?.username}
               fieldError={actionData?.fieldErrors?.username}
               hint="Must contain 4+ characters and only lowercase letter"
             />

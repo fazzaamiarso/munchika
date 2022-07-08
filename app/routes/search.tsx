@@ -1,4 +1,4 @@
-import { Form, Link, Outlet, useLocation, useTransition } from "@remix-run/react";
+import { Form, Link, Outlet, useLocation, useTransition } from '@remix-run/react';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowCircleUpIcon, RefreshIcon } from '@heroicons/react/outline';
 import throttle from 'lodash.throttle';
@@ -25,14 +25,15 @@ const navigation = [
 
 export default function SearchLayout() {
   const location = useLocation();
-  const searchRef = useRef();
+  const searchRef = useRef<HTMLInputElement>(null);
   const transition = useTransition();
 
   useEffect(() => {
-    if (transition.type === 'loaderSubmissionRedirect') searchRef.current.value = '';
+    if (transition.type === 'loaderSubmissionRedirect' && searchRef.current)
+      searchRef.current.value = '';
   }, [transition]);
   useEffect(() => {
-    searchRef.current.focus();
+    searchRef.current?.focus();
   }, [location]);
 
   return (
