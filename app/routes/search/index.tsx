@@ -1,18 +1,30 @@
-import { json, redirect } from "@remix-run/node";
-import { useFetcher, useLoaderData, useSearchParams, useSubmit, useTransition } from "@remix-run/react";
+import { json, LoaderFunction, redirect } from '@remix-run/node';
+import {
+  useCatch,
+  useFetcher,
+  useLoaderData,
+  useSearchParams,
+  useSubmit,
+  useTransition,
+} from '@remix-run/react';
 import { getPostWithTrack } from '../../utils/geniusApi.server';
 import { supabase } from '../../utils/supabase.server';
 import { getUserId } from '~/utils/session.server';
-import { PostCard, PostCardSkeleton } from '../../components/post-card';
+import { PostCard, PostCardSkeleton, PostWithTrack } from '../../components/post-card';
 import { Fragment, useEffect, useState, useRef } from 'react';
 import { Listbox } from '@headlessui/react';
 import { SortAscendingIcon, SortDescendingIcon } from '@heroicons/react/outline';
+import { Post } from '~/types/database';
 
-export const loader = async ({ request }) => {
+type LoaderData = {
+  data: PostWithTrack[];
+  userId: string;
+};
+export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
   const { searchParams } = new URL(request.url);
   const searchTerm = searchParams.get('term') ?? null;
-  const currPage = searchParams.get('currPage') ? parseInt(searchParams.get('currPage')) : 0;
+  const currPage = Number(searchParams.get('currPage')) ?? 0;
   const actionType = searchParams.get('action');
   const sortValue = searchParams.get('sortValue');
 
@@ -20,23 +32,28 @@ export const loader = async ({ request }) => {
 
   if (searchTerm === null) {
     const { data } = await supabase
-      .from('post')
+      .from<Post>('post')
       .select('*, user!post_author_id_fkey (username, avatar_url)')
       .order('created_at', { ascending: sortValue === 'CREATED_ASC' })
       .range(currPage * 10, (currPage + 1) * 10 - 1);
 
+    if (!data)
+      return json({
+        data: [],
+        userId,
+      });
     return json({
       data: await getPostWithTrack(data),
       userId,
     });
   }
   const { data: fullTextData, error } = await supabase
-    .from('post')
+    .from<Post>('post')
     .select('*, user!post_author_id_fkey (username, avatar_url)')
     .order('created_at', { ascending: sortValue === 'CREATED_ASC' })
     .textSearch('fts', searchTerm, { type: 'plain' });
 
-  if (error) {
+  if (error || !fullTextData) {
     throw json({ message: "Couldn't find what you're looking for!" }, 500);
   }
 
@@ -57,18 +74,19 @@ const SORTER = [
     value: 'CREATED_ASC',
     Icon: SortAscendingIcon,
   },
-];
+] as const;
+type SortValues = typeof SORTER[number]['value'];
 
 export default function SearchPost() {
-  const { data, userId } = useLoaderData();
-  const fetcher = useFetcher();
+  const { data, userId } = useLoaderData<LoaderData>();
+  const fetcher = useFetcher<LoaderData>();
   const transition = useTransition();
   const submit = useSubmit();
 
   const [postList, setPostList] = useState(data);
-  const [sortValue, setSortValue] = useState(SORTER[0]);
+  const [sortValue, setSortValue] = useState<typeof SORTER[number]>(SORTER[0]);
 
-  const boxRef = useRef(null);
+  const boxRef = useRef<HTMLDivElement>(null);
   const [shouldFetch, setShouldFetch] = useState(true);
   const [currPage, setCurrPage] = useState(1);
   const [initial, setInitial] = useState(true);
@@ -80,7 +98,7 @@ export default function SearchPost() {
   const isSearching =
     transition.type === 'loaderSubmissionRedirect' || transition.type === 'loaderSubmission';
 
-  const handleSort = selected => {
+  const handleSort = (selected: typeof sortValue) => {
     submit({ sortValue: selected.value }, { method: 'get' });
     setSortValue(selected);
   };
@@ -88,7 +106,7 @@ export default function SearchPost() {
   useEffect(() => {
     const handleScroll = () => {
       if (!shouldFetch || fetcher.state !== 'idle' || data.length < 10) return;
-      if (shouldFetch && boxRef.current.getBoundingClientRect().top < 1000) {
+      if (shouldFetch && boxRef.current && boxRef.current.getBoundingClientRect().top < 1000) {
         fetcher.load(searchURL);
         setCurrPage(prev => prev + 1);
         setInitial(false);
@@ -155,7 +173,9 @@ export default function SearchPost() {
         <>
           <ul className=" mx-auto flex w-full flex-col items-center space-y-8">
             {postList.map(post => {
-              return <PostCard key={post.id} postWithUser={post} currentUserId={userId} />;
+              return (
+                <PostCard key={post.id} postWithUser={post} currentUserId={userId} displayTrack />
+              );
             })}
             {fetcher.state === 'loading' ? <PostCardSkeleton /> : null}
           </ul>
@@ -185,7 +205,7 @@ export const CatchBoundary = () => {
     return (
       <div className="flex h-screen w-screen flex-col items-center justify-center ">
         <div className="text-center">
-          <h1 className="text-2xl ">{caught.message}</h1>
+          <h1 className="text-2xl ">{caught.data.message}</h1>
           <p>We are working on it right now!</p>
         </div>
       </div>

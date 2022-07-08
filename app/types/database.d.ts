@@ -13,6 +13,7 @@ export interface Post extends BaseEntity {
   lyrics: string;
   author_id: string;
   track_id: number;
+  fts: string; //full text search field (type tsvector)
   user: User;
 }
 

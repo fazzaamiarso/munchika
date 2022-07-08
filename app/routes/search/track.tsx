@@ -1,10 +1,17 @@
 import { ArrowRightIcon } from '@heroicons/react/solid';
 import { useEffect, useState, useRef } from 'react';
-import { redirect } from '@remix-run/node';
+import { LoaderFunction, redirect } from '@remix-run/node';
 import { Link, useFetcher, useLoaderData, useTransition } from '@remix-run/react';
-import { searchGenius } from '../../utils/geniusApi.server';
+import { GeniusTrackData, searchGenius } from '../../utils/geniusApi.server';
 
-export const loader = async ({ request }) => {
+type LoaderData = {
+  data: Array<{
+    result: GeniusTrackData;
+  }>;
+  searchTerm: string;
+  prevPage: string;
+};
+export const loader: LoaderFunction = async ({ request }) => {
   const newUrl = new URL(request.url);
   const searchTerm = newUrl.searchParams.get('term');
   const currPage = newUrl.searchParams.get('currPage') ?? 1;
@@ -28,8 +35,8 @@ export const loader = async ({ request }) => {
 };
 
 export default function SearchTrack() {
-  const { data, searchTerm } = useLoaderData();
-  const fetcher = useFetcher();
+  const { data, searchTerm } = useLoaderData<LoaderData>();
+  const fetcher = useFetcher<LoaderData>();
   const transition = useTransition();
   const [trackList, setTrackList] = useState(data);
   const currPage = useRef(2);
@@ -43,19 +50,20 @@ export default function SearchTrack() {
     currPage.current = currPage.current + 1;
   };
 
-  const useFocusOnFirstLoadedContent = list => {
+  const useFocusOnFirstLoadedContent = (list: any[], elementId: string) => {
     useEffect(() => {
       if (list.length === 0 || !list) return;
       const listLengthDivided = Math.floor(list.length / 10) - 1;
+      const listItemIdx = String(listLengthDivided * 10 + 1);
       const contentToFocus =
         listLengthDivided === 0
-          ? document.getElementById('link-0')
-          : document.getElementById('link-' + String(listLengthDivided * 10 + 1));
+          ? document.getElementById(`${elementId}-0`)
+          : document.getElementById(`${elementId}-${listItemIdx}`);
       contentToFocus?.focus();
     }, [list]);
   };
 
-  useFocusOnFirstLoadedContent(trackList || []);
+  useFocusOnFirstLoadedContent(trackList || [], 'link');
 
   useEffect(() => {
     if (transition.type === 'loaderSubmission') {
@@ -122,14 +130,14 @@ export default function SearchTrack() {
                   to={`/track/${track.result.id}`}
                   prefetch="intent"
                   id={`link-${index}`}
-                  aria-labelledby={track.result.id}
+                  aria-labelledby={String(track.result.id)}
                 >
                   {transition.state === 'loading' &&
                   transition.location.pathname === `/track/${track.result.id}`
                     ? 'Loading..'
                     : 'Details'}
                   <ArrowRightIcon className="h-3 transition-transform group-hover:translate-x-1" />
-                  <span className="sr-only" id={track.result.id} aria-live="polite">
+                  <span className="sr-only" id={String(track.result.id)} aria-live="polite">
                     {transition.state === 'loading' &&
                     transition.location.pathname === `/track/${track.result.id}`
                       ? 'Loading'
@@ -153,7 +161,7 @@ export default function SearchTrack() {
           </>
         ) : null}
       </ul>
-      {fetcher.data?.data.length < 10 && !initial.current ? null : (
+      {fetcher.data && fetcher.data.data.length < 10 && !initial.current ? null : (
         <button
           className="self-center rounded-full bg-white  px-3  py-1 text-blue-600 ring-2 ring-blue-600 transition-colors  hover:bg-blue-600 hover:text-white disabled:opacity-75"
           onClick={handleLoadMore}

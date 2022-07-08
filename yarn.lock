@@ -2270,6 +2270,11 @@ cliui@^7.0.2:
     strip-ansi "^6.0.0"
     wrap-ansi "^7.0.0"
 
+cloc@^2.10.0:
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/cloc/-/cloc-2.10.0.tgz#1dbd3755a9ca8d426e9222b2e8a4feaecf855837"
+  integrity sha512-iHYXbhKNF+Wy6TNxHozD8WkW0qbZ7WKecyFntyFron4BF4SOX6hp7HEuNJ8iVnjimnf3xpLd81kMwoRj2WiCoA==
+
 clone-deep@^4.0.1:
   version "4.0.1"
   resolved "https://registry.npmjs.org/clone-deep/-/clone-deep-4.0.1.tgz"
