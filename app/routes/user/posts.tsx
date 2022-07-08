@@ -1,10 +1,11 @@
-import { json } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
-import { commitSession, getUserId, getUserSession } from '~/utils/session.server';
+import { ActionFunction, json, LoaderFunction } from '@remix-run/node';
+import { Link, useLoaderData } from '@remix-run/react';
+import { commitSession, getUserId, getUserSession, requireUserId } from '~/utils/session.server';
 import { getPostWithTrack } from '~/utils/geniusApi.server';
 import { supabase } from '~/utils/supabase.server';
 import { AnnotationIcon, PlusIcon } from '@heroicons/react/outline';
-import { PostCard } from '~/components/post-card';
+import { PostCard, PostWithTrack } from '~/components/post-card';
+import { Post } from '~/types/database';
 
 export function meta() {
   return {
@@ -13,20 +14,24 @@ export function meta() {
   };
 }
 
-export const loader = async ({ request }) => {
-  const userId = await getUserId(request);
+type LoaderData = {
+  postsData: PostWithTrack[];
+};
+export const loader: LoaderFunction = async ({ request }) => {
+  const userId = await requireUserId(request);
 
   const { data: userPosts } = await supabase
-    .from('post')
+    .from<Post>('post')
     .select('*, user!post_author_id_fkey (username, avatar_url)')
     .order('created_at', { ascending: false })
     .eq('author_id', userId);
 
+  if (!userPosts) return { postsData: [] };
   const postsData = await getPostWithTrack(userPosts);
   return { postsData };
 };
 
-export const action = async ({ request }) => {
+export const action: ActionFunction = async ({ request }) => {
   const userSession = await getUserSession(request);
   const userId = await getUserId(request);
   const formData = await request.formData();
@@ -44,14 +49,21 @@ export const action = async ({ request }) => {
 };
 
 export default function UserPost() {
-  const { postsData } = useLoaderData();
+  const { postsData } = useLoaderData<LoaderData>();
 
   return (
     <div className="mt-6 flex min-h-screen w-full flex-col items-center">
       {postsData.length ? (
         <ul className=" w-full space-y-4 px-4">
           {postsData.map(post => {
-            return <PostCard key={post.id} currentUserId={post.author_id} postWithUser={post} />;
+            return (
+              <PostCard
+                key={post.id}
+                currentUserId={post.author_id}
+                postWithUser={post}
+                displayTrack
+              />
+            );
           })}
         </ul>
       ) : (

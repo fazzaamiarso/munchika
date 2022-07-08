@@ -9,6 +9,7 @@ import { useRef } from 'react';
 import { useFocusOnError } from '~/hooks/useFocusOnError';
 import { ErrorMessage } from '~/components/form/error-message';
 import invariant from 'tiny-invariant';
+import { Post } from '~/types/database';
 
 export const loader: LoaderFunction = async ({ request }) => {
   const newUrl = new URL(request.url);
@@ -41,6 +42,8 @@ export const action: ActionFunction = async ({ request }) => {
   const thought = formData.get('thought');
 
   invariant(typeof track_id === 'string', 'track_id must be a string!');
+  invariant(typeof userId === 'string', 'userId must be a string!');
+  invariant(typeof track_id === 'string', 'track_id must be a string!');
   invariant(typeof lyrics === 'string', 'lyrics must be a string!');
   invariant(typeof thought === 'string', 'thought must be a string!');
 
@@ -57,7 +60,7 @@ export const action: ActionFunction = async ({ request }) => {
     return json({ fieldErrors, fields }, { status: 400 });
   }
 
-  await supabase.from('post').insert([
+  await supabase.from<Post>('post').insert([
     {
       author_id: userId,
       lyrics,
