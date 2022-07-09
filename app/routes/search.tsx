@@ -58,6 +58,8 @@ export default function SearchLayout() {
             placeholder="Try searching something"
           />
           <button
+            name="action"
+            value="search"
             type="submit"
             className="rounded-md bg-blue-600 px-4 py-2 text-white hover:opacity-90 disabled:opacity-75"
             disabled={transition.state === 'submitting' || transition.state === 'loading'}

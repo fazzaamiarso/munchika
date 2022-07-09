@@ -60,7 +60,7 @@ export default function SearchTrack() {
           ? document.getElementById(`${elementId}-0`)
           : document.getElementById(`${elementId}-${listItemIdx}`);
       contentToFocus?.focus();
-    }, [list]);
+    }, [list, elementId]);
   };
 
   useFocusOnFirstLoadedContent(trackList || [], 'link');

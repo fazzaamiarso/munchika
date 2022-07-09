@@ -20,47 +20,65 @@ type LoaderData = {
   data: PostWithTrack[];
   userId: string;
 };
+
+type FetchActions = 'sort' | 'clear' | 'search' | 'fetchMore' | 'initialLoad';
+
+const fetchPosts = (options?: { orderAscending?: boolean }) => {
+  return supabase
+    .from<Post>('post')
+    .select('*, user!post_author_id_fkey (username, avatar_url)')
+    .order('created_at', { ascending: options?.orderAscending ?? false });
+};
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
   const { searchParams } = new URL(request.url);
   const searchTerm = searchParams.get('term') ?? null;
   const currPage = Number(searchParams.get('currPage')) ?? 0;
-  const actionType = searchParams.get('action');
+  const actionType: FetchActions = (searchParams.get('action') as FetchActions) ?? 'initialLoad';
   const sortValue = searchParams.get('sortValue');
 
-  if (actionType === 'clear') return redirect('/search');
+  let posts: PostWithTrack[] = [];
+  switch (actionType) {
+    case 'clear':
+      throw redirect('/search');
+    case 'initialLoad':
+    case 'sort': {
+      const { data } = await fetchPosts({ orderAscending: sortValue === 'CREATED_ASC' }).range(
+        currPage * 10,
+        (currPage + 1) * 10 - 1,
+      );
+      posts = data ? await getPostWithTrack(data) : [];
+      break;
+    }
+    case 'fetchMore': {
+      const { data } = await fetchPosts({ orderAscending: sortValue === 'CREATED_ASC' }).range(
+        10,
+        (currPage + 1) * 10 - 1,
+      );
+      posts = data ? await getPostWithTrack(data) : [];
+      break;
+    }
+    case 'search': {
+      if (!searchTerm)
+        throw Error(
+          `Search action should be coupled with a search term. Instead, received: ${searchTerm}`,
+        );
+      const { data: fullTextData, error } = await fetchPosts({
+        orderAscending: sortValue === 'CREATED_ASC',
+      }).textSearch('fts', searchTerm, { type: 'plain' });
 
-  if (searchTerm === null) {
-    const { data } = await supabase
-      .from<Post>('post')
-      .select('*, user!post_author_id_fkey (username, avatar_url)')
-      .order('created_at', { ascending: sortValue === 'CREATED_ASC' })
-      .range(currPage * 10, (currPage + 1) * 10 - 1);
-
-    if (!data)
-      return json({
-        data: [],
-        userId,
-      });
-    return json({
-      data: await getPostWithTrack(data),
-      userId,
-    });
+      if (error || !fullTextData) {
+        throw json({ message: "Couldn't find what you're looking for!" }, 500);
+      }
+      posts = await getPostWithTrack(fullTextData);
+      break;
+    }
+    default: {
+      throw Error(`Unhandled action type : ${actionType}`);
+    }
   }
-  const { data: fullTextData, error } = await supabase
-    .from<Post>('post')
-    .select('*, user!post_author_id_fkey (username, avatar_url)')
-    .order('created_at', { ascending: sortValue === 'CREATED_ASC' })
-    .textSearch('fts', searchTerm, { type: 'plain' });
 
-  if (error || !fullTextData) {
-    throw json({ message: "Couldn't find what you're looking for!" }, 500);
-  }
-
-  return json({
-    data: await getPostWithTrack(fullTextData),
-    userId,
-  });
+  return json({ data: posts, userId });
 };
 
 const SORTER = [
@@ -75,66 +93,58 @@ const SORTER = [
     Icon: SortAscendingIcon,
   },
 ] as const;
-type SortValues = typeof SORTER[number]['value'];
+type SortList = typeof SORTER[number];
 
 export default function SearchPost() {
-  const { data, userId } = useLoaderData<LoaderData>();
+  const { data: initialData, userId } = useLoaderData<LoaderData>();
   const fetcher = useFetcher<LoaderData>();
   const transition = useTransition();
   const submit = useSubmit();
 
-  const [postList, setPostList] = useState(data);
-  const [sortValue, setSortValue] = useState<typeof SORTER[number]>(SORTER[0]);
+  const [postList, setPostList] = useState(initialData);
+  const [sortValue, setSortValue] = useState<SortList>(SORTER[0]);
 
   const boxRef = useRef<HTMLDivElement>(null);
-  const [shouldFetch, setShouldFetch] = useState(true);
   const [currPage, setCurrPage] = useState(1);
-  const [initial, setInitial] = useState(true);
   const [searchParams] = useSearchParams();
+
+  const hasNoMoreData = postList.length < currPage * 10;
+  const isFetchMoreRange = boxRef.current && boxRef.current.getBoundingClientRect().top < 1000;
+  const shouldFetch = hasNoMoreData || isFetchMoreRange;
 
   const searchURL = `/search?currPage=${currPage}&sortValue=${sortValue.value}&${
     searchParams.get('term') ?? ''
   }`;
-  const isSearching =
-    transition.type === 'loaderSubmissionRedirect' || transition.type === 'loaderSubmission';
 
-  const handleSort = (selected: typeof sortValue) => {
-    submit({ sortValue: selected.value }, { method: 'get' });
+  const transitionAction = transition.submission?.formData.get('action');
+  const shouldResetToInitialState =
+    transitionAction === 'search' || transitionAction === 'clear' || transitionAction === 'sort';
+
+  const handleSort = (selected: SortList) => {
+    submit({ sortValue: selected.value, action: 'sort' }, { method: 'get' });
     setSortValue(selected);
   };
 
   useEffect(() => {
+    if (fetcher.data?.data) {
+      setPostList([...initialData, ...fetcher.data.data]);
+    }
+  }, [fetcher, initialData]);
+
+  useEffect(() => {
     const handleScroll = () => {
-      if (!shouldFetch || fetcher.state !== 'idle' || data.length < 10) return;
-      if (shouldFetch && boxRef.current && boxRef.current.getBoundingClientRect().top < 1000) {
-        fetcher.load(searchURL);
-        setCurrPage(prev => prev + 1);
-        setInitial(false);
-      }
+      if (!shouldFetch) return;
+      fetcher.submit({ action: 'fetchMore' }, { method: 'get', action: searchURL });
+      setCurrPage(prev => prev + 1);
     };
     window.addEventListener('scroll', handleScroll);
 
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [shouldFetch, fetcher, data, searchURL]);
+  }, [shouldFetch, fetcher, searchURL]);
 
   useEffect(() => {
-    if (isSearching) {
-      setInitial(true);
-      setCurrPage(1);
-      setShouldFetch(true);
-      return;
-    }
-  }, [isSearching]);
-
-  useEffect(() => {
-    if (fetcher.state !== 'idle') return;
-    if (initial) return setPostList(data);
-    if (fetcher.data?.data) {
-      setPostList(prev => [...prev, ...fetcher.data.data]);
-      if (fetcher.data.data.length < 10) return setShouldFetch(false);
-      else return setShouldFetch(true);
-    }
-  }, [fetcher, initial, data]);
+    if (shouldResetToInitialState) setCurrPage(1);
+  }, [shouldResetToInitialState]);
 
   return (
     <div className="mx-auto flex min-h-screen w-full flex-col items-center gap-4">
@@ -163,7 +173,7 @@ export default function SearchPost() {
           </Listbox.Options>
         </div>
       </Listbox>
-      {isSearching ? (
+      {shouldResetToInitialState ? (
         <div aria-hidden="true" className="mx-auto w-full space-y-4">
           <PostCardSkeleton />
           <PostCardSkeleton />
