@@ -16,12 +16,14 @@ import { Listbox } from '@headlessui/react';
 import { SortAscendingIcon, SortDescendingIcon } from '@heroicons/react/outline';
 import { Post } from '~/types/database';
 
+const POST_PER_LOAD = 10;
+
 type LoaderData = {
   data: PostWithTrack[];
   userId: string;
 };
 
-type FetchActions = 'sort' | 'clear' | 'search' | 'fetchMore' | 'initialLoad';
+type FetchActions = 'clear' | 'search' | 'fetchMore' | 'initialLoad';
 
 const fetchPosts = (options?: { orderAscending?: boolean }) => {
   return supabase
@@ -41,19 +43,18 @@ export const loader: LoaderFunction = async ({ request }) => {
   switch (actionType) {
     case 'clear':
       throw redirect('/search');
-    case 'initialLoad':
-    case 'sort': {
+    case 'initialLoad': {
       const { data } = await fetchPosts({ orderAscending: sortValue === 'CREATED_ASC' }).range(
-        currPage * 10,
-        (currPage + 1) * 10 - 1,
+        0,
+        (currPage + 1) * POST_PER_LOAD - 1,
       );
       posts = data ? await getPostWithTrack(data) : [];
       break;
     }
     case 'fetchMore': {
       const { data } = await fetchPosts({ orderAscending: sortValue === 'CREATED_ASC' }).range(
-        10,
-        (currPage + 1) * 10 - 1,
+        POST_PER_LOAD,
+        (currPage + 1) * POST_PER_LOAD - 1,
       );
       posts = data ? await getPostWithTrack(data) : [];
       break;
@@ -66,7 +67,6 @@ export const loader: LoaderFunction = async ({ request }) => {
       const { data: fullTextData, error } = await fetchPosts({
         orderAscending: sortValue === 'CREATED_ASC',
       }).textSearch('fts', searchTerm, { type: 'plain' });
-
       if (error || !fullTextData) {
         throw json({ message: "Couldn't find what you're looking for!" }, 500);
       }
@@ -101,49 +101,46 @@ export default function SearchPost() {
   const transition = useTransition();
   const submit = useSubmit();
 
-  const [postList, setPostList] = useState(initialData);
+  const postList = [...initialData, ...(fetcher.data?.data ?? [])];
   const [sortValue, setSortValue] = useState<SortList>(SORTER[0]);
 
   const boxRef = useRef<HTMLDivElement>(null);
   const [currPage, setCurrPage] = useState(1);
   const [searchParams] = useSearchParams();
 
-  const hasNoMoreData = postList.length < currPage * 10;
-  const isFetchMoreRange = boxRef.current && boxRef.current.getBoundingClientRect().top < 1000;
-  const shouldFetch = hasNoMoreData || isFetchMoreRange;
-
-  const searchURL = `/search?currPage=${currPage}&sortValue=${sortValue.value}&${
-    searchParams.get('term') ?? ''
-  }`;
+  const isFetchingMoreData = fetcher.state === 'loading';
+  const hasMoreData = postList.length === currPage * POST_PER_LOAD;
 
   const transitionAction = transition.submission?.formData.get('action');
   const shouldResetToInitialState =
     transitionAction === 'search' || transitionAction === 'clear' || transitionAction === 'sort';
 
   const handleSort = (selected: SortList) => {
-    submit({ sortValue: selected.value, action: 'sort' }, { method: 'get' });
+    submit({ sortValue: selected.value }, { method: 'get' });
     setSortValue(selected);
   };
 
-  useEffect(() => {
-    if (fetcher.data?.data) {
-      setPostList([...initialData, ...fetcher.data.data]);
-    }
-  }, [fetcher, initialData]);
+  const searchURL = `/search?index=&currPage=${currPage}&sortValue=${sortValue.value}${
+    searchParams.get('term') ? `term=${searchParams.get('term')}` : ''
+  }&action=fetchMore`;
 
   useEffect(() => {
     const handleScroll = () => {
+      const isFetchMoreRange = boxRef.current && boxRef.current.getBoundingClientRect().top < 1000;
+      const shouldFetch = hasMoreData && isFetchMoreRange && !isFetchingMoreData;
       if (!shouldFetch) return;
-      fetcher.submit({ action: 'fetchMore' }, { method: 'get', action: searchURL });
+      fetcher.load(searchURL);
       setCurrPage(prev => prev + 1);
     };
     window.addEventListener('scroll', handleScroll);
 
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [shouldFetch, fetcher, searchURL]);
+  }, [fetcher, hasMoreData, searchURL, isFetchingMoreData]);
 
   useEffect(() => {
-    if (shouldResetToInitialState) setCurrPage(1);
+    if (shouldResetToInitialState) {
+      setCurrPage(1);
+    }
   }, [shouldResetToInitialState]);
 
   return (
