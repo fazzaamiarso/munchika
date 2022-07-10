@@ -1,6 +1,6 @@
 import { ArrowRightIcon } from '@heroicons/react/solid';
-import { useEffect, useState, useRef } from 'react';
-import { LoaderFunction, redirect } from '@remix-run/node';
+import { useEffect, useRef } from 'react';
+import { ErrorBoundaryComponent, json, LoaderFunction, redirect } from '@remix-run/node';
 import { Link, useFetcher, useLoaderData, useTransition } from '@remix-run/react';
 import { GeniusTrackData, searchGenius } from '../../utils/geniusApi.server';
 
@@ -11,78 +11,90 @@ type LoaderData = {
   searchTerm: string;
   prevPage: string;
 };
+
+type FetchActions = 'loadMore' | 'clear' | 'search' | 'initialLoad';
+
 export const loader: LoaderFunction = async ({ request }) => {
   const newUrl = new URL(request.url);
   const searchTerm = newUrl.searchParams.get('term');
   const currPage = newUrl.searchParams.get('currPage') ?? 1;
-  const actionType = newUrl.searchParams.get('action');
+  const actionType: FetchActions = newUrl.searchParams.get('action') as FetchActions;
 
-  if (actionType === 'clear') return redirect('/search/track');
-
-  if (searchTerm === null) return {};
+  if (actionType === 'clear') throw redirect('/search/track');
+  if (actionType === 'search') {
+    if (!searchTerm)
+      throw Error(
+        `Search action should be coupled with a search term. Instead, received: ${searchTerm}`,
+      );
+    const response = await searchGenius({
+      perPage: 10,
+      searchQuery: searchTerm,
+    });
+    return json({ data: response.hits, searchTerm });
+  }
+  if (actionType === 'loadMore') {
+    if (!searchTerm)
+      throw Error(
+        `loadMore action should be coupled with a search term. Instead, received: ${searchTerm}`,
+      );
+    const response = await searchGenius({
+      perPage: Number(currPage) * 10,
+      currentPage: 2,
+      searchQuery: searchTerm,
+    });
+    return json({ data: response.hits, searchTerm });
+  }
+  if (!searchTerm) return json({ data: [], searchTerm });
   const response = await searchGenius({
     perPage: 10,
-    currentPage: Number(currPage),
     searchQuery: searchTerm,
   });
+  return json({ data: response.hits, searchTerm });
+};
 
-  const data = response.hits;
-  return {
-    data,
-    searchTerm,
-    prevPage: currPage,
-  };
+const useFocusOnFirstLoadedContent = (list: any[], elementId: string) => {
+  useEffect(() => {
+    if (list.length === 0 || !list) return;
+    const listLengthDivided = Math.floor(list.length / 10) - 1;
+    const listItemIdx = String(listLengthDivided * 10 + 1);
+    const contentToFocus =
+      listLengthDivided === 0
+        ? document.getElementById(`${elementId}-0`)
+        : document.getElementById(`${elementId}-${listItemIdx}`);
+    contentToFocus?.focus();
+  }, [list, elementId]);
 };
 
 export default function SearchTrack() {
-  const { data, searchTerm } = useLoaderData<LoaderData>();
+  const { data: initialData, searchTerm } = useLoaderData<LoaderData>();
   const fetcher = useFetcher<LoaderData>();
   const transition = useTransition();
-  const [trackList, setTrackList] = useState(data);
-  const currPage = useRef(2);
-  const initial = useRef(true);
-  const isPending =
-    transition.type === 'loaderSubmission' || transition.type === 'loaderSubmissionRedirect';
+
+  const trackList = initialData.length ? [...initialData, ...(fetcher.data?.data ?? [])] : [];
+  const transitionAction = transition.submission?.formData.get('action');
+  const shouldLoadInitialData = transitionAction === 'clear' || transitionAction === 'search';
+
+  const currPage = useRef(1);
+  const hasMoreData = trackList.length === currPage.current * 10;
+
+  console.log(trackList.length, currPage.current * 10);
 
   const handleLoadMore = () => {
-    fetcher.load(`/search/track?term=${searchTerm}&currPage=${currPage.current}`);
-    initial.current = false;
-    currPage.current = currPage.current + 1;
+    fetcher.load(`/search/track?term=${searchTerm}&currPage=${currPage.current}&action=loadMore`);
+    currPage.current++;
   };
 
-  const useFocusOnFirstLoadedContent = (list: any[], elementId: string) => {
-    useEffect(() => {
-      if (list.length === 0 || !list) return;
-      const listLengthDivided = Math.floor(list.length / 10) - 1;
-      const listItemIdx = String(listLengthDivided * 10 + 1);
-      const contentToFocus =
-        listLengthDivided === 0
-          ? document.getElementById(`${elementId}-0`)
-          : document.getElementById(`${elementId}-${listItemIdx}`);
-      contentToFocus?.focus();
-    }, [list, elementId]);
-  };
+  useFocusOnFirstLoadedContent(trackList, 'link');
 
-  useFocusOnFirstLoadedContent(trackList || [], 'link');
-
+  // test: maybe reset the fetcher with this?
   useEffect(() => {
-    if (transition.type === 'loaderSubmission') {
-      initial.current = true;
-      currPage.current = 2;
-      return;
+    if (shouldLoadInitialData) {
+      fetcher.load('/search/track');
+      currPage.current = 1;
     }
+  }, [fetcher, shouldLoadInitialData]);
 
-    if (fetcher.type === 'done' && !initial.current) {
-      setTrackList(prev => [...prev, ...fetcher.data.data]);
-      return;
-    }
-    if (transition.type === 'idle' && initial.current) {
-      setTrackList(data);
-      currPage.current = 2;
-    }
-  }, [fetcher, transition, data]);
-
-  if (isPending)
+  if (shouldLoadInitialData)
     return (
       <>
         <TrackSkeleton />
@@ -161,7 +173,7 @@ export default function SearchTrack() {
           </>
         ) : null}
       </ul>
-      {fetcher.data && fetcher.data.data.length < 10 && !initial.current ? null : (
+      {hasMoreData ? (
         <button
           className="self-center rounded-full bg-white  px-3  py-1 text-blue-600 ring-2 ring-blue-600 transition-colors  hover:bg-blue-600 hover:text-white disabled:opacity-75"
           onClick={handleLoadMore}
@@ -170,7 +182,7 @@ export default function SearchTrack() {
             ? 'Loading..'
             : 'Load More'}
         </button>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -183,6 +195,15 @@ const TrackSkeleton = () => {
         <div className="h-4 w-7/12 bg-gray-300" />
         <div className="h-3 w-5/12 bg-gray-300" />
       </div>
+    </div>
+  );
+};
+
+export const ErrorBoundary: ErrorBoundaryComponent = ({ error }) => {
+  return (
+    <div>
+      <pre>{error.message}</pre>
+      <pre>{error.stack}</pre>
     </div>
   );
 };
