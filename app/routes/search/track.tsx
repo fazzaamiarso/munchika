@@ -1,5 +1,5 @@
 import { ArrowRightIcon } from '@heroicons/react/solid';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ErrorBoundaryComponent, json, LoaderFunction, redirect } from '@remix-run/node';
 import { Link, useFetcher, useLoaderData, useTransition } from '@remix-run/react';
 import { GeniusTrackData, searchGenius } from '../../utils/geniusApi.server';
@@ -9,11 +9,14 @@ type LoaderData = {
     result: GeniusTrackData;
   }>;
   searchTerm: string;
-  prevPage: string;
+  nextPageData: Array<{
+    result: GeniusTrackData;
+  }>;
 };
 
 type FetchActions = 'loadMore' | 'clear' | 'search' | 'initialLoad';
 
+const INITIAL_PAGE_TO_LOADMORE = 2;
 export const loader: LoaderFunction = async ({ request }) => {
   const newUrl = new URL(request.url);
   const searchTerm = newUrl.searchParams.get('term');
@@ -30,7 +33,14 @@ export const loader: LoaderFunction = async ({ request }) => {
       perPage: 10,
       searchQuery: searchTerm,
     });
-    return json({ data: response.hits, searchTerm });
+    const nextPageData = (
+      await searchGenius({
+        perPage: 1,
+        currentPage: Number(currPage) + 1,
+        searchQuery: searchTerm,
+      })
+    ).hits;
+    return json<LoaderData>({ data: response.hits, nextPageData, searchTerm });
   }
   if (actionType === 'loadMore') {
     if (!searchTerm)
@@ -38,11 +48,18 @@ export const loader: LoaderFunction = async ({ request }) => {
         `loadMore action should be coupled with a search term. Instead, received: ${searchTerm}`,
       );
     const response = await searchGenius({
-      perPage: Number(currPage) * 10,
-      currentPage: 2,
+      perPage: 10,
+      currentPage: Number(currPage),
       searchQuery: searchTerm,
     });
-    return json({ data: response.hits, searchTerm });
+    const nextPageData = (
+      await searchGenius({
+        perPage: 1,
+        currentPage: Number(currPage) + 1,
+        searchQuery: searchTerm,
+      })
+    ).hits;
+    return json<LoaderData>({ data: response.hits, nextPageData, searchTerm });
   }
   if (!searchTerm) return json({ data: [], searchTerm });
   const response = await searchGenius({
@@ -66,31 +83,37 @@ const useFocusOnFirstLoadedContent = (list: any[], elementId: string) => {
 };
 
 export default function SearchTrack() {
-  const { data: initialData, searchTerm } = useLoaderData<LoaderData>();
+  const { data: initialData, searchTerm, nextPageData } = useLoaderData<LoaderData>();
   const fetcher = useFetcher<LoaderData>();
   const transition = useTransition();
 
-  const trackList = initialData.length ? [...initialData, ...(fetcher.data?.data ?? [])] : [];
+  const [trackList, setTrackList] = useState(initialData);
   const transitionAction = transition.submission?.formData.get('action');
   const shouldLoadInitialData = transitionAction === 'clear' || transitionAction === 'search';
 
-  const currPage = useRef(1);
-  const hasMoreData = trackList.length === currPage.current * 10;
-
-  console.log(trackList.length, currPage.current * 10);
+  const hasMoreData = nextPageData?.length || fetcher.data?.data.length;
+  const currPage = useRef(INITIAL_PAGE_TO_LOADMORE);
 
   const handleLoadMore = () => {
     fetcher.load(`/search/track?term=${searchTerm}&currPage=${currPage.current}&action=loadMore`);
     currPage.current++;
   };
+  useEffect(() => {
+    if (initialData) setTrackList(initialData);
+  }, [initialData]);
+
+  useEffect(() => {
+    if (hasMoreData && fetcher.type === 'done') {
+      setTrackList(prev => [...prev, ...(fetcher.data?.data ?? [])]);
+    }
+  }, [hasMoreData, fetcher]);
 
   useFocusOnFirstLoadedContent(trackList, 'link');
 
-  // test: maybe reset the fetcher with this?
   useEffect(() => {
     if (shouldLoadInitialData) {
-      fetcher.load('/search/track');
-      currPage.current = 1;
+      fetcher.load('/reset-fetcher');
+      currPage.current = INITIAL_PAGE_TO_LOADMORE;
     }
   }, [fetcher, shouldLoadInitialData]);
 
@@ -104,7 +127,7 @@ export default function SearchTrack() {
         <TrackSkeleton />
       </>
     );
-  if (!trackList)
+  if (trackList.length === 0 && currPage.current === INITIAL_PAGE_TO_LOADMORE)
     return (
       <div className="mt-12 flex min-h-screen flex-col items-center ">
         <h2 className="text-center text-xl font-semibold">

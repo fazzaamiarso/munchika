@@ -15,11 +15,13 @@ import { Fragment, useEffect, useState, useRef } from 'react';
 import { Listbox } from '@headlessui/react';
 import { SortAscendingIcon, SortDescendingIcon } from '@heroicons/react/outline';
 import { Post } from '~/types/database';
+import { mergeClassNames } from '~/utils/mergeClassNames';
 
 const POST_PER_LOAD = 10;
 
 type LoaderData = {
   data: PostWithTrack[];
+  hasNextPage: boolean;
   userId: string;
 };
 
@@ -40,6 +42,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const sortValue = searchParams.get('sortValue');
 
   let posts: PostWithTrack[] = [];
+  let hasNextPage: boolean = false;
   switch (actionType) {
     case 'clear':
       throw redirect('/search');
@@ -48,15 +51,25 @@ export const loader: LoaderFunction = async ({ request }) => {
         0,
         (currPage + 1) * POST_PER_LOAD - 1,
       );
+      const { data: nextPageData } = await fetchPosts().range(
+        (currPage + 1) * POST_PER_LOAD,
+        (currPage + 1) * POST_PER_LOAD + 1,
+      );
       posts = data ? await getPostWithTrack(data) : [];
+      hasNextPage = Boolean(nextPageData?.length);
       break;
     }
     case 'fetchMore': {
       const { data } = await fetchPosts({ orderAscending: sortValue === 'CREATED_ASC' }).range(
-        POST_PER_LOAD,
+        currPage * POST_PER_LOAD,
         (currPage + 1) * POST_PER_LOAD - 1,
       );
+      const { data: nextPageData } = await fetchPosts().range(
+        (currPage + 1) * POST_PER_LOAD,
+        (currPage + 1) * POST_PER_LOAD + 1,
+      );
       posts = data ? await getPostWithTrack(data) : [];
+      hasNextPage = Boolean(nextPageData?.length);
       break;
     }
     case 'search': {
@@ -78,7 +91,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     }
   }
 
-  return json({ data: posts, userId });
+  return json({ data: posts, userId, hasNextPage });
 };
 
 const SORTER = [
@@ -96,12 +109,12 @@ const SORTER = [
 type SortList = typeof SORTER[number];
 
 export default function SearchPost() {
-  const { data: initialData, userId } = useLoaderData<LoaderData>();
+  const { data: initialData, userId, hasNextPage } = useLoaderData<LoaderData>();
   const fetcher = useFetcher<LoaderData>();
   const transition = useTransition();
   const submit = useSubmit();
 
-  const postList = [...initialData, ...(fetcher.data?.data ?? [])];
+  const [postList, setPostList] = useState(initialData);
   const [sortValue, setSortValue] = useState<SortList>(SORTER[0]);
 
   const boxRef = useRef<HTMLDivElement>(null);
@@ -109,7 +122,7 @@ export default function SearchPost() {
   const [searchParams] = useSearchParams();
 
   const isFetchingMoreData = fetcher.state === 'loading';
-  const hasMoreData = postList.length === currPage * POST_PER_LOAD;
+  const hasMoreData = Boolean(fetcher.data?.data.length) || (hasNextPage && !fetcher.data?.data);
 
   const transitionAction = transition.submission?.formData.get('action');
   const shouldResetToInitialState =
@@ -123,6 +136,15 @@ export default function SearchPost() {
   const searchURL = `/search?index=&currPage=${currPage}&sortValue=${sortValue.value}${
     searchParams.get('term') ? `term=${searchParams.get('term')}` : ''
   }&action=fetchMore`;
+
+  useEffect(() => {
+    if (initialData) setPostList(initialData);
+  }, [initialData]);
+
+  useEffect(() => {
+    if (hasMoreData && fetcher.type === 'done')
+      setPostList(prev => [...prev, ...(fetcher.data?.data ?? [])]);
+  }, [hasMoreData, fetcher]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -139,9 +161,10 @@ export default function SearchPost() {
 
   useEffect(() => {
     if (shouldResetToInitialState) {
+      fetcher.load('/reset-fetcher');
       setCurrPage(1);
     }
-  }, [shouldResetToInitialState]);
+  }, [shouldResetToInitialState, initialData, fetcher]);
 
   return (
     <div className="mx-auto flex min-h-screen w-full flex-col items-center gap-4">
@@ -157,9 +180,11 @@ export default function SearchPost() {
                 <Listbox.Option key={idx} value={item} as={Fragment}>
                   {({ selected, active }) => (
                     <li
-                      className={`flex items-center justify-between p-1  ring-1 hover:cursor-pointer  ${
-                        selected ? ' font-semibold' : ''
-                      } ${active ? 'bg-blue-100' : ''}`}
+                      className={mergeClassNames(
+                        `flex items-center justify-between p-1  ring-1 hover:cursor-pointer`,
+                        selected ? ' font-semibold' : '',
+                        active ? 'bg-blue-100' : '',
+                      )}
                     >
                       {item.name} <item.Icon className="h-4" />
                     </li>
