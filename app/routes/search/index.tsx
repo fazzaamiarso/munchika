@@ -3,9 +3,9 @@ import {
   useCatch,
   useFetcher,
   useLoaderData,
+  useLocation,
   useSearchParams,
   useSubmit,
-  useTransition,
 } from '@remix-run/react';
 import { getPostWithTrack } from '../../utils/geniusApi.server';
 import { supabase } from '../../utils/supabase.server';
@@ -17,6 +17,9 @@ import { SortAscendingIcon, SortDescendingIcon } from '@heroicons/react/outline'
 import { Post } from '~/types/database';
 import { mergeClassNames } from '~/utils/mergeClassNames';
 import { createQueryString } from '~/utils/url';
+import { usePrevious } from '~/hooks/usePrevious';
+import { useTransitionActionType } from '~/hooks/useTransitionActionType';
+import type { SearchActions } from '../search';
 
 const POST_PER_LOAD = 10;
 
@@ -26,7 +29,7 @@ type LoaderData = {
   userId: string;
 };
 
-type FetchActions = 'clear' | 'search' | 'fetchMore' | 'initialLoad';
+type FetchActions = SearchActions | 'fetchMore' | 'initialLoad';
 
 const fetchPosts = (options?: { orderAscending?: boolean }) => {
   return supabase
@@ -42,6 +45,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const currPage = Number(searchParams.get('currPage')) ?? 0;
   const actionType: FetchActions = (searchParams.get('action') as FetchActions) ?? 'initialLoad';
   const sortValue = searchParams.get('sortValue');
+  const totalPostsCount = (currPage + 1) * POST_PER_LOAD;
 
   let posts: PostWithTrack[] = [];
   let hasNextPage: boolean = false;
@@ -51,12 +55,9 @@ export const loader: LoaderFunction = async ({ request }) => {
     case 'initialLoad': {
       const { data } = await fetchPosts({ orderAscending: sortValue === 'CREATED_ASC' }).range(
         0,
-        (currPage + 1) * POST_PER_LOAD - 1,
+        totalPostsCount - 1,
       );
-      const { data: nextPageData } = await fetchPosts().range(
-        (currPage + 1) * POST_PER_LOAD,
-        (currPage + 1) * POST_PER_LOAD + 1,
-      );
+      const { data: nextPageData } = await fetchPosts().range(totalPostsCount, totalPostsCount + 1);
       posts = data ? await getPostWithTrack(data) : [];
       hasNextPage = Boolean(nextPageData?.length);
       break;
@@ -64,12 +65,9 @@ export const loader: LoaderFunction = async ({ request }) => {
     case 'fetchMore': {
       const { data } = await fetchPosts({ orderAscending: sortValue === 'CREATED_ASC' }).range(
         currPage * POST_PER_LOAD,
-        (currPage + 1) * POST_PER_LOAD - 1,
+        totalPostsCount - 1,
       );
-      const { data: nextPageData } = await fetchPosts().range(
-        (currPage + 1) * POST_PER_LOAD,
-        (currPage + 1) * POST_PER_LOAD + 1,
-      );
+      const { data: nextPageData } = await fetchPosts().range(totalPostsCount, totalPostsCount + 1);
       posts = data ? await getPostWithTrack(data) : [];
       hasNextPage = Boolean(nextPageData?.length);
       break;
@@ -113,22 +111,26 @@ type SortList = typeof sortItems[number];
 export default function SearchPost() {
   const { data: initialData, userId, hasNextPage } = useLoaderData<LoaderData>();
   const fetcher = useFetcher<LoaderData>();
-  const transition = useTransition();
   const submit = useSubmit();
+
+  const location = useLocation();
+  const prevLocationKey = usePrevious(location.key);
+  const isSameLocation = prevLocationKey === location.key;
 
   const [postList, setPostList] = useState(initialData);
   const [sortValue, setSortValue] = useState<SortList>(sortItems[0]);
 
   const boxRef = useRef<HTMLDivElement>(null);
-  const [currPage, setCurrPage] = useState(1);
+  const currPage = useRef(1);
   const [searchParams] = useSearchParams();
 
   const isFetchingMoreData = fetcher.state === 'loading';
   const isInitialLoad = hasNextPage && !fetcher.data?.data;
   const hasMoreData = Boolean(fetcher.data?.data.length) || isInitialLoad;
 
-  const transitionAction = transition.submission?.formData.get('action');
-  const shouldResetToInitialState = transitionAction === 'search' || transitionAction === 'clear';
+  const transitionAction = useTransitionActionType<FetchActions>();
+  const shouldResetToInitialState =
+    (transitionAction === 'search' || transitionAction === 'clear') && !isSameLocation;
 
   const handleSort = (selected: SortList) => {
     submit({ sortValue: selected.value }, { method: 'get' });
@@ -158,7 +160,7 @@ export default function SearchPost() {
       const shouldFetch = hasMoreData && isFetchMoreRange && !isFetchingMoreData;
       if (!shouldFetch) return;
       fetcher.load(searchURL);
-      setCurrPage(prev => prev + 1);
+      currPage.current++;
     };
     window.addEventListener('scroll', handleScroll);
 
@@ -168,9 +170,9 @@ export default function SearchPost() {
   useEffect(() => {
     if (shouldResetToInitialState) {
       fetcher.load('/reset-fetcher');
-      setCurrPage(1);
+      currPage.current = 1;
     }
-  }, [shouldResetToInitialState, initialData, fetcher]);
+  }, [shouldResetToInitialState, fetcher]);
 
   return (
     <div className="mx-auto flex min-h-screen w-full flex-col items-center gap-4">

@@ -1,11 +1,14 @@
 import { ArrowRightIcon } from '@heroicons/react/solid';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ErrorBoundaryComponent, json, LoaderFunction, redirect } from '@remix-run/node';
 import { Link, useFetcher, useLoaderData, useLocation, useTransition } from '@remix-run/react';
 import { GeniusTrackData, searchGenius } from '../../utils/geniusApi.server';
 import invariant from 'tiny-invariant';
 import { usePrevious } from '~/hooks/usePrevious';
 import { useFocusOnFirstLoadedContent } from '~/hooks/useFocuOnFirstLoadedContent';
+import type { SearchActions } from '../search';
+import { useTransitionActionType } from '~/hooks/useTransitionActionType';
+import { createQueryString } from '~/utils/url';
 
 type LoaderData = {
   data: Array<{
@@ -17,7 +20,7 @@ type LoaderData = {
   }>;
 };
 
-type FetchActions = 'loadMore' | 'clear' | 'search' | 'initialLoad';
+type FetchActions = SearchActions | 'loadMore' | 'initialLoad';
 
 const INITIAL_LOADMORE_PAGE = 2;
 const ITEMS_PER_LOAD = 10;
@@ -85,19 +88,30 @@ export default function SearchTrack() {
   const isSameLocation = prevLocationKey === location.key;
 
   const [trackList, setTrackList] = useState(initialData);
-  const transitionAction = transition.submission?.formData.get('action');
+  const transitionAction = useTransitionActionType<FetchActions>();
   const shouldLoadInitialData = transitionAction === 'clear' || transitionAction === 'search';
 
-  const hasMoreData = nextPageData?.length || fetcher.data?.data.length;
-  const currPage = useRef(INITIAL_LOADMORE_PAGE);
+  const isFetcherHasData = fetcher.data?.data;
+  const isInitialLoad = Boolean(nextPageData?.length) && !isFetcherHasData;
+  const hasMoreData = isInitialLoad || isFetcherHasData;
+  const [currPage, setCurrPage] = useState(INITIAL_LOADMORE_PAGE);
 
   const handleLoadMore = () => {
-    fetcher.load(`/search/track?term=${searchTerm}&currPage=${currPage.current}&action=loadMore`);
-    currPage.current++;
+    const queryString = createQueryString({
+      term: searchTerm,
+      currPage: String(currPage),
+      action: 'loadMore',
+    });
+    fetcher.load(`/search/track?${queryString}`);
+    setCurrPage(prev => prev + 1);
   };
+
   useEffect(() => {
     if (initialData) setTrackList(initialData);
   }, [initialData]);
+  useEffect(() => {
+    if (!isSameLocation) setCurrPage(INITIAL_LOADMORE_PAGE);
+  }, [isSameLocation]);
 
   useEffect(() => {
     if (hasMoreData && fetcher.type === 'done') {
@@ -106,13 +120,6 @@ export default function SearchTrack() {
   }, [hasMoreData, fetcher]);
 
   useFocusOnFirstLoadedContent(trackList, 'link', ITEMS_PER_LOAD);
-
-  useEffect(() => {
-    if (shouldLoadInitialData && !isSameLocation) {
-      fetcher.load('/reset-fetcher');
-      currPage.current = INITIAL_LOADMORE_PAGE;
-    }
-  }, [fetcher, shouldLoadInitialData, isSameLocation]);
 
   if (shouldLoadInitialData)
     return (
@@ -124,7 +131,7 @@ export default function SearchTrack() {
         <TrackSkeleton />
       </>
     );
-  if (trackList.length === 0 && currPage.current === INITIAL_LOADMORE_PAGE)
+  if (trackList.length === 0 && currPage === INITIAL_LOADMORE_PAGE)
     return (
       <div className="mt-12 flex min-h-screen flex-col items-center ">
         <h2 className="text-center text-xl font-semibold">
@@ -137,6 +144,9 @@ export default function SearchTrack() {
       <ul className=" min-h-screen divide-y divide-gray-200 ">
         {trackList?.length ? (
           trackList.map((track, index) => {
+            const isPending =
+              transition.state === 'loading' &&
+              transition.location.pathname === `/track/${track.result.id}`;
             return (
               <li
                 key={`${track.result.id}${Math.random() * 100}`}
@@ -164,16 +174,10 @@ export default function SearchTrack() {
                   id={`link-${index}`}
                   aria-labelledby={String(track.result.id)}
                 >
-                  {transition.state === 'loading' &&
-                  transition.location.pathname === `/track/${track.result.id}`
-                    ? 'Loading..'
-                    : 'Details'}
+                  {isPending ? 'Loading..' : 'Details'}
                   <ArrowRightIcon className="h-3 transition-transform group-hover:translate-x-1" />
                   <span className="sr-only" id={String(track.result.id)} aria-live="polite">
-                    {transition.state === 'loading' &&
-                    transition.location.pathname === `/track/${track.result.id}`
-                      ? 'Loading'
-                      : `Go to ${track.result.title} feed`}
+                    {isPending ? 'Loading' : `Go to ${track.result.title} feed`}
                   </span>
                 </Link>
               </li>
