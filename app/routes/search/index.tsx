@@ -16,6 +16,7 @@ import { Listbox } from '@headlessui/react';
 import { SortAscendingIcon, SortDescendingIcon } from '@heroicons/react/outline';
 import { Post } from '~/types/database';
 import { mergeClassNames } from '~/utils/mergeClassNames';
+import { createQueryString } from '~/utils/url';
 
 const POST_PER_LOAD = 10;
 
@@ -33,6 +34,7 @@ const fetchPosts = (options?: { orderAscending?: boolean }) => {
     .select('*, user!post_author_id_fkey (username, avatar_url)')
     .order('created_at', { ascending: options?.orderAscending ?? false });
 };
+
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
   const { searchParams } = new URL(request.url);
@@ -94,7 +96,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   return json({ data: posts, userId, hasNextPage });
 };
 
-const SORTER = [
+const sortItems = [
   {
     name: 'Recent',
     value: 'CREATED_DESC',
@@ -106,7 +108,7 @@ const SORTER = [
     Icon: SortAscendingIcon,
   },
 ] as const;
-type SortList = typeof SORTER[number];
+type SortList = typeof sortItems[number];
 
 export default function SearchPost() {
   const { data: initialData, userId, hasNextPage } = useLoaderData<LoaderData>();
@@ -115,27 +117,31 @@ export default function SearchPost() {
   const submit = useSubmit();
 
   const [postList, setPostList] = useState(initialData);
-  const [sortValue, setSortValue] = useState<SortList>(SORTER[0]);
+  const [sortValue, setSortValue] = useState<SortList>(sortItems[0]);
 
   const boxRef = useRef<HTMLDivElement>(null);
   const [currPage, setCurrPage] = useState(1);
   const [searchParams] = useSearchParams();
 
   const isFetchingMoreData = fetcher.state === 'loading';
-  const hasMoreData = Boolean(fetcher.data?.data.length) || (hasNextPage && !fetcher.data?.data);
+  const isInitialLoad = hasNextPage && !fetcher.data?.data;
+  const hasMoreData = Boolean(fetcher.data?.data.length) || isInitialLoad;
 
   const transitionAction = transition.submission?.formData.get('action');
-  const shouldResetToInitialState =
-    transitionAction === 'search' || transitionAction === 'clear' || transitionAction === 'sort';
+  const shouldResetToInitialState = transitionAction === 'search' || transitionAction === 'clear';
 
   const handleSort = (selected: SortList) => {
     submit({ sortValue: selected.value }, { method: 'get' });
     setSortValue(selected);
   };
 
-  const searchURL = `/search?index=&currPage=${currPage}&sortValue=${sortValue.value}${
-    searchParams.get('term') ? `term=${searchParams.get('term')}` : ''
-  }&action=fetchMore`;
+  const queryString = createQueryString({
+    sortValue: sortValue.value,
+    currPage: String(currPage),
+    term: searchParams.get('term') ?? '',
+    action: 'fetchMore',
+  });
+  const searchURL = `/search?index=&${queryString}`;
 
   useEffect(() => {
     if (initialData) setPostList(initialData);
@@ -175,7 +181,7 @@ export default function SearchPost() {
             <sortValue.Icon className="h-4" />
           </Listbox.Button>
           <Listbox.Options className="absolute z-10  w-full cursor-default rounded-md bg-white shadow-md ring-2 ring-gray-500/20">
-            {SORTER.map((item, idx) => {
+            {sortItems.map((item, idx) => {
               return (
                 <Listbox.Option key={idx} value={item} as={Fragment}>
                   {({ selected, active }) => (
@@ -223,7 +229,7 @@ export default function SearchPost() {
             value="clear"
             className="rounded-md bg-blue-500 px-4 py-2 text-white hover:opacity-90 disabled:opacity-75"
           >
-            Clear
+            Reset
           </button>
         </div>
       )}

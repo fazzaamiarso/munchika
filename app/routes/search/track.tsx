@@ -1,8 +1,11 @@
 import { ArrowRightIcon } from '@heroicons/react/solid';
 import { useEffect, useRef, useState } from 'react';
 import { ErrorBoundaryComponent, json, LoaderFunction, redirect } from '@remix-run/node';
-import { Link, useFetcher, useLoaderData, useTransition } from '@remix-run/react';
+import { Link, useFetcher, useLoaderData, useLocation, useTransition } from '@remix-run/react';
 import { GeniusTrackData, searchGenius } from '../../utils/geniusApi.server';
+import invariant from 'tiny-invariant';
+import { usePrevious } from '~/hooks/usePrevious';
+import { useFocusOnFirstLoadedContent } from '~/hooks/useFocuOnFirstLoadedContent';
 
 type LoaderData = {
   data: Array<{
@@ -16,7 +19,9 @@ type LoaderData = {
 
 type FetchActions = 'loadMore' | 'clear' | 'search' | 'initialLoad';
 
-const INITIAL_PAGE_TO_LOADMORE = 2;
+const INITIAL_LOADMORE_PAGE = 2;
+const ITEMS_PER_LOAD = 10;
+
 export const loader: LoaderFunction = async ({ request }) => {
   const newUrl = new URL(request.url);
   const searchTerm = newUrl.searchParams.get('term');
@@ -25,10 +30,11 @@ export const loader: LoaderFunction = async ({ request }) => {
 
   if (actionType === 'clear') throw redirect('/search/track');
   if (actionType === 'search') {
-    if (!searchTerm)
-      throw Error(
-        `Search action should be coupled with a search term. Instead, received: ${searchTerm}`,
-      );
+    invariant(
+      searchTerm,
+      `Search action should be coupled with a search term. Instead, received: ${searchTerm}`,
+    );
+
     const response = await searchGenius({
       perPage: 10,
       searchQuery: searchTerm,
@@ -43,10 +49,10 @@ export const loader: LoaderFunction = async ({ request }) => {
     return json<LoaderData>({ data: response.hits, nextPageData, searchTerm });
   }
   if (actionType === 'loadMore') {
-    if (!searchTerm)
-      throw Error(
-        `loadMore action should be coupled with a search term. Instead, received: ${searchTerm}`,
-      );
+    invariant(
+      searchTerm,
+      `loadMore action should be coupled with a search term. Instead, received: ${searchTerm}`,
+    );
     const response = await searchGenius({
       perPage: 10,
       currentPage: Number(currPage),
@@ -69,30 +75,21 @@ export const loader: LoaderFunction = async ({ request }) => {
   return json({ data: response.hits, searchTerm });
 };
 
-const useFocusOnFirstLoadedContent = (list: any[], elementId: string) => {
-  useEffect(() => {
-    if (list.length === 0 || !list) return;
-    const listLengthDivided = Math.floor(list.length / 10) - 1;
-    const listItemIdx = String(listLengthDivided * 10 + 1);
-    const contentToFocus =
-      listLengthDivided === 0
-        ? document.getElementById(`${elementId}-0`)
-        : document.getElementById(`${elementId}-${listItemIdx}`);
-    contentToFocus?.focus();
-  }, [list, elementId]);
-};
-
 export default function SearchTrack() {
   const { data: initialData, searchTerm, nextPageData } = useLoaderData<LoaderData>();
   const fetcher = useFetcher<LoaderData>();
   const transition = useTransition();
+
+  const location = useLocation();
+  const prevLocationKey = usePrevious(location.key);
+  const isSameLocation = prevLocationKey === location.key;
 
   const [trackList, setTrackList] = useState(initialData);
   const transitionAction = transition.submission?.formData.get('action');
   const shouldLoadInitialData = transitionAction === 'clear' || transitionAction === 'search';
 
   const hasMoreData = nextPageData?.length || fetcher.data?.data.length;
-  const currPage = useRef(INITIAL_PAGE_TO_LOADMORE);
+  const currPage = useRef(INITIAL_LOADMORE_PAGE);
 
   const handleLoadMore = () => {
     fetcher.load(`/search/track?term=${searchTerm}&currPage=${currPage.current}&action=loadMore`);
@@ -108,14 +105,14 @@ export default function SearchTrack() {
     }
   }, [hasMoreData, fetcher]);
 
-  useFocusOnFirstLoadedContent(trackList, 'link');
+  useFocusOnFirstLoadedContent(trackList, 'link', ITEMS_PER_LOAD);
 
   useEffect(() => {
-    if (shouldLoadInitialData) {
+    if (shouldLoadInitialData && !isSameLocation) {
       fetcher.load('/reset-fetcher');
-      currPage.current = INITIAL_PAGE_TO_LOADMORE;
+      currPage.current = INITIAL_LOADMORE_PAGE;
     }
-  }, [fetcher, shouldLoadInitialData]);
+  }, [fetcher, shouldLoadInitialData, isSameLocation]);
 
   if (shouldLoadInitialData)
     return (
@@ -127,7 +124,7 @@ export default function SearchTrack() {
         <TrackSkeleton />
       </>
     );
-  if (trackList.length === 0 && currPage.current === INITIAL_PAGE_TO_LOADMORE)
+  if (trackList.length === 0 && currPage.current === INITIAL_LOADMORE_PAGE)
     return (
       <div className="mt-12 flex min-h-screen flex-col items-center ">
         <h2 className="text-center text-xl font-semibold">

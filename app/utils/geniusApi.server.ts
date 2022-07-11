@@ -1,6 +1,7 @@
 import { Post } from '~/types/database';
+import { createQueryString } from './url';
 
-export const BASE_URL = `https://api.genius.com/`;
+const GENIUS_API_BASE_URL = `https://api.genius.com/`;
 
 export interface GeniusTrackData {
   title: string;
@@ -21,7 +22,12 @@ export const searchGenius = async ({
   currentPage?: number;
   perPage?: number;
 }): Promise<{ hits: Array<{ result: GeniusTrackData }> }> => {
-  const url = `${BASE_URL}search?q=${searchQuery}&per_page=${perPage}&page=${currentPage}`;
+  const queryString = createQueryString({
+    q: searchQuery,
+    per_page: String(perPage),
+    page: String(currentPage),
+  });
+  const url = `${GENIUS_API_BASE_URL}search?${queryString}`;
   const encodedURL = encodeURI(url); //replace character with escape sequence of UTF-8 encoding
 
   const response = await fetch(encodedURL, {
@@ -35,7 +41,7 @@ export const searchGenius = async ({
 };
 
 export const fetchFromGenius = async (requestPath: string): Promise<{ song: GeniusTrackData }> => {
-  const url = `${BASE_URL}${requestPath}`;
+  const url = `${GENIUS_API_BASE_URL}${requestPath}`;
   const encodedURL = encodeURI(url);
 
   const response = await fetch(encodedURL, {

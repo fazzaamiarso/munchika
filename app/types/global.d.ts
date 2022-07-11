@@ -1,1 +1,2 @@
-export type FIXME_ANY = any;
+/* eslint-disable no-unused-vars */
+declare type FIXME_ANY = any;
