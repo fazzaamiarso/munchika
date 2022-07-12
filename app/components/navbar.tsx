@@ -1,5 +1,5 @@
 import { Link, NavLink, useFetcher, useLocation, useTransition } from '@remix-run/react';
-import { Fragment, useEffect } from 'react';
+import { Fragment, useEffect, useRef } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { MenuIcon, XIcon } from '@heroicons/react/outline';
 import { UserCircleIcon } from '@heroicons/react/solid';
@@ -16,11 +16,18 @@ function Navbar() {
   const logout = useFetcher();
   const location = useLocation();
   const transition = useTransition();
+  const shouldLoadUser = useRef(true);
 
   useEffect(() => {
-    if (transition.state === 'idle') logout.load('/navbarUser'); //check every route change
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transition]);
+    //should load user data after login submission success
+    if (transition.type === 'actionRedirect') {
+      shouldLoadUser.current = true;
+    }
+    if (shouldLoadUser.current && transition.state === 'idle') {
+      logout.load('/navbarUser');
+      shouldLoadUser.current = false;
+    }
+  }, [transition, logout]);
 
   return (
     <header className="">
