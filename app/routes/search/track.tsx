@@ -1,88 +1,131 @@
 import { ArrowRightIcon } from '@heroicons/react/solid';
-import { useEffect, useState, useRef } from 'react';
-import { LoaderFunction, redirect } from '@remix-run/node';
-import { Link, useFetcher, useLoaderData, useTransition } from '@remix-run/react';
+import { useEffect, useState } from 'react';
+import { ErrorBoundaryComponent, json, LoaderFunction, redirect } from '@remix-run/node';
+import { Link, useFetcher, useLoaderData, useLocation, useTransition } from '@remix-run/react';
 import { GeniusTrackData, searchGenius } from '../../utils/geniusApi.server';
+import invariant from 'tiny-invariant';
+import { usePrevious } from '~/hooks/usePrevious';
+import { useFocusOnFirstLoadedContent } from '~/hooks/useFocuOnFirstLoadedContent';
+import type { SearchActions } from '../search';
+import { useTransitionActionType } from '~/hooks/useTransitionActionType';
+import { createQueryString } from '~/utils/url';
 
 type LoaderData = {
   data: Array<{
     result: GeniusTrackData;
   }>;
   searchTerm: string;
-  prevPage: string;
+  nextPageData: Array<{
+    result: GeniusTrackData;
+  }>;
 };
+
+type FetchActions = SearchActions | 'loadMore' | 'initialLoad';
+
+const INITIAL_LOADMORE_PAGE = 2;
+const ITEMS_PER_LOAD = 10;
+
 export const loader: LoaderFunction = async ({ request }) => {
   const newUrl = new URL(request.url);
   const searchTerm = newUrl.searchParams.get('term');
   const currPage = newUrl.searchParams.get('currPage') ?? 1;
-  const actionType = newUrl.searchParams.get('action');
+  const actionType: FetchActions = newUrl.searchParams.get('action') as FetchActions;
 
-  if (actionType === 'clear') return redirect('/search/track');
+  if (actionType === 'clear') throw redirect('/search/track');
+  if (actionType === 'search') {
+    invariant(
+      searchTerm,
+      `Search action should be coupled with a search term. Instead, received: ${searchTerm}`,
+    );
 
-  if (searchTerm === null) return {};
+    const response = await searchGenius({
+      perPage: ITEMS_PER_LOAD,
+      searchQuery: searchTerm,
+    });
+    const nextPageData = (
+      await searchGenius({
+        perPage: 1,
+        currentPage: Number(currPage) + 1,
+        searchQuery: searchTerm,
+      })
+    ).hits;
+    return json<LoaderData>({ data: response.hits, nextPageData, searchTerm });
+  }
+  if (actionType === 'loadMore') {
+    invariant(
+      searchTerm,
+      `loadMore action should be coupled with a search term. Instead, received: ${searchTerm}`,
+    );
+    const response = await searchGenius({
+      perPage: ITEMS_PER_LOAD,
+      currentPage: Number(currPage),
+      searchQuery: searchTerm,
+    });
+    const nextPageData = (
+      await searchGenius({
+        perPage: 1,
+        currentPage: Number(currPage) + 1,
+        searchQuery: searchTerm,
+      })
+    ).hits;
+    return json<LoaderData>({ data: response.hits, nextPageData, searchTerm });
+  }
+  if (!searchTerm) return json({ data: [], searchTerm });
   const response = await searchGenius({
-    perPage: 10,
-    currentPage: Number(currPage),
+    perPage: ITEMS_PER_LOAD,
     searchQuery: searchTerm,
   });
-
-  const data = response.hits;
-  return {
-    data,
-    searchTerm,
-    prevPage: currPage,
-  };
+  return json({ data: response.hits, searchTerm });
 };
 
 export default function SearchTrack() {
-  const { data, searchTerm } = useLoaderData<LoaderData>();
+  const { data: initialData, searchTerm, nextPageData } = useLoaderData<LoaderData>();
   const fetcher = useFetcher<LoaderData>();
   const transition = useTransition();
-  const [trackList, setTrackList] = useState(data);
-  const currPage = useRef(2);
-  const initial = useRef(true);
-  const isPending =
-    transition.type === 'loaderSubmission' || transition.type === 'loaderSubmissionRedirect';
+
+  const location = useLocation();
+  const prevLocationKey = usePrevious(location.key);
+  const isSameLocation = prevLocationKey === location.key;
+
+  const [currPage, setCurrPage] = useState(INITIAL_LOADMORE_PAGE);
+  const [trackList, setTrackList] = useState(initialData);
+  const transitionAction = useTransitionActionType<FetchActions>();
+  const isLoadingInitialData = transitionAction === 'clear' || transitionAction === 'search';
+
+  const isInitialLoad = initialData.length === 0;
+  const hasNextPageData = fetcher.data?.data || Boolean(nextPageData?.length);
+  const hasMoreData = !isInitialLoad && hasNextPageData;
 
   const handleLoadMore = () => {
-    fetcher.load(`/search/track?term=${searchTerm}&currPage=${currPage.current}`);
-    initial.current = false;
-    currPage.current = currPage.current + 1;
+    const queryString = createQueryString({
+      term: searchTerm,
+      currPage: String(currPage),
+      action: 'loadMore',
+    });
+    fetcher.load(`/search/track?${queryString}`);
+    setCurrPage(prev => prev + 1);
   };
-
-  const useFocusOnFirstLoadedContent = (list: any[], elementId: string) => {
-    useEffect(() => {
-      if (list.length === 0 || !list) return;
-      const listLengthDivided = Math.floor(list.length / 10) - 1;
-      const listItemIdx = String(listLengthDivided * 10 + 1);
-      const contentToFocus =
-        listLengthDivided === 0
-          ? document.getElementById(`${elementId}-0`)
-          : document.getElementById(`${elementId}-${listItemIdx}`);
-      contentToFocus?.focus();
-    }, [list]);
-  };
-
-  useFocusOnFirstLoadedContent(trackList || [], 'link');
 
   useEffect(() => {
-    if (transition.type === 'loaderSubmission') {
-      initial.current = true;
-      currPage.current = 2;
-      return;
-    }
+    if (initialData) setTrackList(initialData);
+  }, [initialData]);
 
-    if (fetcher.type === 'done' && !initial.current) {
-      setTrackList(prev => [...prev, ...fetcher.data.data]);
-      return;
+  useEffect(() => {
+    if (!isSameLocation) {
+      fetcher.load('/reset-fetcher');
+      setCurrPage(INITIAL_LOADMORE_PAGE);
     }
-    if (transition.type === 'idle' && initial.current) {
-      setTrackList(data);
-      currPage.current = 2;
-    }
-  }, [fetcher, transition, data]);
+  }, [fetcher, isSameLocation]);
 
-  if (isPending)
+  useEffect(() => {
+    if (hasMoreData && isSameLocation && fetcher.type === 'done') {
+      setTrackList(prev => [...prev, ...(fetcher.data?.data ?? [])]);
+    }
+  }, [hasMoreData, fetcher, isSameLocation]);
+
+  const { idPrefix } = useFocusOnFirstLoadedContent(trackList, 'link', ITEMS_PER_LOAD);
+
+  if (isLoadingInitialData)
     return (
       <>
         <TrackSkeleton />
@@ -92,7 +135,7 @@ export default function SearchTrack() {
         <TrackSkeleton />
       </>
     );
-  if (!trackList)
+  if (isInitialLoad)
     return (
       <div className="mt-12 flex min-h-screen flex-col items-center ">
         <h2 className="text-center text-xl font-semibold">
@@ -105,6 +148,9 @@ export default function SearchTrack() {
       <ul className=" min-h-screen divide-y divide-gray-200 ">
         {trackList?.length ? (
           trackList.map((track, index) => {
+            const isPending =
+              transition.state === 'loading' &&
+              transition.location.pathname === `/track/${track.result.id}`;
             return (
               <li
                 key={`${track.result.id}${Math.random() * 100}`}
@@ -129,19 +175,13 @@ export default function SearchTrack() {
                   className="group ml-auto flex items-center gap-1 rounded-full px-2 py-1 text-xs text-gray-600 ring-1 ring-gray-300 focus:ring-black"
                   to={`/track/${track.result.id}`}
                   prefetch="intent"
-                  id={`link-${index}`}
+                  id={`${idPrefix}${index}`}
                   aria-labelledby={String(track.result.id)}
                 >
-                  {transition.state === 'loading' &&
-                  transition.location.pathname === `/track/${track.result.id}`
-                    ? 'Loading..'
-                    : 'Details'}
+                  {isPending ? 'Loading..' : 'Details'}
                   <ArrowRightIcon className="h-3 transition-transform group-hover:translate-x-1" />
                   <span className="sr-only" id={String(track.result.id)} aria-live="polite">
-                    {transition.state === 'loading' &&
-                    transition.location.pathname === `/track/${track.result.id}`
-                      ? 'Loading'
-                      : `Go to ${track.result.title} feed`}
+                    {isPending ? 'Loading' : `Go to ${track.result.title} feed`}
                   </span>
                 </Link>
               </li>
@@ -161,7 +201,7 @@ export default function SearchTrack() {
           </>
         ) : null}
       </ul>
-      {fetcher.data && fetcher.data.data.length < 10 && !initial.current ? null : (
+      {hasMoreData ? (
         <button
           className="self-center rounded-full bg-white  px-3  py-1 text-blue-600 ring-2 ring-blue-600 transition-colors  hover:bg-blue-600 hover:text-white disabled:opacity-75"
           onClick={handleLoadMore}
@@ -170,7 +210,7 @@ export default function SearchTrack() {
             ? 'Loading..'
             : 'Load More'}
         </button>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -183,6 +223,15 @@ const TrackSkeleton = () => {
         <div className="h-4 w-7/12 bg-gray-300" />
         <div className="h-3 w-5/12 bg-gray-300" />
       </div>
+    </div>
+  );
+};
+
+export const ErrorBoundary: ErrorBoundaryComponent = ({ error }) => {
+  return (
+    <div>
+      <pre>{error.message}</pre>
+      <pre>{error.stack}</pre>
     </div>
   );
 };

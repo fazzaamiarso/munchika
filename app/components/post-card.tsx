@@ -3,31 +3,32 @@ import { PostMenu } from './post-menu';
 import { useState, useRef, MouseEvent } from 'react';
 import { Dialog } from '@headlessui/react';
 import { ExclamationIcon } from '@heroicons/react/outline';
-import { PostWithUser } from '~/types/database';
+import { Post } from '~/types/database';
 
-export type PostWithTrack = PostWithUser & {
+export type PostWithTrack = Post & {
   thumbnail: string;
   artist: string;
   title: string;
 };
 
-type Post1 = {
+type CommonProps = {
   currentUserId: string | null;
-  postWithUser: PostWithTrack;
   displayUser?: boolean;
+};
+
+type PostTrack = CommonProps & {
+  posts: PostWithTrack;
   displayTrack: true;
 };
-type Post2 = {
-  currentUserId: string | null;
-  postWithUser: PostWithUser;
-  displayUser?: boolean;
-  displayTrack?: never;
+type PostBasic = CommonProps & {
+  posts: Post;
+  displayTrack?: false;
 };
 
-type PostCardProps = Post1 | Post2;
+type PostCardProps = PostTrack | PostBasic;
 
 export const PostCard = ({
-  postWithUser: post,
+  posts: post,
   currentUserId,
   displayUser = true,
   displayTrack,

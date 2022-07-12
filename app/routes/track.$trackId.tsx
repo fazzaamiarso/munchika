@@ -122,7 +122,7 @@ export default function TrackDetails() {
                 avatar_url: post.user.avatar_url,
                 username: post.user.username,
               };
-              return <PostCard key={post.id} currentUserId={userId} postWithUser={modifiedPost} />;
+              return <PostCard key={post.id} currentUserId={userId} posts={modifiedPost} />;
             })}
           </ul>
         </div>

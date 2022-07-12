@@ -1,5 +1,4 @@
 import { json } from '@remix-run/node';
-import { FIXME_ANY } from '~/types/global';
 
 export const validateThought = (thought: string) => {
   if (thought.length < 20)
@@ -26,8 +25,8 @@ export const badRequest = <T extends unknown>(data: T) => {
   return json(data, { status: 400 });
 };
 
-const getRandomNumberFromString = (arr: string): string =>
-  arr[Math.floor(Math.random() * arr.length)];
+const getRandomNumberFromString = (string: string): string =>
+  string[Math.floor(Math.random() * string.length)];
 export const generateRandomString = () => {
   const ALPHABET = 'abcdefghijklmnovqrstuvwxyz';
   const NUMBER = '1234567890';

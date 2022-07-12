@@ -2,6 +2,8 @@ import { Form, Link, Outlet, useLocation, useTransition } from '@remix-run/react
 import { useEffect, useRef, useState } from 'react';
 import { ArrowCircleUpIcon, RefreshIcon } from '@heroicons/react/outline';
 import throttle from 'lodash.throttle';
+import { useTransitionActionType } from '~/hooks/useTransitionActionType';
+import { mergeClassNames } from '~/utils/mergeClassNames';
 
 export function meta() {
   return {
@@ -23,10 +25,13 @@ const navigation = [
   },
 ];
 
+export type SearchActions = 'clear' | 'search';
+
 export default function SearchLayout() {
   const location = useLocation();
   const searchRef = useRef<HTMLInputElement>(null);
   const transition = useTransition();
+  const transitionAction = useTransitionActionType<SearchActions>();
 
   useEffect(() => {
     if (transition.type === 'loaderSubmissionRedirect' && searchRef.current)
@@ -58,11 +63,13 @@ export default function SearchLayout() {
             placeholder="Try searching something"
           />
           <button
+            name="action"
+            value="search"
             type="submit"
             className="rounded-md bg-blue-600 px-4 py-2 text-white hover:opacity-90 disabled:opacity-75"
             disabled={transition.state === 'submitting' || transition.state === 'loading'}
           >
-            {transition.state === 'submitting' ? 'Searching...' : 'Search'}
+            {transitionAction === 'search' ? 'Searching...' : 'Search'}
           </button>
           <button
             type="submit"
@@ -73,36 +80,37 @@ export default function SearchLayout() {
             aria-labelledby="clear-msg"
           >
             <span id="clear-msg" className="sr-only">
-              {transition.submission?.formData.get('action') === 'clear'
-                ? 'Clearing search results'
-                : 'clear Search results'}
+              {transitionAction === 'clear' ? 'Clearing search results' : 'clear Search results'}
             </span>
             <span className="hidden sm:inline ">Clear</span>{' '}
             <RefreshIcon
-              className={`h-5 text-blue-500 ${
-                transition.submission?.formData.get('action') === 'clear' ? 'animate-spin' : ''
-              }`}
+              className={mergeClassNames(
+                `h-5 text-blue-500`,
+                transitionAction === 'clear' ? 'animate-spin' : '',
+              )}
             />
           </button>
         </Form>
         <div className="flex w-full justify-between">
           <ul className="mt-2 flex gap-4">
-            {navigation.map(item => {
+            {navigation.map(page => {
+              const isPending = location.pathname === page.resetDestination;
               return (
-                <li key={item.name}>
+                <li key={page.name}>
                   <Link
-                    to={item.to}
-                    className={`rounded-md font-semibold leading-none ${
-                      location.pathname === item.resetDestination
+                    to={page.to}
+                    className={mergeClassNames(
+                      `rounded-md font-semibold leading-none`,
+                      isPending
                         ? 'bg-white px-3  py-1 text-blue-600 shadow-md  ring-1 ring-gray-300'
-                        : ' text-gray-500 '
-                    }`}
-                    aria-label={`Browse ${item.name} page`}
+                        : ' text-gray-500 ',
+                    )}
+                    aria-label={`Browse ${page.name} page`}
                   >
-                    {item.name}
+                    {page.name}
                   </Link>
                   <span className="sr-only" aria-live="polite">
-                    You are at page {item.name}
+                    You are at page {page.name}
                   </span>
                 </li>
               );

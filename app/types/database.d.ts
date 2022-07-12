@@ -16,5 +16,3 @@ export interface Post extends BaseEntity {
   fts: string; //full text search field (type tsvector)
   user: User;
 }
-
-export type PostWithUser = Post & User;
