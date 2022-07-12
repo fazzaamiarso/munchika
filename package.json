@@ -57,7 +57,7 @@
     "build:css": "tailwindcss -i ./styles/tailwind.css -o ./app/tailwind.css --minify",
     "dev:css": "tailwindcss -i ./styles/tailwind.css -o ./app/tailwind.css --watch",
     "prepare": "husky install && chmod ug+x .husky/*",
-    "lint": "eslint app/**/*.tsx"
+    "lint": "eslint app/**/*.{ts,tsx}"
   },
   "lint-staged": {
     "app/**/*.{ts,tsx}": [
