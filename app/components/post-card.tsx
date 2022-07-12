@@ -11,23 +11,24 @@ export type PostWithTrack = Post & {
   title: string;
 };
 
-type Post1 = {
+type CommonProps = {
   currentUserId: string | null;
-  postWithUser: PostWithTrack;
   displayUser?: boolean;
+};
+
+type PostTrack = CommonProps & {
+  posts: PostWithTrack;
   displayTrack: true;
 };
-type Post2 = {
-  currentUserId: string | null;
-  postWithUser: Post;
-  displayUser?: boolean;
+type PostBasic = CommonProps & {
+  posts: Post;
   displayTrack?: false;
 };
 
-type PostCardProps = Post1 | Post2;
+type PostCardProps = PostTrack | PostBasic;
 
 export const PostCard = ({
-  postWithUser: post,
+  posts: post,
   currentUserId,
   displayUser = true,
   displayTrack,

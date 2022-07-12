@@ -4,9 +4,9 @@ import { supabase } from '../utils/supabase.server';
 import { getPostWithTrack } from '../utils/geniusApi.server';
 import { PostCard } from '../components/post-card';
 import { LoaderFunction } from '@remix-run/node';
-import { PostWithUser } from '~/types/database';
+import { posts } from '~/types/database';
 
-type PostWithTrack = PostWithUser & {
+type PostWithTrack = posts & {
   thumbnail: string;
   artist: string;
   title: string;
@@ -17,7 +17,7 @@ type LoaderData = {
 
 export const loader: LoaderFunction = async () => {
   const { data, error } = await supabase
-    .from<PostWithUser>('post')
+    .from<posts>('post')
     .select('*, user!post_author_id_fkey (username, avatar_url)')
     .limit(7)
     .order('created_at', { ascending: false });
@@ -45,7 +45,7 @@ export default function Index() {
       <p className="mb-6 pt-6 font-semibold">Check some of people&apos;s thought here</p>
       <ul className="w-full space-y-8">
         {postWithTrack.map(post => {
-          return <PostCard key={post.id} postWithUser={post} currentUserId={null} displayTrack />;
+          return <PostCard key={post.id} posts={post} currentUserId={null} displayTrack />;
         })}
       </ul>
     </main>

@@ -57,12 +57,7 @@ export default function UserPost() {
         <ul className=" w-full space-y-4 px-4">
           {postsData.map(post => {
             return (
-              <PostCard
-                key={post.id}
-                currentUserId={post.author_id}
-                postWithUser={post}
-                displayTrack
-              />
+              <PostCard key={post.id} currentUserId={post.author_id} posts={post} displayTrack />
             );
           })}
         </ul>

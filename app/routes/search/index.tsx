@@ -214,9 +214,7 @@ export default function SearchPost() {
         <>
           <ul className=" mx-auto flex w-full flex-col items-center space-y-8">
             {postList.map(post => {
-              return (
-                <PostCard key={post.id} postWithUser={post} currentUserId={userId} displayTrack />
-              );
+              return <PostCard key={post.id} posts={post} currentUserId={userId} displayTrack />;
             })}
             {fetcher.state === 'loading' ? <PostCardSkeleton /> : null}
           </ul>
