@@ -22,7 +22,7 @@ import { useTransitionActionType } from '~/hooks/useTransitionActionType';
 import type { SearchActions } from '../search';
 
 const POST_PER_LOAD = 10;
-
+const INITIAL_PAGE = 1;
 type LoaderData = {
   data: PostWithTrack[];
   hasNextPage: boolean;
@@ -121,12 +121,13 @@ export default function SearchPost() {
   const [sortValue, setSortValue] = useState<SortList>(sortItems[0]);
 
   const boxRef = useRef<HTMLDivElement>(null);
-  const currPage = useRef(1);
+  const currPage = useRef(INITIAL_PAGE);
   const [searchParams] = useSearchParams();
 
   const isFetchingMoreData = fetcher.state === 'loading';
-  const isInitialLoad = hasNextPage && !fetcher.data?.data;
-  const hasMoreData = Boolean(fetcher.data?.data.length) || isInitialLoad;
+  const isInitialLoad = currPage.current === INITIAL_PAGE;
+  const hasMoreData =
+    (fetcher.data?.hasNextPage && !isInitialLoad) || (hasNextPage && isInitialLoad);
 
   const transitionAction = useTransitionActionType<FetchActions>();
   const shouldResetToInitialState =
@@ -139,7 +140,7 @@ export default function SearchPost() {
 
   const queryString = createQueryString({
     sortValue: sortValue.value,
-    currPage: String(currPage),
+    currPage: String(currPage.current),
     term: searchParams.get('term') ?? '',
     action: 'fetchMore',
   });
@@ -150,14 +151,21 @@ export default function SearchPost() {
   }, [initialData]);
 
   useEffect(() => {
-    if (hasMoreData && fetcher.type === 'done')
+    if (!isSameLocation) {
+      fetcher.load('/reset-fetcher');
+      currPage.current = INITIAL_PAGE;
+    }
+  }, [fetcher, isSameLocation]);
+
+  useEffect(() => {
+    if (hasMoreData && isSameLocation && fetcher.type === 'done')
       setPostList(prev => [...prev, ...(fetcher.data?.data ?? [])]);
-  }, [hasMoreData, fetcher]);
+  }, [hasMoreData, fetcher, isSameLocation]);
 
   useEffect(() => {
     const handleScroll = () => {
       const isFetchMoreRange = boxRef.current && boxRef.current.getBoundingClientRect().top < 1000;
-      const shouldFetch = hasMoreData && isFetchMoreRange && !isFetchingMoreData;
+      const shouldFetch = isInitialLoad && hasMoreData && isFetchMoreRange && !isFetchingMoreData;
       if (!shouldFetch) return;
       fetcher.load(searchURL);
       currPage.current++;
@@ -165,14 +173,7 @@ export default function SearchPost() {
     window.addEventListener('scroll', handleScroll);
 
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [fetcher, hasMoreData, searchURL, isFetchingMoreData]);
-
-  useEffect(() => {
-    if (shouldResetToInitialState) {
-      fetcher.load('/reset-fetcher');
-      currPage.current = 1;
-    }
-  }, [shouldResetToInitialState, fetcher]);
+  }, [fetcher, hasMoreData, searchURL, isFetchingMoreData, isInitialLoad]);
 
   return (
     <div className="mx-auto flex min-h-screen w-full flex-col items-center gap-4">

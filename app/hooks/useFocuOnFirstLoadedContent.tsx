@@ -15,4 +15,5 @@ export const useFocusOnFirstLoadedContent = (
         : document.getElementById(`${elementId}-${listItemIdx}`);
     itemToFocus?.focus();
   }, [list, elementId, itemsPerLoad]);
+  return { idPrefix: `${elementId}-` };
 };

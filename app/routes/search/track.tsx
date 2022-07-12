@@ -39,7 +39,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     );
 
     const response = await searchGenius({
-      perPage: 10,
+      perPage: ITEMS_PER_LOAD,
       searchQuery: searchTerm,
     });
     const nextPageData = (
@@ -57,7 +57,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       `loadMore action should be coupled with a search term. Instead, received: ${searchTerm}`,
     );
     const response = await searchGenius({
-      perPage: 10,
+      perPage: ITEMS_PER_LOAD,
       currentPage: Number(currPage),
       searchQuery: searchTerm,
     });
@@ -72,7 +72,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   }
   if (!searchTerm) return json({ data: [], searchTerm });
   const response = await searchGenius({
-    perPage: 10,
+    perPage: ITEMS_PER_LOAD,
     searchQuery: searchTerm,
   });
   return json({ data: response.hits, searchTerm });
@@ -87,14 +87,14 @@ export default function SearchTrack() {
   const prevLocationKey = usePrevious(location.key);
   const isSameLocation = prevLocationKey === location.key;
 
+  const [currPage, setCurrPage] = useState(INITIAL_LOADMORE_PAGE);
   const [trackList, setTrackList] = useState(initialData);
   const transitionAction = useTransitionActionType<FetchActions>();
-  const shouldLoadInitialData = transitionAction === 'clear' || transitionAction === 'search';
+  const isLoadingInitialData = transitionAction === 'clear' || transitionAction === 'search';
 
-  const isFetcherHasData = fetcher.data?.data;
-  const isInitialLoad = Boolean(nextPageData?.length) && !isFetcherHasData;
-  const hasMoreData = isInitialLoad || isFetcherHasData;
-  const [currPage, setCurrPage] = useState(INITIAL_LOADMORE_PAGE);
+  const isInitialLoad = initialData.length === 0;
+  const hasNextPageData = fetcher.data?.data || Boolean(nextPageData?.length);
+  const hasMoreData = !isInitialLoad && hasNextPageData;
 
   const handleLoadMore = () => {
     const queryString = createQueryString({
@@ -109,19 +109,23 @@ export default function SearchTrack() {
   useEffect(() => {
     if (initialData) setTrackList(initialData);
   }, [initialData]);
-  useEffect(() => {
-    if (!isSameLocation) setCurrPage(INITIAL_LOADMORE_PAGE);
-  }, [isSameLocation]);
 
   useEffect(() => {
-    if (hasMoreData && fetcher.type === 'done') {
+    if (!isSameLocation) {
+      fetcher.load('/reset-fetcher');
+      setCurrPage(INITIAL_LOADMORE_PAGE);
+    }
+  }, [fetcher, isSameLocation]);
+
+  useEffect(() => {
+    if (hasMoreData && isSameLocation && fetcher.type === 'done') {
       setTrackList(prev => [...prev, ...(fetcher.data?.data ?? [])]);
     }
-  }, [hasMoreData, fetcher]);
+  }, [hasMoreData, fetcher, isSameLocation]);
 
-  useFocusOnFirstLoadedContent(trackList, 'link', ITEMS_PER_LOAD);
+  const { idPrefix } = useFocusOnFirstLoadedContent(trackList, 'link', ITEMS_PER_LOAD);
 
-  if (shouldLoadInitialData)
+  if (isLoadingInitialData)
     return (
       <>
         <TrackSkeleton />
@@ -131,7 +135,7 @@ export default function SearchTrack() {
         <TrackSkeleton />
       </>
     );
-  if (trackList.length === 0 && currPage === INITIAL_LOADMORE_PAGE)
+  if (isInitialLoad)
     return (
       <div className="mt-12 flex min-h-screen flex-col items-center ">
         <h2 className="text-center text-xl font-semibold">
@@ -171,7 +175,7 @@ export default function SearchTrack() {
                   className="group ml-auto flex items-center gap-1 rounded-full px-2 py-1 text-xs text-gray-600 ring-1 ring-gray-300 focus:ring-black"
                   to={`/track/${track.result.id}`}
                   prefetch="intent"
-                  id={`link-${index}`}
+                  id={`${idPrefix}${index}`}
                   aria-labelledby={String(track.result.id)}
                 >
                   {isPending ? 'Loading..' : 'Details'}

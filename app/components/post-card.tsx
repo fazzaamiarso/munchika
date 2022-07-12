@@ -21,7 +21,7 @@ type Post2 = {
   currentUserId: string | null;
   postWithUser: Post;
   displayUser?: boolean;
-  displayTrack?: never;
+  displayTrack?: false;
 };
 
 type PostCardProps = Post1 | Post2;
