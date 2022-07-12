@@ -60,7 +60,7 @@
     "lint": "eslint app/**/*.tsx"
   },
   "lint-staged": {
-    "app/**/*.tsx": [
+    "app/**/*.{ts,tsx}": [
       "yarn lint",
       "prettier --write"
     ]
