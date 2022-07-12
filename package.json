@@ -32,6 +32,7 @@
     "autoprefixer": "^10.4.2",
     "concurrently": "^7.0.0",
     "cross-env": "^7.0.3",
+    "cypress": "^10.3.0",
     "eslint": "^8.9.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-jsx-a11y": "^6.5.1",
@@ -57,7 +58,9 @@
     "build:css": "tailwindcss -i ./styles/tailwind.css -o ./app/tailwind.css --minify",
     "dev:css": "tailwindcss -i ./styles/tailwind.css -o ./app/tailwind.css --watch",
     "prepare": "husky install && chmod ug+x .husky/*",
-    "lint": "eslint app/**/*.{ts,tsx}"
+    "lint": "eslint app/**/*.{ts,tsx}",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run"
   },
   "lint-staged": {
     "app/**/*.{ts,tsx}": [
