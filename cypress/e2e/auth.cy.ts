@@ -4,15 +4,13 @@ const testUser = {
   password: '123456',
 };
 
-const loginUser = {
-  email: Cypress.env('login_email'),
-  password: Cypress.env('login_password'),
-};
 
 describe('general user auth flow', () => {
-  afterEach(() => {
-    cy.clearCookies();
-  });
+  const loginUser = {
+    email: Cypress.env('login_email'),
+    password: Cypress.env('login_password'),
+  };
+
   it.skip('register a user succesfully', () => {
     //TODO: Figure out best way to handle testing registration
     cy.visit('/register');
@@ -27,7 +25,7 @@ describe('general user auth flow', () => {
   context('login flow', () => {
     it('redirect to login page if trying to acccess profile without session', () => {
       cy.visit('/user');
-      cy.location('pathname').contains('/login');
+      cy.location('pathname').should('contain', '/login');
     });
     it('log a user in successfully', () => {
       cy.visit('/login');
@@ -39,14 +37,13 @@ describe('general user auth flow', () => {
       });
       cy.getCookie('auth_session').should('exist');
     });
+
     it('log a user out successfully', () => {
       cy.login({ email: loginUser.email, password: loginUser.password });
-      cy.findByRole('menu')
-        .click()
-        .within(() => {
-          cy.findByRole('menuitem', { name: /logout/i }).click();
-        });
-      cy.getCookie('auth_session').should('not.exist');
+      cy.getCookie('auth_session').should('exist');
+      Cypress.Cookies.debug(true);
+      cy.findByRole('button', { name: /open user menu/i }).click();
+      cy.findByRole('menuitem', { name: /logout/i }).click();
     });
   });
 });

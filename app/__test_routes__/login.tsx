@@ -30,5 +30,5 @@ export const action: ActionFunction = async ({ request }) => {
   invariant(session?.access_token, 'Logged in user should have session token');
   invariant(user?.id, 'Logged in user should have an Id');
 
-  return await createUserSession(user.id, '/', session.access_token);
+  return createUserSession(user.id, '/', session.access_token);
 };

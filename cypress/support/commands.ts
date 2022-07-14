@@ -18,17 +18,18 @@ import '@testing-library/cypress/add-commands';
 declare global {
   namespace Cypress {
     interface Chainable {
-      login(credentials: { email: string; password: string }): Chainable<void>;
+      login: typeof login;
     }
   }
 }
 
-Cypress.Commands.add('login', ({ email, password }) => {
-  cy.request('POST', '__test/login', {
+function login({ email, password }: { email: string; password: string }) {
+  return cy.request('POST', '__test/login', {
     email,
     password,
   });
-});
+}
+Cypress.Commands.add('login', login);
 // -- This is a parent command --
 // Cypress.Commands.add('login', (email, password) => { ... })
 //
