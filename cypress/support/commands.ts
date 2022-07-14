@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /// <reference types="cypress" />
 
 // ***********************************************
@@ -14,6 +15,20 @@
 
 import '@testing-library/cypress/add-commands';
 
+declare global {
+  namespace Cypress {
+    interface Chainable {
+      login(credentials: { email: string; password: string }): Chainable<void>;
+    }
+  }
+}
+
+Cypress.Commands.add('login', ({ email, password }) => {
+  cy.request('POST', '__test/login', {
+    email,
+    password,
+  });
+});
 // -- This is a parent command --
 // Cypress.Commands.add('login', (email, password) => { ... })
 //
