@@ -4,33 +4,32 @@ import { supabase } from '../utils/supabase.server';
 import { getPostWithTrack } from '../utils/geniusApi.server';
 import { PostCard } from '../components/post-card';
 import { LoaderFunction } from '@remix-run/node';
-import { posts } from '~/types/database';
+import type { Post } from '~/types/database';
 
-type PostWithTrack = posts & {
+type PostWithTrack = Post & {
   thumbnail: string;
   artist: string;
   title: string;
 };
 type LoaderData = {
-  postWithTrack: PostWithTrack[];
+  posts: PostWithTrack[];
 };
 
 export const loader: LoaderFunction = async () => {
   const { data, error } = await supabase
-    .from<posts>('post')
+    .from<Post>('post')
     .select('*, user!post_author_id_fkey (username, avatar_url)')
     .limit(7)
     .order('created_at', { ascending: false });
   if (error) {
-    console.log(error);
     throw json({ message: 'Failed to get data' }, 500);
   }
-  const postWithTrack = await getPostWithTrack(data);
-  return { postWithTrack };
+  const posts = await getPostWithTrack(data);
+  return { posts };
 };
 
 export default function Index() {
-  const { postWithTrack } = useLoaderData<LoaderData>();
+  const { posts } = useLoaderData<LoaderData>();
 
   return (
     <main id="main" className="mx-auto my-6 flex w-11/12 max-w-lg flex-col items-center">
@@ -44,7 +43,7 @@ export default function Index() {
       </p>
       <p className="mb-6 pt-6 font-semibold">Check some of people&apos;s thought here</p>
       <ul className="w-full space-y-8">
-        {postWithTrack.map(post => {
+        {posts.map(post => {
           return <PostCard key={post.id} posts={post} currentUserId={null} displayTrack />;
         })}
       </ul>
