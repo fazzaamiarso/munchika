@@ -1,8 +1,9 @@
 {
   "include": ["remix.env.d.ts", "**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "public", ".cache"],
+  "exclude": ["node_modules", "public", ".cache", "cypress", "cypress.config.ts"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2019"],
+    "types": ["vitest/globals", "vitest/importMeta"],
     "isolatedModules": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",
