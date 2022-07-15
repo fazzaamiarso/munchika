@@ -9,7 +9,10 @@ export const PostMenu = ({ postId, openDialog }: Props) => {
   return (
     <>
       <Menu as="div" className="relative ml-3 py-2">
-        <Menu.Button className="flex rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
+        <Menu.Button
+          data-cy="post-menu"
+          className="flex rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+        >
           <span className="sr-only">Open post menu</span>
           <DotsHorizontalIcon className="h-4" aria-hidden="true" />
         </Menu.Button>
