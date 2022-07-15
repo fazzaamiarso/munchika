@@ -22,11 +22,13 @@ describe('general user auth flow', () => {
       cy.findByRole('button', { name: /register/i }).click();
     });
   });
+
   context('login flow', () => {
     it('redirect to login page if trying to acccess profile without session', () => {
-      cy.visit('/user');
+      cy.visit('/user/posts');
       cy.location('pathname').should('contain', '/login');
     });
+
     it('log a user in successfully', () => {
       cy.visit('/login');
       cy.findByRole('heading', { level: 1 }).should('be.focused');
@@ -39,9 +41,9 @@ describe('general user auth flow', () => {
     });
 
     it('log a user out successfully', () => {
-      cy.login({ email: loginUser.email, password: loginUser.password });
+      cy.clearCookies();
+      cy.uiLogin();
       cy.getCookie('auth_session').should('exist');
-      Cypress.Cookies.debug(true);
       cy.findByRole('button', { name: /open user menu/i }).click();
       cy.findByRole('menuitem', { name: /logout/i }).click();
     });
