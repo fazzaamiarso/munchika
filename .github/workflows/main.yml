@@ -6,11 +6,12 @@ jobs :
   runs-on : ubuntu-20.04
   name : cypress
   steps : 
+    - name : checkout
       uses : actions/checkout@v2
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
+    - name: Setup node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 14
     - name : cypresss run
       uses : cypress-io/github-action@v4
       with : 
