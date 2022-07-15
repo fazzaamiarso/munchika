@@ -22,6 +22,7 @@ describe('general user auth flow', () => {
       cy.findByRole('button', { name: /register/i }).click();
     });
   });
+
   context('login flow', () => {
     it('redirect to login page if trying to acccess profile without session', () => {
       cy.visit('/user/posts');
