@@ -7,12 +7,16 @@ jobs :
     steps : 
       - name : ✓ Checkout
         uses : actions/checkout@v3
+
       - name : 🌱 Setup node
         uses : actions/setup-node@v3
         with : 
           node-version: 14
-      - uses: borales/actions-yarn@v3.0.0
+
+      - name: 📥 Download deps
+        uses: bahmutov/npm-install@v1
         with:
-          cmd: install
+          useLockFile: false
+          
       - name: ⚡ Run vitest
-        run: yarn test:run -- --coverage
+        run: yarn test:run
