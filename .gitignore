@@ -6,3 +6,6 @@ node_modules
 /app/tailwind.css
 cypress.env.json
 .env*
+
+/coverage
+/coverage/

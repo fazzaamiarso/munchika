@@ -1,7 +1,7 @@
 const removeKeysWithNoValue = (record: Record<string, any>) => {
   let filteredRecord = {};
   for (let key in record) {
-    if (record[key]) filteredRecord = { ...filteredRecord, [key]: record[key] };
+    if (record[key] !== null) filteredRecord = { ...filteredRecord, [key]: record[key] };
   }
   return filteredRecord;
 };

@@ -1,0 +1,22 @@
+name : Vitest Unit Test
+on : [push]
+
+jobs : 
+  vitest : 
+    runs-on : ubuntu-latest
+    steps : 
+      - name : ✓ Checkout
+        uses : actions/checkout@v3
+
+      - name : 🌱 Setup node
+        uses : actions/setup-node@v3
+        with : 
+          node-version: 14
+
+      - name: 📥 Download deps
+        uses: bahmutov/npm-install@v1
+        with:
+          useLockFile: false
+          
+      - name: ⚡ Run vitest
+        run: yarn test:run
