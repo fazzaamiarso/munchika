@@ -46,6 +46,8 @@ describe('badRequest', () => {
   it('returns a response with the right message', async () => {
     const jsonResponse = badRequest({ message: 'A request made with wrong data' });
     const json = await jsonResponse.json();
+
+    expect(jsonResponse.status).toBe(400);
     expect(json.message).toBe('A request made with wrong data');
   });
 });
