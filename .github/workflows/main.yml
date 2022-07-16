@@ -15,4 +15,4 @@ jobs :
         with:
           cmd: install
       - name: ⚡ Run vitest
-        run: yarn test:run --coverage
+        run: yarn test:run -- --coverage
