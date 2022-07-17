@@ -21,7 +21,7 @@ import { usePrevious } from '~/hooks/usePrevious';
 import { useTransitionActionType } from '~/hooks/useTransitionActionType';
 import type { SearchActions } from '../search';
 
-const POST_PER_LOAD = 10;
+const POST_PER_LOAD = 2;
 const INITIAL_PAGE = 1;
 type LoaderData = {
   data: PostWithTrack[];

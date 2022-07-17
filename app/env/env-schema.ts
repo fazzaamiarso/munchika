@@ -5,6 +5,6 @@ export const envSchema = z.object({
   SUPABASE_URL: z.string(),
   SUPABASE_KEY: z.string(),
   SESSION_SECRET: z.string(),
-  NODE_ENV: z.enum(['test', 'development', 'production']),
-  ENABLE_TEST_ROUTES: z.enum(['true', 'false']),
+  NODE_ENV: z.enum(['test', 'development', 'production']).optional(),
+  ENABLE_TEST_ROUTES: z.enum(['true', 'false']).optional(),
 });
