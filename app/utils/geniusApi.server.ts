@@ -1,3 +1,4 @@
+import { env } from '~/env';
 import { Post } from '~/types/database';
 import { createQueryString } from './url';
 
@@ -32,7 +33,7 @@ export const searchGenius = async ({
 
   const response = await fetch(encodedURL, {
     headers: {
-      Authorization: `Bearer ${process.env.GENIUS_ACCESS_TOKEN}`,
+      Authorization: `Bearer ${env.GENIUS_ACCESS_TOKEN}`,
     },
   });
   const jsonData = await response.json();
@@ -46,7 +47,7 @@ export const fetchFromGenius = async (requestPath: string): Promise<{ song: Geni
 
   const response = await fetch(encodedURL, {
     headers: {
-      Authorization: `Bearer ${process.env.GENIUS_ACCESS_TOKEN}`,
+      Authorization: `Bearer ${env.GENIUS_ACCESS_TOKEN}`,
     },
   });
   const jsonData = await response.json();

@@ -1,8 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
+import { env } from '~/env';
 import { User } from '~/types/database';
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseUrl = env.SUPABASE_URL;
+const supabaseKey = env.SUPABASE_KEY;
 if (!supabaseUrl) throw Error('SUPABASE_URL env variable is not set');
 if (!supabaseKey) throw Error('SUPABASE_KEY env variable is not set');
 

@@ -165,7 +165,7 @@ export default function SearchPost() {
   useEffect(() => {
     const handleScroll = () => {
       const isFetchMoreRange = boxRef.current && boxRef.current.getBoundingClientRect().top < 1000;
-      const shouldFetch = isInitialLoad && hasMoreData && isFetchMoreRange && !isFetchingMoreData;
+      const shouldFetch = hasMoreData && isFetchMoreRange && !isFetchingMoreData;
       if (!shouldFetch) return;
       fetcher.load(searchURL);
       currPage.current++;
